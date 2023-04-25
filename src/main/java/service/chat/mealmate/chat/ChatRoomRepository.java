@@ -7,7 +7,7 @@ import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
-import websocket.spring_websocket.chat.dto.ChatRoom;
+import service.chat.mealmate.chat.dto.ChatRoom;
 
 import javax.annotation.PostConstruct;
 import java.util.*;

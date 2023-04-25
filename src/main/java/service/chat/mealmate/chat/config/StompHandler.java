@@ -8,7 +8,7 @@ import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.stereotype.Component;
-import websocket.spring_websocket.chat.jwt.JwtTokenProvider;
+import service.chat.mealmate.chat.jwt.JwtTokenProvider;
 
 @Slf4j
 @RequiredArgsConstructor

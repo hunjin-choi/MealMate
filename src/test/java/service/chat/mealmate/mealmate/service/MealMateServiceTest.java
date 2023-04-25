@@ -7,9 +7,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
-import websocket.spring_websocket.mealmate.domain.MealMate;
-import websocket.spring_websocket.member.domain.Member;
-import websocket.spring_websocket.member.service.MemberService;
+import service.chat.mealmate.mealmate.domain.MealMate;
+import service.chat.mealmate.member.domain.Member;
+import service.chat.mealmate.member.service.MemberService;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

@@ -3,9 +3,9 @@ package service.chat.mealmate.member.domain;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import websocket.spring_websocket.mealmate.domain.MealMate;
-import websocket.spring_websocket.mileage.domain.MileageHistory;
-import websocket.spring_websocket.order.domain.Orders;
+import service.chat.mealmate.mealmate.domain.MealMate;
+import service.chat.mealmate.mileage.domain.MileageHistory;
+import service.chat.mealmate.order.domain.Orders;
 
 import javax.persistence.*;
 import java.util.ArrayList;

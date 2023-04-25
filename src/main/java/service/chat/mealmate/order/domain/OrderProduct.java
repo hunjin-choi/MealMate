@@ -1,6 +1,6 @@
 package service.chat.mealmate.order.domain;
 
-import websocket.spring_websocket.product.domain.Product;
+import service.chat.mealmate.product.domain.Product;
 
 import javax.persistence.*;
 

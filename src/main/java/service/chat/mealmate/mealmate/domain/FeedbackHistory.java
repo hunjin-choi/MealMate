@@ -3,7 +3,7 @@ package service.chat.mealmate.mealmate.domain;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
-import websocket.spring_websocket.mileage.domain.MileageHistory;
+import service.chat.mealmate.mileage.domain.MileageHistory;
 
 import javax.persistence.*;
 import java.util.Date;

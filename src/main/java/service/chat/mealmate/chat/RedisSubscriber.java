@@ -8,7 +8,7 @@ import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
-import websocket.spring_websocket.chat.dto.ChatMessage;
+import service.chat.mealmate.chat.dto.ChatMessage;
 
 @Slf4j
 @RequiredArgsConstructor

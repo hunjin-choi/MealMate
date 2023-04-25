@@ -8,9 +8,9 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import websocket.spring_websocket.chat.dto.ChatMessage;
-import websocket.spring_websocket.chat.dto.ChatRoom;
-import websocket.spring_websocket.chat.jwt.JwtTokenProvider;
+import service.chat.mealmate.chat.dto.ChatMessage;
+import service.chat.mealmate.chat.dto.ChatRoom;
+import service.chat.mealmate.chat.jwt.JwtTokenProvider;
 
 import java.util.List;
 

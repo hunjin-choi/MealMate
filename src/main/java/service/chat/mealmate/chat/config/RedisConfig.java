@@ -14,7 +14,7 @@ import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import websocket.spring_websocket.chat.RedisSubscriber;
+import service.chat.mealmate.chat.RedisSubscriber;
 
 @Configuration
 public class RedisConfig {

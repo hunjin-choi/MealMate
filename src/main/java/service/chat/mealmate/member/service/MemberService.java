@@ -2,12 +2,12 @@ package service.chat.mealmate.member.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import websocket.spring_websocket.mileage.domain.Mileage;
-import websocket.spring_websocket.mileage.domain.MileageChangeReason;
-import websocket.spring_websocket.mileage.domain.MileageHistory;
-import websocket.spring_websocket.mileage.domain.MileageHistoryRepository;
-import websocket.spring_websocket.member.domain.Member;
-import websocket.spring_websocket.member.domain.MemberRepository;
+import service.chat.mealmate.mileage.domain.Mileage;
+import service.chat.mealmate.mileage.domain.MileageChangeReason;
+import service.chat.mealmate.mileage.domain.MileageHistory;
+import service.chat.mealmate.mileage.domain.MileageHistoryRepository;
+import service.chat.mealmate.member.domain.Member;
+import service.chat.mealmate.member.domain.MemberRepository;
 
 import java.util.Date;
 

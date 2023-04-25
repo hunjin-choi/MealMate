@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import websocket.spring_websocket.mealmate.service.MealMateService;
+import service.chat.mealmate.mealmate.service.MealMateService;
 
 @RestController
 @RequestMapping("/mealmate")

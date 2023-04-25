@@ -6,10 +6,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import websocket.spring_websocket.chat.config.AppUserRole;
-import websocket.spring_websocket.chat.dto.ChatRoom;
-import websocket.spring_websocket.chat.dto.LoginInfo;
-import websocket.spring_websocket.chat.jwt.JwtTokenProvider;
+import service.chat.mealmate.chat.config.AppUserRole;
+import service.chat.mealmate.chat.dto.ChatRoom;
+import service.chat.mealmate.chat.dto.LoginInfo;
+import service.chat.mealmate.chat.jwt.JwtTokenProvider;
 
 import java.util.ArrayList;
 import java.util.List;

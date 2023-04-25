@@ -4,8 +4,8 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
-import websocket.spring_websocket.mileage.domain.MileageHistory;
-import websocket.spring_websocket.member.domain.Member;
+import service.chat.mealmate.mileage.domain.MileageHistory;
+import service.chat.mealmate.member.domain.Member;
 
 import javax.persistence.*;
 import java.util.ArrayList;

@@ -4,9 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import websocket.spring_websocket.mealmate.domain.FeedbackHistory;
-import websocket.spring_websocket.order.domain.Orders;
-import websocket.spring_websocket.member.domain.Member;
+import service.chat.mealmate.mealmate.domain.FeedbackHistory;
+import service.chat.mealmate.order.domain.Orders;
+import service.chat.mealmate.member.domain.Member;
 
 import javax.persistence.*;
 import java.util.Date;

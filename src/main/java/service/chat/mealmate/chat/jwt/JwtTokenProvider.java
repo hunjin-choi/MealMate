@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
-import websocket.spring_websocket.chat.config.AppUserRole;
+import service.chat.mealmate.chat.config.AppUserRole;
 
 import javax.annotation.PostConstruct;
 import java.util.Base64;

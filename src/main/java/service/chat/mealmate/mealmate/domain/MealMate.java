@@ -3,7 +3,7 @@ package service.chat.mealmate.mealmate.domain;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import websocket.spring_websocket.member.domain.Member;
+import service.chat.mealmate.member.domain.Member;
 
 import javax.persistence.*;
 import java.util.Date;
