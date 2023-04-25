@@ -1,0 +1,38 @@
+package service.chat.mealmate.order.domain;
+
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+import websocket.spring_websocket.mileage.domain.MileageHistory;
+import websocket.spring_websocket.member.domain.Member;
+
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+@Entity
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Orders {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long ordersId;
+
+    @Temporal(value = TemporalType.TIMESTAMP)
+    private Date orderDate;
+
+    @Enumerated(EnumType.STRING)
+    private OrderStatus orderStatus;
+
+    @ManyToOne
+    private Member member;
+
+    @OneToMany(mappedBy = "orders")
+    private List<OrderProduct> orderProduct = new ArrayList<OrderProduct>();
+
+    @OneToOne(mappedBy = "orders")
+    private MileageHistory mileageHistory;
+}
