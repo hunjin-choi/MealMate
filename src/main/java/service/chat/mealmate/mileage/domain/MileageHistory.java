@@ -35,11 +35,19 @@ public class MileageHistory {
     @OneToOne() @JoinColumn(name = "orders_id")
     private Orders orders;
 
-    public MileageHistory(Mileage mileage, Date date, MileageChangeReason mileageChangeReason, Member member) {
+    public MileageHistory(Mileage mileage, Date date, MileageChangeReason mileageChangeReason, Member member, Object object) {
         this.mileage = mileage;
         this.date = date;
-        this.mileageChangeReason = mileageChangeReason;
         this.member = member;
+        this.mileageChangeReason = mileageChangeReason;
+        if (mileageChangeReason == MileageChangeReason.INIT) {
+            this.orders = null; this.feedBackHistory = null;
+        } else if (mileageChangeReason == MileageChangeReason.FEEDBACK) {
+            this.orders = null; this.feedBackHistory = (FeedbackHistory) object;
+        } else if (mileageChangeReason == MileageChangeReason.PRODUCT_ORDER) {
+            this.orders = (Orders) object; this.feedBackHistory = null;
+        } else {
+            throw new RuntimeException("");
+        }
     }
-
 }

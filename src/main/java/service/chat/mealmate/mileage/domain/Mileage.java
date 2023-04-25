@@ -11,10 +11,14 @@ public class Mileage {
     private Long currentMileage;
 
     public Mileage appendValueAndCreateNewMileage(Long appendValue) {
-        return new Mileage(appendValue, currentMileage + appendValue);
+        Mileage mileage = new Mileage(appendValue);
+        mileage.currentMileage += this.currentMileage;
+        return mileage;
     }
-    public Mileage(Long appendValue, Long currentMileage) {
-        this.appendValue = appendValue;
-        this.currentMileage = currentMileage;
+
+    public Mileage(Long initValue) {
+        this.appendValue = initValue;
+        this.currentMileage = 0L + appendValue;
     }
+
 }

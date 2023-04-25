@@ -17,7 +17,7 @@ public class MemberService {
     private final MileageHistoryRepository mileageHistoryRepository;
     public void signUp(String userName) {
         Member member = new Member(userName, "nickname");
-        MileageHistory mileageHistory = new MileageHistory(new Mileage(10L, 0L), new Date(), MileageChangeReason.INIT, member);
+        MileageHistory mileageHistory = new MileageHistory(new Mileage(0L), new Date(), MileageChangeReason.INIT, member, null);
         mileageHistoryRepository.save(mileageHistory);
         memberRepository.save(member);
     }

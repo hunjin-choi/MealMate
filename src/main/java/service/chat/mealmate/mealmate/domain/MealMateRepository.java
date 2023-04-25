@@ -8,5 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface MealMateRepository extends JpaRepository<MealMate, Long> {
-    public Optional<MealMate> findByOwnerAndIsActive(Member member, Boolean isActive);
+    public Optional<MealMate> findByGiverAndIsActive(Member member, Boolean isActive);
 }

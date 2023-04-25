@@ -1,33 +1,61 @@
 package service.chat.mealmate.member.service;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import service.chat.mealmate.member.domain.Member;
+import service.chat.mealmate.member.domain.MemberRepository;
+import service.chat.mealmate.mileage.domain.MileageChangeReason;
+import service.chat.mealmate.mileage.domain.MileageHistory;
+import service.chat.mealmate.mileage.domain.MileageHistoryRepository;
+import service.chat.mealmate.utils.MyDateUtil;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.Date;
 
 @SpringBootTest @Transactional
 class MemberServiceTest {
     @Autowired
     private MemberService memberService;
 
+    @Autowired
+    private MemberRepository memberRepository;
+    @Autowired
+    private MileageHistoryRepository mileageHistoryRepository;
     @PersistenceContext
     private EntityManager em;
 
     @Test @DisplayName("유저를 생성합니다")
     public void signUpUser() {
-        Long pastUserCount = (Long) em.createQuery("select count(m) from Member m").getSingleResult();
-        em.createQuery("select count(mh) from MileageHistory  mh").getSingleResult();
+        // given
+        long pastMemberCount = memberRepository.count();
+        // when
         memberService.signUp("tempUser");
-        Long currentUserCount = (Long) em.createQuery("select count(m) from Member m").getSingleResult();
-        em.createQuery("select count(mh) from MileageHistory  mh").getResultList();
+        long currentMemberCount = memberRepository.count();
+        // then
+        Assertions.assertEquals(pastMemberCount + 1, currentMemberCount);
     }
 
     @Test @DisplayName("유저를 생성하면 그 유저의 mileageHistory도 생성되어야 합니다.")
     public void IfUserSignUpThenCreateMileageHistory() {
-
+        // given
+        long pastMHCount = mileageHistoryRepository.count();
+        // when
+        memberService.signUp("tempUser");
+        Member member = em.createQuery("select m from Member m where m.name=?1", Member.class).setParameter(1, "tempUser").getSingleResult();
+        long currentMHCount = mileageHistoryRepository.count();
+        MileageHistory mileageHistory = mileageHistoryRepository.findFirstByMemberOrderByDateDesc(member);
+        // then
+        Assertions.assertEquals(pastMHCount + 1, currentMHCount);
+        Assertions.assertEquals(0, mileageHistory.getMileage().getCurrentMileage());
+        Assertions.assertEquals(MileageChangeReason.INIT, mileageHistory.getMileageChangeReason());
+        Assertions.assertNull(mileageHistory.getFeedBackHistory());
+        Assertions.assertNull(mileageHistory.getOrders());
+        Assertions.assertTrue(MyDateUtil.isSameDateWithoutTime(new Date(), mileageHistory.getDate()));
+        Assertions.assertTrue(member.equals(mileageHistory.getMember()));
     }
 }

@@ -2,13 +2,14 @@ package service.chat.mealmate.mealmate.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import service.chat.mealmate.mileage.domain.MileageHistory;
 
 import javax.persistence.*;
 import java.util.Date;
 
-@Entity @Builder @AllArgsConstructor @NoArgsConstructor
+@Entity @Builder @AllArgsConstructor @NoArgsConstructor @Getter
 public class FeedbackHistory {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long feedBackHistoryId;

@@ -11,6 +11,8 @@ spring:
     host: localhost
     port: 6379
     database: 0
+    lettuce:
+      shutdown-timeout: 2s # 임베디드 레디스 종료 안되는 문제떄문에 임시로 timeout 시간 설정
   jwt:
     secret: secreto
   h2:

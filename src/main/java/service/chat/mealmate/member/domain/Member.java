@@ -21,7 +21,7 @@ public class Member {
     @OneToMany(mappedBy = "member")
     private List<MileageHistory> mileageHistoryList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "owner")
+    @OneToMany(mappedBy = "giver")
     private List<MealMate> mealMate = new ArrayList<>();
 
     @OneToMany(mappedBy = "member")

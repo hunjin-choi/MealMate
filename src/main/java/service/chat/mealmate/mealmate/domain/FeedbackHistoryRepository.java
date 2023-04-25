@@ -5,4 +5,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface FeedbackHistoryRepository extends JpaRepository<FeedbackHistory, Long> {
+    public FeedbackHistory findFirstByMealMateOrderByFeedBackDateDesc(MealMate mealMate);
+    public Long countAllByMealMate(MealMate mealMate);
 }
