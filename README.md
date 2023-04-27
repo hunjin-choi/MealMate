@@ -4,6 +4,6 @@
 
 spring, spring mvc, junit, thymeleaf, free marker, jpa, jpql, mysql, websocket, redis
 
-DDD, OOP
+~~DDD~~, OOP, TDD
 
-lamda, rds
+lambda, rds
