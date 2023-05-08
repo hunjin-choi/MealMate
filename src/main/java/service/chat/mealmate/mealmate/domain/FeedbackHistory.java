@@ -24,9 +24,6 @@ public class FeedbackHistory {
     @ManyToOne
     private MealMate mealMate;
 
-    @OneToOne(mappedBy = "feedBackHistory")
-    private MileageHistory mileageHistory;
-
     public FeedbackHistory(Long temporalMileage, String feedbackMention, Date feedBackDate, MealMate mealMate) {
         this.temporalMileage = temporalMileage;
         this.feedbackMention = feedbackMention;

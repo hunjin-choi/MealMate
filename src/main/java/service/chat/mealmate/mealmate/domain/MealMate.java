@@ -24,27 +24,29 @@ public class MealMate {
 
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date connectDate;
-    @ManyToOne() @JoinColumn(name = "GIVER")
-    private Member giver;
+//    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "GIVER")
+    private Long giverId;
 
-    // Mealmate에서 ManyToOwn이 두 개라도, User에도 OneToMany가 두 개일 필요는 없다.
-    @ManyToOne @JoinColumn(name = "RECEIVER")
-    private Member receiver;
+    // Mealmate에서 ManyToOne이 두 개라도, User에도 OneToMany가 두 개일 필요는 없다.
+//    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "RECEIVER")
+    private Long receiverId;
 
     @OneToMany(mappedBy = "mealMate")
     private List<FeedbackHistory> feedbackHistoryList;
 
-    public MealMate(Long mealMateMileage, Boolean isActive, Member giver, Member receiver) {
+    public MealMate(Long mealMateMileage, Boolean isActive, Long giverId, Long receiverId) {
         this.mealMateMileage = mealMateMileage;
         this.isActive = isActive;
-        this.giver = giver;
-        this.receiver = receiver;
+        this.giverId = giverId;
+        this.receiverId = receiverId;
     }
 
     public void disconnect() {
         this.isActive = false;
     }
-    public void addMileage(Long value) {
+
+    public FeedbackHistory recordMileageHistory(Long value, String feedbackMention) {
         this.mealMateMileage += value;
+        return new FeedbackHistory(value, feedbackMention, new Date(), this);
     }
 }

@@ -27,12 +27,9 @@ public class Orders {
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus;
 
-    @ManyToOne
-    private Member member;
+//    @ManyToOne
+    private Long memberId;
 
     @OneToMany(mappedBy = "orders")
-    private List<OrderProduct> orderProduct = new ArrayList<OrderProduct>();
-
-    @OneToOne(mappedBy = "orders")
-    private MileageHistory mileageHistory;
+    private List<OrderProduct> orderProductList = new ArrayList<OrderProduct>();
 }

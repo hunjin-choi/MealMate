@@ -11,6 +11,6 @@ public class Product {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long productId;
 
-    @OneToMany(mappedBy = "product")
-    private List<OrderProduct> orderProductList = new ArrayList<>();
+//    @OneToMany(mappedBy = "product")
+//    private List<OrderProduct> orderProductList = new ArrayList<>();
 }

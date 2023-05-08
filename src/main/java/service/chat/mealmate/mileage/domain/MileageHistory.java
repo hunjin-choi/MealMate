@@ -28,26 +28,31 @@ public class MileageHistory {
     @ManyToOne
     private Member member;
 
+//    @OneToOne()
+    @JoinColumn(name = "feedback_history_id")
+    private Long feedBackHistoryId;
 
-    @OneToOne() @JoinColumn(name = "feedback_history_id")
-    private FeedbackHistory feedBackHistory;
+//    @OneToOne()
+    @JoinColumn(name = "orders_id")
+    private Long ordersId;
 
-    @OneToOne() @JoinColumn(name = "orders_id")
-    private Orders orders;
-
-    public MileageHistory(Mileage mileage, Date date, MileageChangeReason mileageChangeReason, Member member, Object object) {
+    public MileageHistory(Mileage mileage, Date date, MileageChangeReason mileageChangeReason, Member member, Long fk) {
         this.mileage = mileage;
         this.date = date;
         this.member = member;
         this.mileageChangeReason = mileageChangeReason;
         if (mileageChangeReason == MileageChangeReason.INIT) {
-            this.orders = null; this.feedBackHistory = null;
+            this.ordersId = null; this.feedBackHistoryId = null;
         } else if (mileageChangeReason == MileageChangeReason.FEEDBACK) {
-            this.orders = null; this.feedBackHistory = (FeedbackHistory) object;
+            this.ordersId = null; this.feedBackHistoryId = fk;
         } else if (mileageChangeReason == MileageChangeReason.PRODUCT_ORDER) {
-            this.orders = (Orders) object; this.feedBackHistory = null;
+            this.ordersId = fk; this.feedBackHistoryId = null;
         } else {
             throw new RuntimeException("");
         }
+    }
+
+    public Mileage appendValueAndCreateNewMileage(Long appendValue) {
+        return this.mileage.appendValueAndCreateNewMileage(appendValue);
     }
 }

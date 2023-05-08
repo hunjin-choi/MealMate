@@ -9,26 +9,32 @@ import service.chat.mealmate.order.domain.Orders;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Entity @NoArgsConstructor(access = AccessLevel.PROTECTED) @Getter
 public class Member {
     @Id() @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userId;
+    private Long memberId;
     private String name;
     private String nickname;
 
-    @OneToMany(mappedBy = "member")
+    @Temporal(value = TemporalType.TIMESTAMP)
+    private Date date;
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<MileageHistory> mileageHistoryList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "giver")
-    private List<MealMate> mealMate = new ArrayList<>();
+//    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+//    private List<MealMate> mealMateList = new ArrayList<>();
+//
+//    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+//    private List<Orders> ordersList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "member")
-    private List<Orders> ordersList = new ArrayList<>();
-
-    public Member(String name, String nickname) {
+    public Member(String name, String nickname, Date date) {
         this.name = name;
         this.nickname = nickname;
+        this.date = date;
     }
+
 }

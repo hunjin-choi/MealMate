@@ -7,12 +7,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.annotation.Testable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 import service.chat.mealmate.mealmate.domain.FeedbackHistory;
 import service.chat.mealmate.mealmate.domain.FeedbackHistoryRepository;
 import service.chat.mealmate.mealmate.domain.MealMate;
 import service.chat.mealmate.mealmate.domain.MealMateRepository;
 import service.chat.mealmate.member.domain.Member;
+import service.chat.mealmate.member.domain.MemberRepository;
 import service.chat.mealmate.member.service.MemberService;
 import service.chat.mealmate.mileage.domain.MileageChangeReason;
 import service.chat.mealmate.mileage.domain.MileageHistory;
@@ -20,6 +22,7 @@ import service.chat.mealmate.mileage.domain.MileageHistoryRepository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.List;
 
 @SpringBootTest @Transactional
 class MealMateServiceTest {
@@ -27,6 +30,8 @@ class MealMateServiceTest {
     private MealMateService mealMateService;
     @Autowired
     private MemberService memberService;
+    @Autowired
+    private MemberRepository memberRepository;
     @Autowired
     private MealMateRepository mealMateRepository;
     @Autowired
@@ -50,7 +55,7 @@ class MealMateServiceTest {
 
     @Test @DisplayName("두 사용자를 매칭합니다.")
     public void connectTwoUsers() {
-        mealMateService.connectMealMate(lhs_m1.getUserId(), rhs_m1.getUserId());
+        mealMateService.connectMealMate(lhs_m1.getMemberId(), rhs_m1.getMemberId());
         MealMate mealMate = em.createQuery("select mm from MealMate mm where mm.isActive = ?1 and mm.giver = ?2", MealMate.class).setParameter(1, true).setParameter(2, lhs_m1).getSingleResult();
         Assertions.assertNotNull(mealMate);
         mealMate = em.createQuery("select mm from MealMate mm where mm.isActive = ?1 and mm.receiver = ?2", MealMate.class).setParameter(1, true).setParameter(2, lhs_m1).getSingleResult();
@@ -61,9 +66,9 @@ class MealMateServiceTest {
     public void clarifyFeedbackHistory() throws Exception {
         // given
         Member giver = lhs_m1; Member receiver = rhs_m1;
-        mealMateService.connectMealMate(giver.getUserId(), receiver.getUserId());
+        mealMateService.connectMealMate(giver.getMemberId(), receiver.getMemberId());
         // when
-        mealMateService.confirm(giver.getUserId(), "goodJob!");
+        mealMateService.confirm(giver.getMemberId(), "goodJob!");
         MealMate mealMate = mealMateRepository.findByGiverAndIsActive(giver, true).orElseThrow(() -> new RuntimeException(""));
         FeedbackHistory feedbackHistory = feedbackHistoryRepository.findFirstByMealMateOrderByFeedBackDateDesc(mealMate);
         MileageHistory giverMileageHistory = mileageHistoryRepository.findFirstByMemberOrderByDateDesc(giver);
@@ -81,10 +86,10 @@ class MealMateServiceTest {
     public void checkMileageHistoryEquals() throws Exception {
         // given
         Member giver = lhs_m1; Member receiver = rhs_m1;
-        mealMateService.connectMealMate(giver.getUserId(), receiver.getUserId());
+        mealMateService.connectMealMate(giver.getMemberId(), receiver.getMemberId());
         // when
         MealMate mealMate = mealMateRepository.findByGiverAndIsActive(giver, true).orElseThrow(() -> new RuntimeException(""));
-        mealMateService.confirm(giver.getUserId(), "goodJob!");
+        mealMateService.confirm(giver.getMemberId(), "goodJob!");
         FeedbackHistory feedbackHistory = feedbackHistoryRepository.findFirstByMealMateOrderByFeedBackDateDesc(mealMate);
         MileageHistory receiverMileageHistory_1 = mileageHistoryRepository.findFirstByMemberOrderByDateDesc(receiver);
         MileageHistory receiverMileageHistory_2 = mileageHistoryRepository.findFirstByFeedBackHistoryOrderByDateDesc(feedbackHistory).orElseThrow(() -> new RuntimeException());
@@ -95,9 +100,9 @@ class MealMateServiceTest {
     public void confirmToMealMate() {
         // given
         Member giver = lhs_m1; Member receiver = rhs_m1;
-        mealMateService.connectMealMate(giver.getUserId(), receiver.getUserId());
+        mealMateService.connectMealMate(giver.getMemberId(), receiver.getMemberId());
         // when
-        mealMateService.confirm(giver.getUserId(), "goodJob!");
+        mealMateService.confirm(giver.getMemberId(), "goodJob!");
         MealMate mealMate = em.createQuery("select mm from MealMate mm where mm.isActive = ?1 and mm.giver = ?2", MealMate.class).setParameter(1, true).setParameter(2, giver).getSingleResult();
         FeedbackHistory feedbackHistory = feedbackHistoryRepository.findFirstByMealMateOrderByFeedBackDateDesc(mealMate);
         MileageHistory giverMileageHistory = mileageHistoryRepository.findFirstByMemberOrderByDateDesc(giver);
@@ -117,11 +122,13 @@ class MealMateServiceTest {
     public void multipleConfirm() throws Exception {
         // given
         Member giver = lhs_m1; Member receiver = rhs_m1;
-        mealMateService.connectMealMate(giver.getUserId(), receiver.getUserId());
+        mealMateService.connectMealMate(giver.getMemberId(), receiver.getMemberId());
+        Member member = memberRepository.findByIdWithActiveMM(giver.getMemberId()).orElseThrow(() -> new RuntimeException());
+        Assertions.assertNotNull(member.getMealMateList());
         // when
-        mealMateService.confirm(giver.getUserId(), "firstConfirm!");
-        mealMateService.confirm(giver.getUserId(), "secondConfirm!");
-        mealMateService.confirm(giver.getUserId(), "thirdConfirm!");
+        mealMateService.confirm(giver.getMemberId(), "firstConfirm!");
+        mealMateService.confirm(giver.getMemberId(), "secondConfirm!");
+        mealMateService.confirm(giver.getMemberId(), "thirdConfirm!");
         // then
         MealMate mealMate = mealMateRepository.findByGiverAndIsActive(giver, true).orElseThrow(() -> new RuntimeException());
         Assertions.assertEquals(mealMate.getMealMateMileage(), 30);
@@ -134,6 +141,36 @@ class MealMateServiceTest {
     }
     @Testable @DisplayName("member가 마일리지로 하나의 상품을 구매하면, 해당 상품의 가격만큼 마일리지가 차감됩니다.")
     public void memberBuyProductThenMileageDecreaseProperly() throws Exception {
+        // given
+
+        // when
+
+        // then
+
+    }
+
+    @Test @DisplayName("한 멤버가 순차적으로 여러 밀메이트와 매칭됩니다")
+    public void oneMemberMultipleMatching() throws Exception {
+        // given
+        mealMateService.connectMealMate(lhs_m1.getMemberId(), rhs_m1.getMemberId());
+        mealMateService.disConnectMealMate(lhs_m1.getMemberId(), rhs_m1.getMemberId());
+        mealMateService.connectMealMate(lhs_m1.getMemberId(), lhs_m2.getMemberId());
+        mealMateService.disConnectMealMate(lhs_m1.getMemberId(), lhs_m2.getMemberId());
+        mealMateService.connectMealMate(lhs_m1.getMemberId(), rhs_m2.getMemberId());
+        // when
+        List resultList = em.createQuery("SELECT m FROM Member m LEFT JOIN m.mealMateList mm WHERE m.memberId = ?1 AND mm.isActive = true").setParameter(1, lhs_m1.getMemberId()).getResultList();
+        Member member = memberRepository.findByIdWithActiveMM(lhs_m1.getMemberId()).orElseThrow(() -> new RuntimeException(""));
+        List<MealMate> activeMealMateList = member.getMealMateList();
+//        List<MealMate> allMealMateList = em.createQuery("select mm from MealMate mm order by mm.connectDate", MealMate.class).getResultList();
+        // then
+//        Assertions.assertEquals(allMealMateList.size(), 3 * 2);
+        Assertions.assertEquals(activeMealMateList.size(), 1);
+        MealMate activeMealMate = activeMealMateList.get(0);
+        Assertions.assertEquals(activeMealMate.getReceiver(), lhs_m1);
+    }
+
+    @Testable @DisplayName("자기 자신과 밀메이트로 매칭될 수는 없습니다.")
+    public void selfMatchIllegar() throws Exception {
         // given
 
         // when

@@ -5,14 +5,9 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
 import service.chat.mealmate.chat.dto.ChatMessage;
-import service.chat.mealmate.chat.dto.ChatRoom;
 import service.chat.mealmate.chat.jwt.JwtTokenProvider;
-
-import java.util.List;
 
 @RequiredArgsConstructor
 @Controller

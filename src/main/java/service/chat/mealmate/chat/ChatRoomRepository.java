@@ -3,9 +3,6 @@ package service.chat.mealmate.chat;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.listener.ChannelTopic;
-import org.springframework.data.redis.listener.RedisMessageListenerContainer;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import service.chat.mealmate.chat.dto.ChatRoom;
 

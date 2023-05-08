@@ -27,7 +27,8 @@ public class MealMateService {
         Member member2 = memberRepository.findById(member2_id).orElseThrow(() -> new RuntimeException("member2이 존재하지 않습니다"));
         MealMate mealMate1 = new MealMate(0L, true, member1, member2);
         MealMate mealMate2 = new MealMate(0L, true, member2, member1);
-        mealMateRepository.save(mealMate1); mealMateRepository.save(mealMate2);
+        member1.addMealMate(mealMate1);
+        member2.addMealMate(mealMate2);
     }
 
     public void disConnectMealMate(Long member1_id, Long member2_id) {
@@ -39,17 +40,15 @@ public class MealMateService {
     }
 
     public void confirm(Long senderId, String confirmMessage) {
-        Member owner = memberRepository.findById(senderId).orElseThrow(() -> new RuntimeException("해당 유저가 없습니다."));
-        MealMate mealMate = mealMateRepository.findByGiverAndIsActive(owner, true).orElseThrow(() -> new RuntimeException("밀 메이트가 없습니다"));
-        Member member = mealMate.getReceiver(); Long givenMileage = 10L;
-        mealMate.addMileage(givenMileage);
-        FeedbackHistory feedbackHistory = new FeedbackHistory(givenMileage, confirmMessage, new Date(), mealMate);
+        Member giver = memberRepository.findById(senderId).orElseThrow(() -> new RuntimeException("해당 유저가 없습니다."));
+        MealMate mealMate = mealMateRepository.findByGiverAndIsActive(giver, true).orElseThrow(() -> new RuntimeException("밀 메이트가 없습니다"));
+        Member receiver = mealMate.getReceiver(); Long givenMileage = 10L;
+        FeedbackHistory feedbackHistory = mealMate.recordMileageHistory(givenMileage, confirmMessage);
         feedbackHistoryRepository.save(feedbackHistory);
 
-        MileageHistory oldMileageHistory = mileageHistoryRepository.findFirstByMemberOrderByDateDesc(member);
-        Mileage oldMileage = oldMileageHistory.getMileage();
-        Mileage newMileage = oldMileage.appendValueAndCreateNewMileage(givenMileage);
-        MileageHistory newMileageHistory = new MileageHistory(newMileage, new Date(), MileageChangeReason.FEEDBACK, member, feedbackHistory);
+        MileageHistory oldMileageHistory = mileageHistoryRepository.findFirstByMemberOrderByDateDesc(receiver);
+        Mileage newMileage = oldMileageHistory.appendValueAndCreateNewMileage(givenMileage);
+        MileageHistory newMileageHistory = new MileageHistory(newMileage, new Date(), MileageChangeReason.FEEDBACK, receiver, feedbackHistory);
         mileageHistoryRepository.save(newMileageHistory);
     }
 }

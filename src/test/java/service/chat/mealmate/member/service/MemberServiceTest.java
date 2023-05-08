@@ -36,17 +36,19 @@ class MemberServiceTest {
         // when
         memberService.signUp("tempUser");
         long currentMemberCount = memberRepository.count();
+        Member member = memberRepository.findFirstByNameOrderByDateDesc("tempUser").orElseThrow(() -> new RuntimeException());
         // then
         Assertions.assertEquals(pastMemberCount + 1, currentMemberCount);
+        Assertions.assertEquals("tempUser", member.getName());
     }
 
     @Test @DisplayName("유저를 생성하면 그 유저의 mileageHistory도 생성되어야 합니다.")
-    public void IfUserSignUpThenCreateMileageHistory() {
+    public void ifUserSignUpThenCreateMileageHistory() {
         // given
         long pastMHCount = mileageHistoryRepository.count();
         // when
         memberService.signUp("tempUser");
-        Member member = em.createQuery("select m from Member m where m.name=?1", Member.class).setParameter(1, "tempUser").getSingleResult();
+        Member member = memberRepository.findFirstByNameOrderByDateDesc("tempUser").orElseThrow(() -> new RuntimeException());
         long currentMHCount = mileageHistoryRepository.count();
         MileageHistory mileageHistory = mileageHistoryRepository.findFirstByMemberOrderByDateDesc(member);
         // then
