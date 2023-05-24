@@ -4,7 +4,7 @@
     <title>Websocket ChatRoom</title>
     <!-- Required meta tags -->
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, member-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="/webjars/bootstrap/4.3.1/dist/css/bootstrap.min.css">
@@ -30,7 +30,8 @@
         </div>
         <input type="text" class="form-control" v-model="message" v-on:keypress.enter="sendMessage('TALK')">
         <div class="input-group-append">
-            <button class="btn btn-primary" type="button" @click="sendMessage('TALK')">보내기</button>
+            <button class="btn btn-primary" type="button" @click="sendMessage('TALK')">채팅 보내기</button>
+            <button class="btn btn-primary" type="button" @click="sendMessage('TALK')">피드백 보내기</button>
         </div>
     </div>
     <ul class="list-group">
@@ -63,7 +64,7 @@
             this.roomId = localStorage.getItem('wschat.roomId');
             this.roomName = localStorage.getItem('wschat.roomName');
             var _this = this;
-            axios.get('/chat/member').then(response => {
+            axios.get('/chat/user/' + this.roomId).then(response => {
                 _this.token = response.data.token;
                 ws.connect({"token":_this.token}, function(frame) {
                     ws.subscribe("/sub/chat/room/"+_this.roomId, function(message) {

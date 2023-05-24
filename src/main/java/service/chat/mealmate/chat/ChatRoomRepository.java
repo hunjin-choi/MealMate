@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import service.chat.mealmate.chat.dto.ChatRoom;
 
 import javax.annotation.PostConstruct;
-import java.util.*;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service

@@ -3,50 +3,89 @@ package service.chat.mealmate.mealmate.domain;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import service.chat.mealmate.member.domain.Member;
+import service.chat.mealmate.utils.DateUtil;
 
 import javax.persistence.*;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 @Entity @Table(uniqueConstraints = {
         // table의 column 이름
-        @UniqueConstraint(name = "unique_index", columnNames = {"MEALMATE_ID", "GIVER", "RECEIVER"})
+        @UniqueConstraint(name = "unique_index", columnNames = {"mealmate_id", "giver_id", "receiver_id"})
 })@Getter @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class MealMate {
+public class MealMate implements Serializable {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "MEALMATE_ID")
+    @Column(name = "mealmate_id")
     private Long mealMateId;
 
-    private Long mealMateMileage;
+    private Integer mileagePerMealmate = 0;
 
-    private Boolean isActive;
 
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date connectDate;
-//    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "GIVER")
+
+    // disconnect '예정' 날짜
+    // 정해진 시간이 지나도록 disconnect 버튼을 클릭하지 않는 사람은 어떻게 처리?
+    // 스케쥴러 돌려야 하나?
+    @Temporal(value = TemporalType.TIMESTAMP)
+    private Date expectedDisconnectDate;
+    // 실제 disconnect 버튼을 클릭한 날짜 <- isActive 컬럼보다는 이게 더 많은 정보를 포함하기에 확장성이 있음
+    @Temporal(value = TemporalType.TIMESTAMP)
+    private Date actualDisconnectDate = null;
+    @Column(name = "giver_id")
     private Long giverId;
 
     // Mealmate에서 ManyToOne이 두 개라도, User에도 OneToMany가 두 개일 필요는 없다.
 //    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "RECEIVER")
+    @Column(name = "receiver_id")
     private Long receiverId;
+
+    @Column(name = "chat_room_id")
+    private String chatRoomId;
 
     @OneToMany(mappedBy = "mealMate")
     private List<FeedbackHistory> feedbackHistoryList;
 
-    public MealMate(Long mealMateMileage, Boolean isActive, Long giverId, Long receiverId) {
-        this.mealMateMileage = mealMateMileage;
-        this.isActive = isActive;
+    @OneToMany(mappedBy = "mealMate")
+    @Getter(value = AccessLevel.PROTECTED)
+    private List<ChatPeriod> chatPeriodList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "mealMate", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Getter(value = AccessLevel.PROTECTED)
+    private List<ChatMessage> chatMessageList = new ArrayList<>();
+//    @OneToMany(mappedBy = "mealmate")
+//    private List<ChatMessage> chatMessageList = new ArrayList<>();
+//    @Transient
+//    private int period = 14;
+
+    public MealMate(Long giverId, Long receiverId, Date connectDate, String chatRoomId) {
         this.giverId = giverId;
         this.receiverId = receiverId;
+        this.connectDate = connectDate;
+        Date now = DateUtil.getNow();
+        this.expectedDisconnectDate = DateUtil.addDaysToDate(now, 14);
+        this.chatRoomId = chatRoomId;
     }
 
-    public void disconnect() {
-        this.isActive = false;
+    public void disconnect(Date disconnectDate) {
+        this.actualDisconnectDate = disconnectDate;
     }
 
-    public FeedbackHistory recordMileageHistory(Long value, String feedbackMention) {
-        this.mealMateMileage += value;
-        return new FeedbackHistory(value, feedbackMention, new Date(), this);
+    public void addChatPeriod(int startHour, int startMinute, int endHour, int endMinute) {
+        ChatPeriod chatPeriod = new ChatPeriod(startHour, startMinute, endHour, endMinute, this);
+        this.chatPeriodList.add(chatPeriod);
+    }
+
+    public FeedbackHistory confirm(String feedbackMention, Date feedbackDate, int feedbackMileage) {
+        FeedbackHistory feedbackHistory = new FeedbackHistory(feedbackMention, feedbackDate, feedbackMileage, this);
+        this.mileagePerMealmate += feedbackHistory.getMileagePerFeedback();
+        return feedbackHistory;
+    }
+
+    public void addChatMessage(String message) {
+        ChatMessage chatMessage = new ChatMessage(message, DateUtil.getNow(), this);
+        this.chatMessageList.add(chatMessage);
     }
 }

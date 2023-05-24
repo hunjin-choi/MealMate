@@ -6,11 +6,13 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 @Component
-public class MyDateUtil {
+public class DateUtil {
+
     static public Date stringToDate(String str) {
         // yyyy-mm-dd 혹은 yyyy-m-dd 혹은 yyyy-m-d 포맷을 받습니다
         boolean matches = Pattern.matches("^\\d{4}\\-(0?[1-9]|1[012])\\-(0?[1-9]|[12][0-9]|3[01])$", str);
@@ -46,5 +48,31 @@ public class MyDateUtil {
 
     static public int isSameDate(Date d1, Date d2) {
         return d1.compareTo(d2);
+    }
+
+    static public Date getNow() {
+        return new Date();
+    }
+
+    static public Date addDaysFromNow(int days) {
+        Date now = getNow();
+        return addDaysToDate(now, days);
+    }
+    static public int getHour(Date d) {
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("ASIA/SEOUL"));
+        cal.setTime(d);
+        return cal.get(Calendar.YEAR);
+    }
+    static public int getMinute(Date d) {
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("ASIA/SEOUL"));
+        cal.setTime(d);
+        return cal.get(Calendar.MONTH);
+    }
+
+    static public Date addHour(Date d) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(d);
+        cal.add(Calendar.HOUR_OF_DAY, 1);
+        return cal.getTime();
     }
 }

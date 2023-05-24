@@ -1,11 +1,10 @@
 package service.chat.mealmate.member.domain;
 
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import service.chat.mealmate.mealmate.domain.MealMate;
-import service.chat.mealmate.mileage.domain.MileageHistory;
-import service.chat.mealmate.order.domain.Orders;
+import service.chat.mealmate.mileageHistory.domain.MileageHistory;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -16,11 +15,37 @@ import java.util.List;
 public class Member {
     @Id() @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long memberId;
+    @Column(nullable = false)
     private String name;
-    private String nickname;
 
-    @Temporal(value = TemporalType.TIMESTAMP)
-    private Date date;
+    @Column(nullable = false)
+    private String email;
+
+    @Column
+    private String picture;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = true)
+    private Role role;
+
+    @Builder
+    public Member(String name, String email, String picture, Role role){
+        this.name = name;
+        this.email = email;
+        this.picture = picture;
+        this.role = role;
+    }
+
+    public Member update(String name, String picture){
+        this.name = name;
+        this.picture = picture;
+
+        return this;
+    }
+
+    public String getRoleKey(){
+        return this.role.getKey();
+    }
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<MileageHistory> mileageHistoryList = new ArrayList<>();
@@ -30,11 +55,4 @@ public class Member {
 //
 //    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 //    private List<Orders> ordersList = new ArrayList<>();
-
-    public Member(String name, String nickname, Date date) {
-        this.name = name;
-        this.nickname = nickname;
-        this.date = date;
-    }
-
 }

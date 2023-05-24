@@ -47,12 +47,12 @@ public class RedisConfig {
     @Bean
     public MessageListenerAdapter listenerAdapter(RedisSubscriber subscriber) {
         return new MessageListenerAdapter(subscriber, "sendMessage");
+        // RedisSubscriber.sendMessage(String publishMessage) {}
     }
 
     // redis client 설정
     /**
      * redis pub/sub 메시지를 처리하는 listener 설정
-     * 이 listener 은 우리 서버 소속 아닌듯, 레디스 소속인듯
      */
     @Bean
     public RedisMessageListenerContainer redisMessageListener(RedisConnectionFactory connectionFactory, MessageListenerAdapter messageListenerAdapter, ChannelTopic channelTopic) {

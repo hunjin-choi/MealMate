@@ -1,11 +1,9 @@
-package service.chat.mealmate.mileage.domain;
+package service.chat.mealmate.mileageHistory.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import service.chat.mealmate.mealmate.domain.FeedbackHistory;
-import service.chat.mealmate.order.domain.Orders;
 import service.chat.mealmate.member.domain.Member;
 
 import javax.persistence.*;
@@ -22,7 +20,7 @@ public class MileageHistory {
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date date;
 
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.STRING) // index 걸어야 하는데..
     private MileageChangeReason mileageChangeReason;
 
     @ManyToOne
@@ -30,11 +28,14 @@ public class MileageHistory {
 
 //    @OneToOne()
     @JoinColumn(name = "feedback_history_id")
-    private Long feedBackHistoryId;
+    private Long feedBackHistoryId = null;
 
 //    @OneToOne()
     @JoinColumn(name = "orders_id")
-    private Long ordersId;
+    private Long ordersId = null;
+
+    @JoinColumn(name = "event_id")
+    private Long eventId = null;
 
     public MileageHistory(Mileage mileage, Date date, MileageChangeReason mileageChangeReason, Member member, Long fk) {
         this.mileage = mileage;
@@ -42,17 +43,20 @@ public class MileageHistory {
         this.member = member;
         this.mileageChangeReason = mileageChangeReason;
         if (mileageChangeReason == MileageChangeReason.INIT) {
-            this.ordersId = null; this.feedBackHistoryId = null;
+            this.ordersId = null; this.feedBackHistoryId = null; this.eventId = null;
         } else if (mileageChangeReason == MileageChangeReason.FEEDBACK) {
-            this.ordersId = null; this.feedBackHistoryId = fk;
+            this.ordersId = null; this.feedBackHistoryId = fk; this.eventId = null;
         } else if (mileageChangeReason == MileageChangeReason.PRODUCT_ORDER) {
-            this.ordersId = fk; this.feedBackHistoryId = null;
-        } else {
-            throw new RuntimeException("");
+            this.ordersId = fk; this.feedBackHistoryId = null; this.eventId = null;
+        } else if (mileageChangeReason == MileageChangeReason.EVENT) {
+            this.ordersId = null; this.feedBackHistoryId = null; this.eventId = fk;
+        }else {
+            throw new RuntimeException("적절하지 않은 MileageChangeReason 입니다.");
         }
     }
 
-    public Mileage appendValueAndCreateNewMileage(Long appendValue) {
-        return this.mileage.appendValueAndCreateNewMileage(appendValue);
+    public MileageHistory createNewHistory(Integer unitMileage, MileageChangeReason mileageChangeReason, Long fk, Date now) {
+        Mileage mileage = this.mileage.createNewMileage(unitMileage);
+        return new MileageHistory(mileage, now, mileageChangeReason, this.member, fk);
     }
 }

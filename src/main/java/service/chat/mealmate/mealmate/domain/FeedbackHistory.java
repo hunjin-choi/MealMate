@@ -1,20 +1,19 @@
 package service.chat.mealmate.mealmate.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import service.chat.mealmate.mileage.domain.MileageHistory;
+import lombok.*;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.persistence.*;
 import java.util.Date;
 
-@Entity @Builder @AllArgsConstructor @NoArgsConstructor @Getter
+@Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
 public class FeedbackHistory {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long feedBackHistoryId;
 
-    private Long temporalMileage;
+    private Integer mileagePerFeedback;
 
     private String feedbackMention;
 
@@ -24,10 +23,15 @@ public class FeedbackHistory {
     @ManyToOne
     private MealMate mealMate;
 
-    public FeedbackHistory(Long temporalMileage, String feedbackMention, Date feedBackDate, MealMate mealMate) {
-        this.temporalMileage = temporalMileage;
+    @Value("")
+    private int maxFeedbackMileage = 100;
+    @Value("")
+    private int minFeedbackMileage = 0;
+    public FeedbackHistory(String feedbackMention, Date feedBackDate, int feedbackMileage, MealMate mealMate) {
         this.feedbackMention = feedbackMention;
         this.feedBackDate = feedBackDate;
         this.mealMate = mealMate;
+        if (feedbackMileage > this.maxFeedbackMileage || feedbackMileage < this.minFeedbackMileage) throw new RuntimeException("");
+        this.mileagePerFeedback = feedbackMileage;
     }
 }

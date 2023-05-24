@@ -11,7 +11,9 @@ import service.chat.mealmate.chat.dto.ChatRoom;
 import service.chat.mealmate.chat.dto.LoginInfo;
 import service.chat.mealmate.chat.jwt.JwtTokenProvider;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -50,14 +52,18 @@ public class ChatRoomController {
         return chatRoomRepository.findRoomById(roomId);
     }
 
-    @GetMapping("/user")
+    @GetMapping("/user/{roomId}")
     @ResponseBody
-    public LoginInfo getUserInfo() {
+    public LoginInfo getUserInfo(HttpServletResponse httpResponse, @PathVariable("roomId") String roomId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String name = auth.getName();
+        // 이 name을 이용하여 readonly-jwt 발급조건 만족하는지 검증
+        // 이 name을 이용하여 readWrite-jwt 발급조건 만족하는지 검증
         List<AppUserRole> lst = new ArrayList<>();
         lst.add(AppUserRole.ROLE_ADMIN); lst.add(AppUserRole.ROLE_CLIENT);
-        // 아래 방식처럼 jwt 값 전달하는 방식 안좋음. 나중에 바꿀 것.
-        return LoginInfo.builder().name(name).token(jwtTokenProvider.generateToken(name, lst)).build();
+        String readOnlyJWT = jwtTokenProvider.generateReadOnlyJWT(name, roomId, lst, new Date(new Date().getTime() + 1000L * 60 * 60));
+        String readWriteJWT = jwtTokenProvider.generateReadWriteJWT(name, roomId, lst, new Date(new Date().getTime() + 1000L * 60 * 60));
+        // 아래 방식처럼 jwt 값 전달하는 방식 안 좋음. 나중에 바꿀 것.
+        return LoginInfo.builder().name(name).token(readWriteJWT).build();
     }
 }

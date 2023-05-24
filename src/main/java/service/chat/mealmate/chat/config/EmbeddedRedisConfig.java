@@ -2,7 +2,6 @@ package service.chat.mealmate.chat.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
-// spring RedisServer 말고 embedded.RedisServer 가져와야함
 import redis.embedded.RedisServer;
 
 import javax.annotation.PostConstruct;
