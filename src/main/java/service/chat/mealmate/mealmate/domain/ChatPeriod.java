@@ -32,7 +32,7 @@ public class ChatPeriod {
     MealMate mealMate;
 
     @Value("")
-    private int maxPeriod = 500;
+    private int maxPeriod = 500000;
 
     public ChatPeriod(int startHour, int startMinute, int endHour, int endMinute, MealMate mealMate) {
         ChatTime startChatTime = new ChatTime(startHour, startMinute);

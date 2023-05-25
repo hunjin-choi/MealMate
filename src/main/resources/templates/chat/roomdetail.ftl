@@ -148,7 +148,7 @@
         },
         methods: {
             sendMessage: function(type) {
-                ws.send("/pub/chat/message", {"token":this.token, "readOnlyToken" : this.readOnlyToken, "readWriteToken": this.readWriteToken},
+                ws.send("/pub/chat/message/" + this.roomId, {"token":this.token, "readOnlyToken" : this.readOnlyToken, "readWriteToken": this.readWriteToken},
                     JSON.stringify({type:type, roomId:this.roomId, message:this.message}));
                 this.message = '';
             },
