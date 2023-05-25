@@ -12,8 +12,8 @@ import service.chat.mealmate.member.service.MemberService;
 public class MemberController {
     private final MemberService memberService;
 
-    @GetMapping("/signUp")
-    public void signUp(String userName) {
-        this.memberService.signUp(userName);
-    }
+//    @GetMapping("/signUp")
+//    public void signUp(String userName) {
+//        this.memberService.signUp(userName);
+//    }
 }

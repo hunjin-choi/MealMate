@@ -35,12 +35,12 @@ public class MealMate implements Serializable {
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date actualDisconnectDate = null;
     @Column(name = "giver_id")
-    private Long giverId;
+    private String giverId;
 
     // Mealmate에서 ManyToOne이 두 개라도, User에도 OneToMany가 두 개일 필요는 없다.
 //    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "RECEIVER")
     @Column(name = "receiver_id")
-    private Long receiverId;
+    private String receiverId;
 
     @Column(name = "chat_room_id")
     private String chatRoomId;
@@ -48,19 +48,19 @@ public class MealMate implements Serializable {
     @OneToMany(mappedBy = "mealMate")
     private List<FeedbackHistory> feedbackHistoryList;
 
-    @OneToMany(mappedBy = "mealMate")
-    @Getter(value = AccessLevel.PROTECTED)
+    @OneToMany(mappedBy = "mealMate", cascade = CascadeType.ALL, orphanRemoval = true)
+//    @Getter(value = AccessLevel.PROTECTED)
     private List<ChatPeriod> chatPeriodList = new ArrayList<>();
 
     @OneToMany(mappedBy = "mealMate", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Getter(value = AccessLevel.PROTECTED)
+//    @Getter(value = AccessLevel.PROTECTED)
     private List<ChatMessage> chatMessageList = new ArrayList<>();
 //    @OneToMany(mappedBy = "mealmate")
 //    private List<ChatMessage> chatMessageList = new ArrayList<>();
 //    @Transient
 //    private int period = 14;
 
-    public MealMate(Long giverId, Long receiverId, Date connectDate, String chatRoomId) {
+    public MealMate(String giverId, String receiverId, Date connectDate, String chatRoomId) {
         this.giverId = giverId;
         this.receiverId = receiverId;
         this.connectDate = connectDate;
@@ -69,6 +69,10 @@ public class MealMate implements Serializable {
         this.chatRoomId = chatRoomId;
     }
 
+    public void connect(Date connectDate, String receiverId) {
+        this.connectDate = connectDate;
+        this.receiverId = receiverId;
+    }
     public void disconnect(Date disconnectDate) {
         this.actualDisconnectDate = disconnectDate;
     }
@@ -78,6 +82,16 @@ public class MealMate implements Serializable {
         this.chatPeriodList.add(chatPeriod);
     }
 
+    public void addTempChatPeriod() {
+        Date now = DateUtil.getNow();
+        int hour = DateUtil.getHour(now);
+        int minute = DateUtil.getMinute(now);
+        // 24를 넘어가면? 어짜피 심야시간에 채팅 안열어줄 것
+        Date expiredAt = new Date(now.getTime() + 60 * 60 * 1000L);
+        int expiredHour = DateUtil.getHour(expiredAt);
+        int expiredMinute = DateUtil.getMinute(expiredAt);
+        addChatPeriod(hour, minute, expiredHour, expiredMinute);
+    }
     public FeedbackHistory confirm(String feedbackMention, Date feedbackDate, int feedbackMileage) {
         FeedbackHistory feedbackHistory = new FeedbackHistory(feedbackMention, feedbackDate, feedbackMileage, this);
         this.mileagePerMealmate += feedbackHistory.getMileagePerFeedback();

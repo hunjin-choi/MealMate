@@ -1,9 +1,9 @@
 package service.chat.mealmate.mealmate.domain;
 
 import lombok.AccessLevel;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import service.chat.mealmate.utils.DateUtil;
 
 import javax.persistence.*;
 import java.sql.Date;
@@ -32,15 +32,21 @@ public class ChatPeriod {
     MealMate mealMate;
 
     @Value("")
-    private int maxPeriod = 50;
+    private int maxPeriod = 500;
 
     public ChatPeriod(int startHour, int startMinute, int endHour, int endMinute, MealMate mealMate) {
         ChatTime startChatTime = new ChatTime(startHour, startMinute);
         ChatTime endChatTime = new ChatTime(endHour, endMinute);
-        if (startTime.isLessThanMaxPeriod(endTime, maxPeriod) == false) throw new RuntimeException("");
-
         this.startTime = startChatTime;
         this.endTime = endChatTime;
+        if (startTime.isLessThanMaxPeriod(endTime, maxPeriod) == false) throw new RuntimeException("");
         this.mealMate = mealMate;
+    }
+
+    public Integer chatPeriodCheck(java.util.Date date) {
+        if (startTime.isLessThan(date) && endTime.isMoreThan(date)) {
+            return endTime.calculateDiffBySecond(date);
+        }
+        else return null;
     }
 }

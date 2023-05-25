@@ -6,6 +6,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -39,7 +41,7 @@ public class ChatController {
             message.setSender("[알림]");
             message.setMessage(nickname + "님이 입장하셨습니다.");
         } else {
-            mealmateService.saveChatMessage(message.getMessage(), chatRoomId, 1L);
+            mealmateService.saveChatMessage(message.getMessage(), chatRoomId, nickname);
         }
 //        mealmateService.saveChatMessage(message.getMessage(), );
         // Websocket에 발행된 메시지를 redis로 발행(publish)

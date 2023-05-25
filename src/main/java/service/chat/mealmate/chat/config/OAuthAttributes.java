@@ -40,6 +40,7 @@ public class OAuthAttributes {
 
     public Member toEntity(){
         return Member.builder()
+                .memberId(nameAttributeKey)
                 .name(name)
                 .email(email)
                 .picture(picture)

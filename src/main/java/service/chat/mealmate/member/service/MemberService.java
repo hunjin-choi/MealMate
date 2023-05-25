@@ -16,10 +16,10 @@ import java.util.Date;
 public class MemberService {
     private final MemberRepository memberRepository;
     private final MileageHistoryRepository mileageHistoryRepository;
-    public void signUp(String userName) {
-        Member member = new Member(userName, "nickname", "picture", Role.USER);
-        MileageHistory mileageHistory = new MileageHistory(new Mileage(0), new Date(), MileageChangeReason.INIT, member, null);
-        mileageHistoryRepository.save(mileageHistory);
-        memberRepository.save(member);
-    }
+//    public void signUp(String userName) {
+//        Member member = new Member(userName, "nickname", "picture", Role.USER);
+//        MileageHistory mileageHistory = new MileageHistory(new Mileage(0), new Date(), MileageChangeReason.INIT, member, null);
+//        mileageHistoryRepository.save(mileageHistory);
+//        memberRepository.save(member);
+//    }
 }

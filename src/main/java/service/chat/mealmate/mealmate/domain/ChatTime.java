@@ -1,8 +1,10 @@
 package service.chat.mealmate.mealmate.domain;
 
 import lombok.*;
+import service.chat.mealmate.utils.DateUtil;
 
 import javax.persistence.Embeddable;
+import java.util.Date;
 
 @Embeddable @Getter @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ChatTime {
@@ -25,4 +27,27 @@ public class ChatTime {
         return diff <= maxPeriod;
     }
 
+    public boolean isMoreThan(Date other) {
+        int hour = DateUtil.getHour(other);
+        int minutes = DateUtil.getMinute(other);
+        int thisTimeInMinutes = this.hour * 60 + this.minutes;
+        int otherTimeInMinutes = hour * 60 + minutes;
+        return thisTimeInMinutes >= otherTimeInMinutes;
+    }
+    public boolean isLessThan(Date other) {
+        int hour = DateUtil.getHour(other);
+        int minutes = DateUtil.getMinute(other);
+        int thisTimeInMinutes = this.hour * 60 + this.minutes;
+        int otherTimeInMinutes = hour * 60 + minutes;
+        return thisTimeInMinutes <= otherTimeInMinutes;
+    }
+
+    public int calculateDiffBySecond(Date other) {
+        int hour = DateUtil.getHour(other);
+        int minutes = DateUtil.getMinute(other);
+        int thisTimeInMinutes = this.hour * 60 + this.minutes;
+        int otherTimeInMinutes = hour * 60 + minutes;
+
+        return Math.abs(thisTimeInMinutes - otherTimeInMinutes) * 60;
+    }
 }

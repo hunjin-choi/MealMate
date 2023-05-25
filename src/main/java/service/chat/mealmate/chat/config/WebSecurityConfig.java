@@ -27,8 +27,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     .antMatchers("/chat/**").hasRole(Role.USER.name()) // chat으로 시작하는 리소스에 대한 접근 권한 설정
                     .anyRequest().permitAll() // 나머지 리소스에 대한 접근 설정
                 .and()
-//                .formLogin().defaultSuccessUrl("/chat/room") // 권한없이 페이지 접근하면 로그인 페이지로 이동한다.
-//                .and()
+                    .formLogin().defaultSuccessUrl("/chat/room") // 권한없이 페이지 접근하면 로그인 페이지로 이동한다.
+                .and()
                     .oauth2Login()
                     .defaultSuccessUrl("/chat/room")
                     .userInfoEndpoint()
@@ -39,19 +39,19 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
      * 테스트를 위해 In-Memory에 계정을 임의로 생성한다.
      * 서비스에 사용시에는 DB데이터를 이용하도록 수정이 필요하다.
      */
-//    @Override
-//    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-//        auth.inMemoryAuthentication()
-//                .withUser("happydaddy")
-//                .password("{noop}1234")
-//                .roles("USER")
-//                .and()
-//                .withUser("angrydaddy")
-//                .password("{noop}1234")
-//                .roles("USER")
-//                .and()
-//                .withUser("guest")
-//                .password("{noop}1234")
-//                .roles("GUEST");
-//    }
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.inMemoryAuthentication()
+                .withUser("happydaddy")
+                .password("{noop}1234")
+                .roles(Role.USER.name())
+                .and()
+                .withUser("angrydaddy")
+                .password("{noop}1234")
+                .roles(Role.USER.name())
+                .and()
+                .withUser("guest")
+                .password("{noop}1234")
+                .roles(Role.GUEST.name());
+    }
 }

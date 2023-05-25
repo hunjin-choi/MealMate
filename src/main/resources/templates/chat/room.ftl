@@ -49,7 +49,12 @@
             ]
         },
         created() {
+            window.addEventListener('beforeunload', function(e) {
+                // WebSocket 연결을 닫는다.
+                vm.$destroy();
+            });
             this.findAllRoom();
+
         },
         methods: {
             findAllRoom: function() {

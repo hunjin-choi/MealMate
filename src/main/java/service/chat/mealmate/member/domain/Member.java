@@ -7,14 +7,15 @@ import lombok.NoArgsConstructor;
 import service.chat.mealmate.mileageHistory.domain.MileageHistory;
 
 import javax.persistence.*;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 @Entity @NoArgsConstructor(access = AccessLevel.PROTECTED) @Getter
 public class Member {
-    @Id() @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long memberId;
+    @Id()
+    private String memberId;
     @Column(nullable = false)
     private String name;
 
@@ -29,7 +30,8 @@ public class Member {
     private Role role;
 
     @Builder
-    public Member(String name, String email, String picture, Role role){
+    public Member(String memberId, String name, String email, String picture, Role role){
+        this.memberId = memberId;
         this.name = name;
         this.email = email;
         this.picture = picture;

@@ -61,12 +61,12 @@ public class DateUtil {
     static public int getHour(Date d) {
         Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("ASIA/SEOUL"));
         cal.setTime(d);
-        return cal.get(Calendar.YEAR);
+        return cal.get(Calendar.HOUR);
     }
     static public int getMinute(Date d) {
         Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("ASIA/SEOUL"));
         cal.setTime(d);
-        return cal.get(Calendar.MONTH);
+        return cal.get(Calendar.MINUTE);
     }
 
     static public Date addHour(Date d) {

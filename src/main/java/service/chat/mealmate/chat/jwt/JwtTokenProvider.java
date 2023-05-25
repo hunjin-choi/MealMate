@@ -92,6 +92,21 @@ public class JwtTokenProvider {
         return this.getClaims(jwt) != null;
     }
 
+    public void validateReadOnlyToken(String jwt) {
+        Jws<Claims> claims = this.getClaims(jwt);
+        boolean claimCheck = (claims != null);
+        if (claimCheck == false) throw new RuntimeException("");
+        if (isReadOnlyJWT(jwt)) return ;
+        else throw new RuntimeException("");
+    }
+
+    public void validateReadWriteToken(String jwt) {
+        Jws<Claims> claims = this.getClaims(jwt);
+        boolean claimCheck = (claims != null);
+        if (claimCheck == false) throw new RuntimeException("");
+        if (isReadWriteJWT(jwt)) return ;
+        else throw new RuntimeException("");
+    }
     public Jws<Claims> getClaims(String jwt) {
         try {
             return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwt);
