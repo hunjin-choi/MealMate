@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import service.chat.mealmate.mealmate.domain.*;
 import service.chat.mealmate.mealmate.dto.ChatPeriodDto;
+import service.chat.mealmate.mealmate.dto.FeedbackDto;
 import service.chat.mealmate.mealmate.repository.FeedbackHistoryRepository;
 import service.chat.mealmate.mealmate.repository.MealMateRepository;
 import service.chat.mealmate.mileageHistory.domain.MileageChangeReason;
@@ -27,25 +28,27 @@ public class MealmateService {
     private final FeedbackHistoryRepository feedbackHistoryRepository;
     private final MileageHistoryRepository mileageHistoryRepository;
 
-    public void connectMealMate(String member1_id, String member2_id, String chatRoomId) {
-        Date now = DateUtil.getNow();
-        MealMate mealMate1 = new MealMate(member1_id, member2_id, now, chatRoomId);
-        MealMate mealMate2 = new MealMate(member2_id, member1_id, now, chatRoomId);
-        mealMateRepository.save(mealMate1);
-        mealMateRepository.save(mealMate2);
-    }
+//    public void connectMealMate(String member1_id, String member2_id, String chatRoomId) {
+//        Date now = DateUtil.getNow();
+//        MealMate mealMate1 = new MealMate(member1_id, member2_id, now, chatRoomId);
+//        MealMate mealMate2 = new MealMate(member2_id, member1_id, now, chatRoomId);
+//        mealMateRepository.save(mealMate1);
+//        mealMateRepository.save(mealMate2);
+//    }
+//
+//    public void disConnectMealMate(String member1_id, String member2_id) {
+//        Date now = DateUtil.getNow();
+//        MealMate mealMate1 = mealMateRepository.findActiveMealmateByReceiverId(member1_id).orElseThrow(() -> new RuntimeException("적절한 밀메이트가 없습니다."));
+//        MealMate mealMate2 = mealMateRepository.findActiveMealmateByReceiverId(member2_id).orElseThrow(() -> new RuntimeException("적절한 밀메이트가 없습니다."));
+//        mealMate1.disconnect(now); mealMate2.disconnect(now);
+//        // cookie.setMaxAge(0)을 통해 쿠키 삭제 유;
+//    }
 
-    public void disConnectMealMate(String member1_id, String member2_id) {
+    public void confirm(String senderId, FeedbackDto feedbackDto, String roomId) {
+        String confirmMessage = feedbackDto.getFeedbackMention();
+        int feedbackMileage = feedbackDto.getMileage();
         Date now = DateUtil.getNow();
-        MealMate mealMate1 = mealMateRepository.findActiveMealmateByReceiverId(member1_id).orElseThrow(() -> new RuntimeException("적절한 밀메이트가 없습니다."));
-        MealMate mealMate2 = mealMateRepository.findActiveMealmateByReceiverId(member2_id).orElseThrow(() -> new RuntimeException("적절한 밀메이트가 없습니다."));
-        mealMate1.disconnect(now); mealMate2.disconnect(now);
-        // cookie.setMaxAge(0)을 통해 쿠키 삭제 유;
-    }
-
-    public void confirm(String senderId, String confirmMessage, int feedbackMileage) {
-        Date now = DateUtil.getNow();
-        MealMate mealMate = mealMateRepository.findActiveMealmateByGiverId(senderId).orElseThrow(() -> new RuntimeException("밀 메이트가 없습니다"));
+        MealMate mealMate = mealMateRepository.findActiveMealmateByGiverIdAndChatRoomId(senderId, roomId).orElseThrow(() -> new RuntimeException("밀 메이트가 없습니다"));
         Member receiver = memberRepository.findById(mealMate.getReceiverId()).orElse(null);
 
         FeedbackHistory feedbackHistory = mealMate.confirm(confirmMessage, now, feedbackMileage);

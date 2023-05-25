@@ -1,11 +1,13 @@
 package service.chat.mealmate.chat;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 import service.chat.mealmate.chat.config.AppUserRole;
 import service.chat.mealmate.chat.dto.ChatRoom;
 import service.chat.mealmate.chat.dto.LoginInfo;
@@ -13,6 +15,7 @@ import service.chat.mealmate.chat.jwt.JwtTokenProvider;
 import service.chat.mealmate.mealmate.domain.ChatPeriod;
 import service.chat.mealmate.mealmate.domain.MealMate;
 import service.chat.mealmate.mealmate.dto.ChatPeriodDto;
+import service.chat.mealmate.mealmate.dto.FeedbackDto;
 import service.chat.mealmate.mealmate.repository.MealMateRepository;
 import service.chat.mealmate.mealmate.service.MealmateService;
 import service.chat.mealmate.utils.DateUtil;
@@ -81,7 +84,6 @@ public class ChatRoomController {
                 MealMate mealMate = new MealMate(name, null, null, roomId);
                 mealMate.addTempChatPeriod();
                 mealMateRepository.save(mealMate);
-
             } else if (count == 1) {
                 // A가 나갔다가 재입장 한 걸수도 있으니까 아래 검증 필요
                 // select count(*) from mealmate as mm where mm.giverId = name and mm.roomId = roomId
@@ -118,7 +120,7 @@ public class ChatRoomController {
                     }
                 }
             } else {
-                throw new RuntimeException("현제 채팅방의 멤버가 아닙니다");
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST);
             }
         }
         // 아래 방식처럼 jwt 값 전달하는 방식 안 좋음. 나중에 바꿀 것.
@@ -136,4 +138,16 @@ public class ChatRoomController {
         // find mealmate -> add ChatPeriod
         mealmateService.addChatPeriod(name, chatPeriodDto);
      }
+
+    @PostMapping("/feedback/{roomId}")
+    @ResponseBody
+    public void addFeedback(HttpServletRequest httpRequest, @PathVariable("roomId") String roomId, @RequestBody FeedbackDto feedbackDto) throws IOException {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String name = auth.getName();
+        String readWriteToken = httpRequest.getHeader("readWriteToken");
+        String userName = jwtTokenProvider.getUserNameFromJwt(readWriteToken);
+        // chatPeriod 개수 체크, chatPeriod 겹치지 않는지 체크
+        // find mealmate -> add ChatPeriod
+        mealmateService.confirm(name, feedbackDto, roomId);
+    }
 }

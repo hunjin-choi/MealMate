@@ -18,8 +18,8 @@ public interface MealMateRepository extends JpaRepository<MealMate, Long> {
 
     @Query("select mm from MealMate mm where mm.giverId = :giverId and mm.chatRoomId = :chatRoomId and mm.actualDisconnectDate is null ")
     public Optional<MealMate> findMealMateByGiverIdAndChatRoomId(String giverId, String chatRoomId);
-    @Query("select mm from MealMate mm where mm.giverId = :memberId and mm.actualDisconnectDate is null ")
-    public Optional<MealMate> findActiveMealmateByGiverId(String memberId);
+    @Query("select mm from MealMate mm where mm.giverId = :memberId and mm.actualDisconnectDate is null and mm.chatRoomId =:roomId")
+    public Optional<MealMate> findActiveMealmateByGiverIdAndChatRoomId(String memberId, String roomId);
 
     public Optional<MealMate> findFirstByChatRoomId(String chatRoomId);
     public Optional<MealMate> findByChatRoomIdAndGiverId(String chatRoomId, String giverId);

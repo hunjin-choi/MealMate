@@ -6,7 +6,10 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import service.chat.mealmate.member.domain.Member;
 import service.chat.mealmate.member.domain.Role;
+import service.chat.mealmate.member.repository.MemberRepository;
+import service.chat.mealmate.member.service.MemberService;
 
 /**
  * Web Security 설정
@@ -16,6 +19,7 @@ import service.chat.mealmate.member.domain.Role;
 @RequiredArgsConstructor
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final CustomOAuth2UserService customOAuth2UserService;
+    private final MemberService memberService;
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
@@ -53,5 +57,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .withUser("guest")
                 .password("{noop}1234")
                 .roles(Role.GUEST.name());
+        memberService.signUp("happydaddy", Role.USER);
+        memberService.signUp("angrydaddy", Role.USER);
+        memberService.signUp("guest", Role.GUEST);
+
     }
 }
