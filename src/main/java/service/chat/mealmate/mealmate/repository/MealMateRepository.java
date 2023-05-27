@@ -16,10 +16,16 @@ public interface MealMateRepository extends JpaRepository<MealMate, Long> {
     @Query("select mm from MealMate mm where mm.receiverId = :memberId and mm.actualDisconnectDate is null ")
     public Optional<MealMate> findActiveMealmateByReceiverId(String memberId);
 
+    @Query("select mm from MealMate mm where mm.giverId = :memberId and mm.actualDisconnectDate is null ")
+    public Optional<MealMate> findActiveMealmateByGiverId(String memberId);
+
     @Query("select mm from MealMate mm where mm.giverId = :giverId and mm.chatRoomId = :chatRoomId and mm.actualDisconnectDate is null ")
-    public Optional<MealMate> findMealMateByGiverIdAndChatRoomId(String giverId, String chatRoomId);
-    @Query("select mm from MealMate mm where mm.giverId = :memberId and mm.actualDisconnectDate is null and mm.chatRoomId =:roomId")
-    public Optional<MealMate> findActiveMealmateByGiverIdAndChatRoomId(String memberId, String roomId);
+    public Optional<MealMate> findActiveMealMateByGiverIdAndChatRoomId(String giverId, String chatRoomId);
+    @Query("select mm from MealMate mm where mm.giverId = :receiverId and mm.actualDisconnectDate is null and mm.chatRoomId = :roomId")
+    public Optional<MealMate> findActiveMealmateByReceiverIdAndChatRoomId(String receiverId, String roomId);
+
+    @Query("select count(mm) from MealMate mm where mm.giverId = :giverId and mm.actualDisconnectDate is null and mm.chatRoomId <> :roomId")
+    public Long countMemberAttendOtherMealmate(String giverId, String roomId);
 
     public Optional<MealMate> findFirstByChatRoomId(String chatRoomId);
     public Optional<MealMate> findByChatRoomIdAndGiverId(String chatRoomId, String giverId);
@@ -32,4 +38,6 @@ public interface MealMateRepository extends JpaRepository<MealMate, Long> {
     public Long countByChatRoomId(String chatRoomId);
 
     public Long countByChatRoomIdAndGiverId(String chatRoomId, String giverId);
+
+    public List<MealMate> findByReceiverId(String receiverId);
 }

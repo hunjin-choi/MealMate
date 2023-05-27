@@ -48,7 +48,7 @@ public class MealmateService {
         String confirmMessage = feedbackDto.getFeedbackMention();
         int feedbackMileage = feedbackDto.getMileage();
         Date now = DateUtil.getNow();
-        MealMate mealMate = mealMateRepository.findActiveMealmateByGiverIdAndChatRoomId(senderId, roomId).orElseThrow(() -> new RuntimeException("밀 메이트가 없습니다"));
+        MealMate mealMate = mealMateRepository.findActiveMealMateByGiverIdAndChatRoomId(senderId, roomId).orElseThrow(() -> new RuntimeException("밀 메이트가 없습니다"));
         Member receiver = memberRepository.findById(mealMate.getReceiverId()).orElse(null);
 
         FeedbackHistory feedbackHistory = mealMate.confirm(confirmMessage, now, feedbackMileage);
@@ -78,5 +78,18 @@ public class MealmateService {
         Page<ChatMessage> chatMessagePageable = mealMateRepository.findChatMessagePageable(chatRoomId, giverId, pageRequest);
         List<ChatMessage> content = chatMessagePageable.getContent();
         return content;
+    }
+
+    public List<MealMate> findALlMealmate(String name) {
+        return mealMateRepository.findByReceiverId(name);
+    }
+    public List<FeedbackHistory> findAllFeedbackHistory(Long mealmateId) {
+        MealMate mealMate = mealMateRepository.findById(mealmateId).orElseThrow(() -> new RuntimeException(""));
+        return mealMate.getFeedbackHistoryList();
+    }
+
+    public List<ChatPeriod> findAllChatPeriod(String name) {
+        MealMate mealMate = mealMateRepository.findActiveMealmateByGiverId(name).orElse(null);
+        return mealMate.getChatPeriodList();
     }
 }

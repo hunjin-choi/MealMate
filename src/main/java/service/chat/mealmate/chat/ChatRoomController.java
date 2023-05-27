@@ -70,6 +70,9 @@ public class ChatRoomController {
     public LoginInfo getUserInfo(HttpServletResponse httpResponse, @PathVariable("roomId") String roomId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String name = auth.getName();
+        // 이미 active 한 mealmate를 가지고 있으면
+        Long otherCount = mealMateRepository.countMemberAttendOtherMealmate(name, roomId);
+        if (otherCount != 0) throw new RuntimeException("이미 다른 채팅방을 가지고 있습니다");
         String readOnlyJWT = null;
         String readWriteJWT = null;
         // 이 name을 이용하여 readonly-jwt 발급조건 만족하는지 검증
@@ -107,7 +110,7 @@ public class ChatRoomController {
         } else { // 채팅방에 2명이 꽉 차있음
             // 임시 토큰 발급 안한다
             // 토큰을 요청한 사람이 현재 채팅방의 멤버인지
-            MealMate mealMate = mealMateRepository.findMealMateByGiverIdAndChatRoomId(name, roomId).orElse(null);
+            MealMate mealMate = mealMateRepository.findActiveMealMateByGiverIdAndChatRoomId(name, roomId).orElse(null);
             if (mealMate != null) {
                 // 일단 readOnlyToken 발급
                 readOnlyJWT = jwtTokenProvider.generateReadOnlyJWT(name, roomId, lst, new Date(new Date().getTime() + 1000L * 60 * 60));

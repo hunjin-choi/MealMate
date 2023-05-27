@@ -1,6 +1,7 @@
 package service.chat.mealmate.mealmate.domain;
 
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import service.chat.mealmate.utils.DateUtil;
@@ -9,6 +10,7 @@ import javax.persistence.*;
 import java.sql.Date;
 
 @Entity @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
 public class ChatPeriod {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long chatPeriodId;

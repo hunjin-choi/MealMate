@@ -18,7 +18,7 @@ import java.util.List;
 public class MealMate implements Serializable {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "mealmate_id")
-    private Long mealMateId;
+    private Long mealmateId;
 
     private Integer mileagePerMealmate = 0;
 
