@@ -1,7 +1,5 @@
 package service.chat.mealmate.chat.jwt;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +25,7 @@ class JwtTokenProviderTest {
         roles.add(AppUserRole.ROLE_CLIENT); roles.add(AppUserRole.ROLE_ADMIN);
         String roomId = "testRoomId";
         // when
-        String jwt = jwtTokenProvider.generateReadWriteJWT("huchoi", roomId, roles, DateUtil.addDaysFromNow(10));
+        String jwt = jwtTokenProvider.generateAccessToken("huchoi", roomId, roles, DateUtil.addDaysFromNow(10));
         // then
         assertEquals("huchoi", jwtTokenProvider.getUserNameFromJwt(jwt));
         assertEquals(roomId, jwtTokenProvider.getChatRoomIdFromJWT(jwt));

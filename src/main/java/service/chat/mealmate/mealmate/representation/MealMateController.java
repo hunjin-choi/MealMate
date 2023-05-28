@@ -17,6 +17,7 @@ import java.util.List;
 @Controller
 @RequestMapping("/mealmate")
 @RequiredArgsConstructor
+@ControllerAdvice
 public class MealMateController {
     private final MealmateService mealMateService;
     @GetMapping("/confirm")

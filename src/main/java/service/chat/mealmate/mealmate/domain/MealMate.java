@@ -77,12 +77,13 @@ public class MealMate implements Serializable {
         this.actualDisconnectDate = disconnectDate;
     }
 
-    public void addChatPeriod(int startHour, int startMinute, int endHour, int endMinute) {
+    public ChatPeriod addChatPeriod(int startHour, int startMinute, int endHour, int endMinute) {
         ChatPeriod chatPeriod = new ChatPeriod(startHour, startMinute, endHour, endMinute, this);
         this.chatPeriodList.add(chatPeriod);
+        return chatPeriod;
     }
 
-    public void addTempChatPeriod() {
+    public ChatPeriod addTempChatPeriod() {
         Date now = DateUtil.getNow();
         int hour = DateUtil.getHour(now);
         int minute = DateUtil.getMinute(now);
@@ -90,7 +91,7 @@ public class MealMate implements Serializable {
         Date expiredAt = new Date(now.getTime() + 60 * 60 * 1000L);
         int expiredHour = DateUtil.getHour(expiredAt);
         int expiredMinute = DateUtil.getMinute(expiredAt);
-        addChatPeriod(hour, minute, expiredHour, expiredMinute);
+        return addChatPeriod(hour, minute, expiredHour, expiredMinute);
     }
     public FeedbackHistory confirm(String feedbackMention, Date feedbackDate, int feedbackMileage) {
         FeedbackHistory feedbackHistory = new FeedbackHistory(feedbackMention, feedbackDate, feedbackMileage, this);

@@ -5,6 +5,6 @@ import org.springframework.stereotype.Repository;
 import service.chat.mealmate.mealmate.domain.ChatPeriod;
 
 @Repository
-public interface ChatRepository extends JpaRepository<ChatPeriod, Long> {
+public interface ChatPeriodRepository extends JpaRepository<ChatPeriod, Long> {
 
 }

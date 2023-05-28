@@ -16,55 +16,55 @@
 </head>
 <body>
 <div class="container" id="app" v-cloak>
-    <div class="row">
-        <div class="col-md-6">
-            <h3>{{roomName}}</h3>
-        </div>
-        <div class="col-md-6 text-right">
-            <a class="btn btn-primary btn-sm" href="/logout">로그아웃</a>
-        </div>
+    <div class="row justify-content-between align-items-center">
+        <h3 class="col-6">{{roomName}}</h3>
+        <a class="col-6 text-right btn btn-primary btn-sm" href="/logout">로그아웃</a>
     </div>
-    <div class="input-group">
-        <div class="input-group-prepend">
-            <label class="input-group-text">내용</label>
-        </div>
-        <input type="text" class="form-control" v-model="message" v-on:keypress.enter="sendMessage('TALK')">
+
+    <div class="input-group mb-3">
+        <input type="text" class="form-control" v-model="message" v-on:keypress.enter="sendMessage('TALK')" placeholder="Enter chat message here...">
         <div class="input-group-append">
             <button class="btn btn-primary" type="button" @click="sendMessage('TALK')">채팅 보내기</button>
-            <button class="btn btn-primary" type="button" @click="sendMessage('TALK')">피드백 보내기</button>
-            <!-- 모달창 -->
-            <div v-if="chatPeriodModal">
-                <label>시작 시각: </label>
-                <input type="number" v-model="startHour" min="0" max="23"><br/>
-                <label>시작 분: </label>
-                <input type="number" v-model="startMinute" min="0" max="59"><br/>
-                <label>종료 시각: </label>
-                <input type="number" v-model="endHour" min="0" max="23"><br/>
-                <label>종료 분: </label>
-                <input type="number" v-model="endMinute" min="0" max="59"><br/>
-                <button @click="submit">제출</button>
-            </div>
-            <!-- 모달창 -->
-            <div v-if="feedbackModal">
-                <label>피드백: </label>
-                <input type="text" v-model="feedback" required minlength="5" placeholder="5글자 이상 입력하세요."><br/>
-                <label>마일리지: </label>
-                <input type="number" v-model="mileage" required min="0" placeholder="0 이상의 정수를 입력하세요."><br/>
-                <button @click="submitFeedback">제출</button>
-                <button @click="cancelFeedback">취소</button>
-            </div>
-            <!-- 버튼 -->
-            <button @click="feedbackModal = true">피드백 보내기</button>
-            <!-- 버튼 -->
-            <button @click="chatPeriodModal = true">Open Modal</button>
-
+            <button class="btn btn-secondary" type="button" @click="chatPeriodModal = true">채팅 시간 설정</button>
+            <button class="btn btn-info" type="button" @click="feedbackModal = true">피드백 보내기</button>
         </div>
     </div>
+
     <ul class="list-group">
         <li class="list-group-item" v-for="message in messages">
-            {{message.sender}} - {{message.message}}</a>
+            {{message.sender}} - {{message.message}}
         </li>
     </ul>
+
+    <!-- Chat Time Period Modal -->
+    <div v-if="chatPeriodModal" class="modal-container">
+        <h4>Chat Time Period</h4>
+        <div>
+            <label>시작 시각: </label>
+            <input type="number" v-model="startHour" min="0" max="23"><br/>
+            <label>시작 분: </label>
+            <input type="number" v-model="startMinute" min="0" max="59"><br/>
+            <label>종료 시각: </label>
+            <input type="number" v-model="endHour" min="0" max="23"><br/>
+            <label>종료 분: </label>
+            <input type="number" v-model="endMinute" min="0" max="59"><br/>
+            <button @click="submit">제출</button>
+        </div>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div v-if="feedbackModal" class="modal-container">
+        <h4>Feedback</h4>
+        <div>
+            <label>피드백: </label>
+            <input type="text" v-model="feedback" required minlength="5" placeholder="5글자 이상 입력하세요."><br/>
+            <label>마일리지: </label>
+            <input type="number" v-model="mileage" required min="0" placeholder="0 이상의 정수를 입력하세요."><br/>
+            <button @click="submitFeedback">제출</button>
+            <button @click="cancelFeedback">취소</button>
+        </div>
+    </div>
+
 </div>
 <!-- JavaScript -->
 
@@ -111,6 +111,8 @@
                 _this.token = null;
                 _this.readOnlyToken = null;
                 _this.readWriteToken = null;
+                _this.accessToken = null;
+                _this.refreshToken = null;
                 vm.$destroy();
                 sock.close();
             });
@@ -119,12 +121,14 @@
                 _this.token = response.data.token;
                 _this.readOnlyToken = response.data.readOnlyToken;
                 _this.readWriteToken = response.data.readWriteToken;
-                ws.connect({"token":_this.token, "readOnlyToken" : _this.readOnlyToken, "readWriteToken": _this.readWriteToken}, function(frame) {
+                ws.connect({"token":_this.token, "readOnlyToken" : _this.readOnlyToken, "readWriteToken": _this.readWriteToken, "chatRoomId" : _this.chatRoomId}, function(frame) {
+                    _this.accessToken = frame.headers['accessToken'];
+                    _this.refreshToken = frame.headers['refreshToken'];
                     alert("구독 신청");
                     ws.subscribe("/sub/chat/room/"+_this.roomId, function(message) {
                         var recv = JSON.parse(message.body);
                         _this.recvMessage(recv);
-                    });
+                    }, {"accessToken": _this.accessToken, "refreshToken" : _this.refreshToken});
                     _this.sendMessage('ENTER');
                     alert("서버 접속 성공!");
                 }, function(error) {
@@ -140,15 +144,16 @@
             this.readOnlyToken = null;
             this.readWriteToken = null;
             this.message = "퇴장하겠습니다";
-            ws.send("/pub/chat/message", {"token":this.token, "readOnlyToken" : this.readOnlyToken, "readWriteToken": this.readWriteToken},
-                JSON.stringify({type:type, roomId:this.roomId, message:this.message}));
+            this.sendMessage('QUIT');
             this.message = '';
             sock.close();
             console.log("beforeDestroy")
         },
         methods: {
             sendMessage: function(type) {
-                ws.send("/pub/chat/message/" + this.roomId, {"token":this.token, "readOnlyToken" : this.readOnlyToken, "readWriteToken": this.readWriteToken},
+                ws.send("/pub/chat/message/" + this.roomId,
+                    {"token":this.token, "readOnlyToken" : this.readOnlyToken, "readWriteToken": this.readWriteToken,
+                        "accessToken": this.accessToken, "refreshToken" : this.refreshToken},
                     JSON.stringify({type:type, roomId:this.roomId, message:this.message}));
                 this.message = '';
             },

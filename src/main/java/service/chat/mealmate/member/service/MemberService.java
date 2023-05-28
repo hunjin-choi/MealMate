@@ -27,6 +27,10 @@ public class MemberService {
         mileageHistoryRepository.save(mileageHistory);
     }
 
+    public void changeNickname(String memberId, String nickname) {
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new RuntimeException(""));
+        member.changeNickname(nickname);
+    }
     public List<MileageDto> dynamicTest(String name) {
         Member member = memberRepository.findById(name).orElse(null);
         return mileageHistoryRepository.dynamicTest(member);

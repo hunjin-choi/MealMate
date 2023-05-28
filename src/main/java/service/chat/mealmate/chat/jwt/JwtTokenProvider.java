@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 import service.chat.mealmate.chat.config.AppUserRole;
+import service.chat.mealmate.utils.DateUtil;
 
 import javax.annotation.PostConstruct;
 import java.util.Base64;
@@ -24,6 +25,7 @@ public class JwtTokenProvider {
     private String readOnly = "ReadOnly";
     private String readWrite = "ReadWrite";
     private String chatRoomId = "ChatRoomId";
+    private String chatPeriodId = "ChatPeriodId";
     @PostConstruct
     protected void init() {
         secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
@@ -33,15 +35,49 @@ public class JwtTokenProvider {
     /**
      * 이름으로 Jwt Token을 생성한다.
      */
-    public String generateReadWriteJWT(String name, String chatRoomId, List<AppUserRole> appUserRoles, Date expiredDate) {
-        Date now = new Date();
+    public String generateAccessToken(String name, List<AppUserRole> appUserRoles, Date expiredDate) {
         Claims claims = Jwts.claims().setSubject(name);
         claims.put("auth", appUserRoles.stream().map(s -> new SimpleGrantedAuthority(s.getAuthority())).
                 filter(Objects::nonNull).
                 collect(Collectors.toList()));
+        return Jwts.builder()
+                .setId(name)
+                .setClaims(claims)
+                .setIssuedAt(DateUtil.getNow()) // 토큰 발행일자
+                .setExpiration(expiredDate)
+                .signWith(SignatureAlgorithm.HS256, secretKey) // 암호화 알고리즘, secret값 세팅
+                .compact();
+    }
+
+    public String generateChatAccessToken(String name, String chatRoomId, Long chatPeriodId, Date expiredDate) {
+        Date now = new Date();
+        Claims claims = Jwts.claims().setSubject(name);
+//        claims.put("auth", appUserRoles.stream().map(s -> new SimpleGrantedAuthority(s.getAuthority())).
+//                filter(Objects::nonNull).
+//                collect(Collectors.toList()));
         claims.put(readOnly, false);
         claims.put(readWrite, true);
         claims.put(this.chatRoomId, chatRoomId);
+        claims.put(this.chatPeriodId, chatPeriodId);
+        return Jwts.builder()
+                .setId(name)
+                .setClaims(claims)
+                .setIssuedAt(now) // 토큰 발행일자
+                .setExpiration(expiredDate)
+                .signWith(SignatureAlgorithm.HS256, secretKey) // 암호화 알고리즘, secret값 세팅
+                .compact();
+    }
+
+    public String generateChatRefreshToken(String name, String chatRoomId, Long chatPeriodId, Date expiredDate) {
+        Date now = new Date();
+        Claims claims = Jwts.claims().setSubject(name);
+//        claims.put("auth", appUserRoles.stream().map(s -> new SimpleGrantedAuthority(s.getAuthority())).
+//                filter(Objects::nonNull).
+//                collect(Collectors.toList()));
+        claims.put(readOnly, false);
+        claims.put(readWrite, true);
+        claims.put(this.chatRoomId, chatRoomId);
+        claims.put(this.chatPeriodId, chatPeriodId);
         return Jwts.builder()
                 .setId(name)
                 .setClaims(claims)
@@ -72,6 +108,25 @@ public class JwtTokenProvider {
                 .signWith(SignatureAlgorithm.HS256, secretKey) // 암호화 알고리즘, secret값 세팅
                 .compact();
     }
+
+    public String generateReadWriteToken(String name, String chatRoomId, List<AppUserRole> appUserRoles, Date expiredDate) {
+        Date now = new Date();
+        // claim에 put, claim.subject에 put 두 방식의 차이는? 보통 중요한 하나의 시그니쳐 값을 subject에 넣나보다
+        Claims claims = Jwts.claims().setSubject(name);
+        claims.put("auth", appUserRoles.stream().map(s -> new SimpleGrantedAuthority(s.getAuthority())).
+                filter(Objects::nonNull).
+                collect(Collectors.toList()));
+        claims.put(readOnly, true);
+        claims.put(readWrite, true);
+        claims.put(this.chatRoomId, chatRoomId);
+        return Jwts.builder()
+                .setId(name)
+                .setClaims(claims)
+                .setIssuedAt(now) // 토큰 발행일자
+                .setExpiration(expiredDate)
+                .signWith(SignatureAlgorithm.HS256, secretKey) // 암호화 알고리즘, secret값 세팅
+                .compact();
+    }
     public boolean isReadOnlyJWT(String jwt) {
         return (boolean) getClaims(jwt).getBody().get(readOnly);
     }
@@ -84,6 +139,10 @@ public class JwtTokenProvider {
     }
     public String getChatRoomIdFromJWT(String jwt) {
         return (String) getClaims(jwt).getBody().get(chatRoomId);
+    }
+
+    public Long getChatPeriodIdFromJWT(String jwt) {
+        return (Long) getClaims(jwt).getBody().get(chatPeriodId);
     }
     /**
      * Jwt Token의 유효성을 체크한다.
@@ -127,4 +186,6 @@ public class JwtTokenProvider {
             throw ex;
         }
     }
+
+
 }

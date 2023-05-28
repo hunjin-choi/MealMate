@@ -25,6 +25,8 @@ public class Member {
     @Column
     private String picture;
 
+    @Column
+    private String refreshToken = null;
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
     private Role role;
@@ -57,4 +59,12 @@ public class Member {
 //
 //    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 //    private List<Orders> ordersList = new ArrayList<>();
+
+    public void changeNickname(String nickname) {
+        this.name = nickname;
+    }
+
+    public void connectChatRoom(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
 }

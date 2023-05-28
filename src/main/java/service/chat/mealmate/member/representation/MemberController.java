@@ -6,10 +6,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import service.chat.mealmate.member.dto.MileageDto;
 import service.chat.mealmate.member.repository.MemberRepository;
 import service.chat.mealmate.member.service.MemberService;
@@ -21,6 +18,7 @@ import java.util.List;
 @Controller
 @RequestMapping("/member")
 @RequiredArgsConstructor
+@ControllerAdvice
 public class MemberController {
     private final MemberService memberService;
 //    @GetMapping("/signUp")
@@ -28,6 +26,12 @@ public class MemberController {
 //        this.memberService.signUp(userName);
 //    }
 
+    @GetMapping("/change/nickname/{nickname}")
+    public void changeNickname(@PathVariable("nickname") String nickname) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String member_id = auth.getName();
+        memberService.changeNickname(member_id, nickname);
+    }
     @GetMapping("/mileage/history/json")
     @ResponseBody
     public List<MileageDto> findMileageHistoryJson() {
@@ -45,4 +49,5 @@ public class MemberController {
         model.addAttribute("mileageHistoryList", mileageHistoryList);
         return "member/mileageHistoryList";
     }
+
 }
