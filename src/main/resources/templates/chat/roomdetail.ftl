@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="/webjars/bootstrap/4.3.1/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/webjars/bootstrap/5.2.2/dist/css/bootstrap.min.css">
     <style>
         [v-cloak] {
             display: none;
@@ -17,8 +17,15 @@
 <body>
 <div class="container" id="app" v-cloak>
     <div class="row justify-content-between align-items-center">
-        <h3 class="col-6">{{roomName}}</h3>
-        <a class="col-6 text-right btn btn-primary btn-sm" href="/logout">로그아웃</a>
+        <div class="col-3">
+            <button class="btn btn-warning" type="button" @click="redirectToChatRoom">채팅룸으로 이동</button>
+        </div>
+        <div class="col-6 text-center">
+            <h3>{{roomName}}</h3>
+        </div>
+        <div class="col-3 text-right">
+            <a class="btn btn-primary btn-sm" href="/logout">로그아웃</a>
+        </div>
     </div>
 
     <div class="input-group mb-3">
@@ -26,13 +33,20 @@
         <div class="input-group-append">
             <button class="btn btn-primary" type="button" @click="sendMessage('TALK')">채팅 보내기</button>
             <button class="btn btn-secondary" type="button" @click="chatPeriodModal = true">채팅 시간 설정</button>
+            <button class="btn btn-third" type="button" @click="fetchChatPeriodList()">채팅 시간 삭제</button>
             <button class="btn btn-info" type="button" @click="feedbackModal = true">피드백 보내기</button>
+
         </div>
     </div>
 
-    <ul class="list-group">
-        <li class="list-group-item" v-for="message in messages">
-            {{message.sender}} - {{message.message}}
+    <ul class="list-group" v-if="isDataFetched">
+        <li class="list-group-item d-flex justify-content-between" v-for="message in messages">
+    <span>
+      {{message.sender}} - {{message.message}}
+    </span>
+            <span>
+      {{message.date}}
+    </span>
         </li>
     </ul>
 
@@ -50,6 +64,32 @@
             <input type="number" v-model="endMinute" min="0" max="59"><br/>
             <button @click="submit">제출</button>
         </div>
+        <button @click="chatPeriodModal = false; fetchChatPeriodList()">Close</button>
+    </div>
+
+    <!-- Chat Time Period Delete Modal -->
+    <div v-if="deleteChatPeriodModal" class="modal-container">
+        <h4>Delete Chat Time Period</h4>
+        <table>
+            <tr>
+                <th>ChatPeriodId</th>
+                <th>startHour</th>
+                <th>startMinute</th>
+                <th>endHour</th>
+                <th>endMinute</th>
+                <th>latestFeedbackDate</th>
+            </tr>
+            <tr v-for="chatPeriod in chatPeriodList">
+                <td>{{chatPeriod.chatPeriodId}}</td>
+                <td>{{chatPeriod.startHour}}</td>
+                <td>{{chatPeriod.startMinute}}</td>
+                <td>{{chatPeriod.endHour}}</td>
+                <td>{{chatPeriod.endMinute}}</td>
+                <td>{{chatPeriod.latestFeedbackDate}}</td>
+                <td><button @click="deleteChatPeriod(chatPeriod.chatPeriodId); deleteChatPeriodModal = false;">Delete</button></td>
+            </tr>
+        </table>
+        <button @click="deleteChatPeriodModal = false;">Close</button>
     </div>
 
     <!-- Feedback Modal -->
@@ -68,10 +108,10 @@
 </div>
 <!-- JavaScript -->
 
-<script src="/webjars/vue/2.5.16/dist/vue.min.js"></script>
-<script src="/webjars/axios/0.17.1/dist/axios.min.js"></script>
-<script src="/webjars/sockjs-client/1.1.2/sockjs.min.js"></script>
-<script src="/webjars/stomp-websocket/2.3.3-1/stomp.min.js"></script>
+<script src="/webjars/vue/2.6.14/dist/vue.min.js"></script>
+<script src="/webjars/axios/0.21.1/dist/axios.min.js"></script>
+<script src="/webjars/sockjs-client/1.5.1/sockjs.min.js"></script>
+<script src="/webjars/stomp-websocket/2.3.4/stomp.min.js"></script>
 <script>
     // websocket & stomp initialize
     var sock = new SockJS("/ws-stomp");
@@ -87,22 +127,29 @@
             message: '',
             messages: [],
             token: '',
+            deleteChatPeriodModal: false,
+            chatPeriodList: [],
             readOnlyToken: '',
             readWriteToken: '',
             chatPeriodModal: false,
+            accessToken : null,
+            refreshToken : null,
             feedbackModal: false,
             startHour: null,
             startMinute: null,
             endHour: null,
             endMinute: null,
             feedback: '',
-            mileage: null
+            mileage: null,
+            tempValue:null,
+            isDataFetched: false,
         },
         // 아래가 vm 생성자인가보다;
         created() {
             console.log("created!")
             this.roomId = localStorage.getItem('wschat.roomId');
             this.roomName = localStorage.getItem('wschat.roomName');
+            console.log(this.roomId);
             var _this = this;
             window.addEventListener('beforeunload', function(e) {
                 // WebSocket 연결을 닫는다.
@@ -121,21 +168,41 @@
                 _this.token = response.data.token;
                 _this.readOnlyToken = response.data.readOnlyToken;
                 _this.readWriteToken = response.data.readWriteToken;
-                ws.connect({"token":_this.token, "readOnlyToken" : _this.readOnlyToken, "readWriteToken": _this.readWriteToken, "chatRoomId" : _this.chatRoomId}, function(frame) {
-                    _this.accessToken = frame.headers['accessToken'];
-                    _this.refreshToken = frame.headers['refreshToken'];
+                // console.log(response.data);
+                ws.connect({"token":_this.token, "readOnlyToken" : _this.readOnlyToken, "readWriteToken": _this.readWriteToken, "chatRoomId" : localStorage.getItem('wschat.roomId')}, function() {
+                    // _this.accessToken = frame.headers['accessToken'];
+                    // _this.refreshToken = frame.headers['refreshToken'];
+                    // console.log("frame test!");
+                    // console.log(frame);
+                    // console.log(frame.headers);
+                    console.log(_this.roomId);
                     alert("구독 신청");
                     ws.subscribe("/sub/chat/room/"+_this.roomId, function(message) {
                         var recv = JSON.parse(message.body);
+                        // alert("구독 성공!");
+                        this.tempValue = message;
+                        console.log(message);
                         _this.recvMessage(recv);
                     }, {"accessToken": _this.accessToken, "refreshToken" : _this.refreshToken});
-                    _this.sendMessage('ENTER');
+                    // _this.sendMessage('ENTER');
+                    console.log(this.tempValue);
                     alert("서버 접속 성공!");
+                    axios.get('/chat/room/messages/' + _this.roomId).then(response => {
+                        console.log(response);
+                        _this.messages = response.data;
+                        console.log(response.data);
+                        console.log(_this.messages);
+                        _this.isDataFetched = true;
+                    }).catch(error => {
+                        console.error(error);
+                    });
                 }, function(error) {
                     alert("서버 연결에 실패 하였습니다. 다시 접속해 주십시요.");
                     location.href="/chat/room";
                 });
+                console.log("good")
             });
+
         },
         beforeDestroy() {
             this.roomId = null;
@@ -143,8 +210,8 @@
             this.token = null;
             this.readOnlyToken = null;
             this.readWriteToken = null;
-            this.message = "퇴장하겠습니다";
-            this.sendMessage('QUIT');
+            // this.message = "퇴장하겠습니다";
+            // this.sendMessage('QUIT');
             this.message = '';
             sock.close();
             console.log("beforeDestroy")
@@ -154,7 +221,11 @@
                 ws.send("/pub/chat/message/" + this.roomId,
                     {"token":this.token, "readOnlyToken" : this.readOnlyToken, "readWriteToken": this.readWriteToken,
                         "accessToken": this.accessToken, "refreshToken" : this.refreshToken},
-                    JSON.stringify({type:type, roomId:this.roomId, message:this.message}));
+                    JSON.stringify({type:type, roomId:this.roomId, message:this.message}), function(response) {
+                        // 응답을 처리하는 로직을 작성합니다.
+                        console.log("서버로부터의 응답:", response);
+                    });
+
                 this.message = '';
             },
             recvMessage: function(recv) {
@@ -168,7 +239,7 @@
                     endMinute: this.endMinute
                 };
 
-                axios.post('http://localhost:8080/chat/period/' + this.roomId, data, {
+                axios.post('http://localhost:8080/mealmate/addPeriod/' + this.roomId, data, {
                     headers: {
                         "token":this.token,
                         "readOnlyToken" : this.readOnlyToken,
@@ -190,11 +261,11 @@
                 }
 
                 const data = {
-                    feedback: this.feedback,
+                    feedbackMention: this.feedback,
                     mileage: this.mileage
                 };
 
-                axios.post('http://localhost:8080/chat/feedback/' + this.roomId, data, {
+                axios.post('http://localhost:8080/mealmate/feedback/' + this.roomId, data, {
                     headers: {
                         "token":this.token,
                         "readOnlyToken" : this.readOnlyToken,
@@ -216,6 +287,42 @@
                 this.feedback = '';
                 this.mileage = null;
                 this.feedbackModal = false;
+            },
+            deleteChatPeriod: function(chatPeriodId) {
+                axios.get('http://localhost:8080/mealmate/deletePeriod/' + this.roomId + '/' + chatPeriodId, {
+                    headers: {
+                        "token":this.token,
+                        "readOnlyToken" : this.readOnlyToken,
+                        "readWriteToken": this.readWriteToken
+                    }
+                })
+                    .then(response => {
+                        console.log(response);
+                    })
+                    .catch(error => {
+                        console.error(error);
+                    });
+            },
+            fetchChatPeriodList: function() {
+                axios.get('http://localhost:8080/mealmate/chatPeriod/list', {
+                    headers: {
+                        "token":this.token,
+                        "readOnlyToken" : this.readOnlyToken,
+                        "readWriteToken": this.readWriteToken
+                    }
+                })
+                    .then(response => {
+                        console.log(response);
+                        this.chatPeriodList = response.data;
+                        this.deleteChatPeriodModal = true;
+                    })
+                    .catch(error => {
+                        console.error("chatPeriod 리스트 받아오기 실패");
+                        console.error(error);
+                    });
+            },
+            redirectToChatRoom: function() {
+                window.location.href = "/chat/room";
             }
         }
     });

@@ -11,7 +11,9 @@ import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import service.chat.mealmate.member.domain.Member;
+import service.chat.mealmate.member.domain.Role;
 import service.chat.mealmate.member.repository.MemberRepository;
+import service.chat.mealmate.member.service.MemberService;
 import service.chat.mealmate.mileageHistory.domain.Mileage;
 import service.chat.mealmate.mileageHistory.domain.MileageChangeReason;
 import service.chat.mealmate.mileageHistory.domain.MileageHistory;
@@ -28,6 +30,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     private final MemberRepository memberRepository;
     private final HttpSession httpSession;
     private final MileageHistoryRepository mileageHistoryRepository;
+    private final MemberService memberService;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -50,10 +53,12 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
     private Member saveOrUpdate(OAuthAttributes attributes) {
         Member member = memberRepository.findByEmail(attributes.getEmail()).map(entity->entity.update(attributes.getName(), attributes.getPicture()))
-                .orElse(attributes.toEntity());
-        MileageHistory mileageHistory = new MileageHistory(new Mileage(0), new Date(), MileageChangeReason.INIT, member, null);
-        member = memberRepository.save(member);
-        mileageHistoryRepository.save(mileageHistory);
-        return member;
+                .orElse(null);
+        if (member == null) {
+            return memberService.signUp(attributes.getName(), Role.USER);
+        } else {
+            member = memberRepository.save(member);
+            return member;
+        }
     }
 }

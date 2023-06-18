@@ -20,11 +20,12 @@ import java.util.List;
 public class MemberService {
     private final MemberRepository memberRepository;
     private final MileageHistoryRepository mileageHistoryRepository;
-    public void signUp(String userName, Role role) {
+    public Member signUp(String userName, Role role) {
         Member member = new Member(userName, userName, "email", "picture", role);
         MileageHistory mileageHistory = new MileageHistory(new Mileage(0), new Date(), MileageChangeReason.INIT, member, null);
         memberRepository.save(member);
         mileageHistoryRepository.save(mileageHistory);
+        return member;
     }
 
     public void changeNickname(String memberId, String nickname) {

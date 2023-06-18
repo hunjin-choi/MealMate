@@ -69,10 +69,34 @@ public class DateUtil {
         return cal.get(Calendar.MINUTE);
     }
 
-    static public Date addHour(Date d) {
+    static public Date addHour(Date d, int hour) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(d);
-        cal.add(Calendar.HOUR_OF_DAY, 1);
+        cal.add(Calendar.HOUR_OF_DAY, hour);
         return cal.getTime();
+    }
+
+    static public Date addMinute(Date d, int minute) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(d);
+        cal.add(Calendar.MINUTE, minute);
+        return cal.getTime();
+    }
+
+    static public Date addSecond(Date d, int second) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(d);
+        cal.add(Calendar.SECOND, second);
+        return cal.getTime();
+    }
+
+    static public boolean isSameDay(Date d1, Date d2) {
+        Calendar cal1 = Calendar.getInstance();
+        Calendar cal2 = Calendar.getInstance();
+        cal1.setTime(d1);
+        cal2.setTime(d2);
+        boolean sameDay = cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR) &&
+                cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR);
+        return sameDay;
     }
 }

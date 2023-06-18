@@ -25,7 +25,7 @@ public class Member {
     @Column
     private String picture;
 
-    @Column
+    @Column(length = 500)
     private String refreshToken = null;
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
@@ -67,4 +67,9 @@ public class Member {
     public void connectChatRoom(String refreshToken) {
         this.refreshToken = refreshToken;
     }
+    public void reConnectChatRoom(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
+    public void disconnectChatRoom(String refreshToken) { this.refreshToken = refreshToken; }
 }

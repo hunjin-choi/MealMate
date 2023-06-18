@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import service.chat.mealmate.mealmate.domain.*;
 import service.chat.mealmate.mealmate.dto.ChatPeriodDto;
 import service.chat.mealmate.mealmate.dto.FeedbackDto;
+import service.chat.mealmate.mealmate.repository.ChatPeriodRepository;
 import service.chat.mealmate.mealmate.repository.FeedbackHistoryRepository;
 import service.chat.mealmate.mealmate.repository.MealMateRepository;
 import service.chat.mealmate.mileageHistory.domain.MileageChangeReason;
@@ -27,6 +28,7 @@ public class MealmateService {
     private final MemberRepository memberRepository;
     private final FeedbackHistoryRepository feedbackHistoryRepository;
     private final MileageHistoryRepository mileageHistoryRepository;
+    private final ChatPeriodRepository chatPeriodRepository;
 
 //    public void connectMealMate(String member1_id, String member2_id, String chatRoomId) {
 //        Date now = DateUtil.getNow();
@@ -44,7 +46,7 @@ public class MealmateService {
 //        // cookie.setMaxAge(0)을 통해 쿠키 삭제 유;
 //    }
 
-    public void confirm(String senderId, FeedbackDto feedbackDto, String roomId) {
+    public void confirm(String senderId, FeedbackDto feedbackDto, String roomId, Long chatPeriodId) {
         String confirmMessage = feedbackDto.getFeedbackMention();
         int feedbackMileage = feedbackDto.getMileage();
         Date now = DateUtil.getNow();
@@ -59,10 +61,15 @@ public class MealmateService {
         mileageHistoryRepository.save(newMileageHistory);
     }
 
-    public void addChatPeriod(String receiverId, ChatPeriodDto chatPeriodDto) {
-        MealMate mealMate = mealMateRepository.findActiveMealmateByReceiverId(receiverId).orElse(null);
+    public void addChatPeriod(String giverId, ChatPeriodDto chatPeriodDto) {
+        MealMate mealMate = mealMateRepository.findActiveMealmateByGiverId(giverId).orElse(null);
         mealMate.addChatPeriod(chatPeriodDto.getStartHour(), chatPeriodDto.getStartMinute(), chatPeriodDto.getEndHour(), chatPeriodDto.getEndMinute());
         // chatRepository.save(chatPeriod);
+    }
+
+    public void deleteChatPeriod(String giverId, Long chatPeriodId) {
+        MealMate mealMate = mealMateRepository.findActiveMealmateByGiverId(giverId).orElse(null);
+        mealMate.deleteChatPeriod(chatPeriodId);
     }
 
     public void saveChatMessage(String chatMessage, String chatRoomId, String giverId) {

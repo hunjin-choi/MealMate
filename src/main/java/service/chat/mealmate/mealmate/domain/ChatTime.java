@@ -42,12 +42,12 @@ public class ChatTime {
         return thisTimeInMinutes <= otherTimeInMinutes;
     }
 
-    public int calculateDiffBySecond(Date other) {
+    public int calculateDiffByMinute(Date other) {
         int hour = DateUtil.getHour(other);
         int minutes = DateUtil.getMinute(other);
         int thisTimeInMinutes = this.hour * 60 + this.minutes;
         int otherTimeInMinutes = hour * 60 + minutes;
 
-        return Math.abs(thisTimeInMinutes - otherTimeInMinutes) * 60;
+        return Math.abs(thisTimeInMinutes - otherTimeInMinutes);
     }
 }

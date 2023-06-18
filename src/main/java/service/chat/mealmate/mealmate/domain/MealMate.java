@@ -48,8 +48,8 @@ public class MealMate implements Serializable {
     @OneToMany(mappedBy = "mealMate")
     private List<FeedbackHistory> feedbackHistoryList;
 
-    @OneToMany(mappedBy = "mealMate", cascade = CascadeType.ALL, orphanRemoval = true)
 //    @Getter(value = AccessLevel.PROTECTED)
+    @OneToMany(mappedBy = "mealMate", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ChatPeriod> chatPeriodList = new ArrayList<>();
 
     @OneToMany(mappedBy = "mealMate", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -78,6 +78,7 @@ public class MealMate implements Serializable {
     }
 
     public ChatPeriod addChatPeriod(int startHour, int startMinute, int endHour, int endMinute) {
+        if (this.chatPeriodList.size() >= 3) throw new RuntimeException("채팅시간대를 더 이상 추가할 수 없습니다");
         ChatPeriod chatPeriod = new ChatPeriod(startHour, startMinute, endHour, endMinute, this);
         this.chatPeriodList.add(chatPeriod);
         return chatPeriod;
@@ -93,14 +94,38 @@ public class MealMate implements Serializable {
         int expiredMinute = DateUtil.getMinute(expiredAt);
         return addChatPeriod(hour, minute, expiredHour, expiredMinute);
     }
+
+    public void deleteChatPeriod(Long chatPeriodId) {
+        // chatperiod를 Map으로 바꾸는게 좋을 듯?
+        if (this.chatPeriodList.size() == 1) {
+            throw new RuntimeException("채팅 시간대를 더 이상 지울 수 없습니다");
+        }
+        // delete 로직 작성
+        for (ChatPeriod chatPeriod : chatPeriodList) {
+            if (chatPeriod.getChatPeriodId() == chatPeriodId) {
+                chatPeriodList.remove(chatPeriod);
+            }
+        }
+    }
     public FeedbackHistory confirm(String feedbackMention, Date feedbackDate, int feedbackMileage) {
         FeedbackHistory feedbackHistory = new FeedbackHistory(feedbackMention, feedbackDate, feedbackMileage, this);
         this.mileagePerMealmate += feedbackHistory.getMileagePerFeedback();
+        for (ChatPeriod chatPeriod : chatPeriodList) {
+            Integer minutes = null;
+            if ((minutes = chatPeriod.calculateRemainPeriod(DateUtil.getNow())) != null) {
+                chatPeriod.recordFeedbackDate();
+                break;
+            }
+        }
         return feedbackHistory;
     }
 
     public void addChatMessage(String message) {
         ChatMessage chatMessage = new ChatMessage(message, DateUtil.getNow(), this);
         this.chatMessageList.add(chatMessage);
+    }
+
+    public ChatPeriod findTempChatPeriod() {
+        return this.getChatPeriodList().get(0);
     }
 }

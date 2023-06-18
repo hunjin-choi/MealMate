@@ -45,10 +45,19 @@ public class ChatPeriod {
         this.mealMate = mealMate;
     }
 
-    public Integer chatPeriodCheck(java.util.Date date) {
+    public Integer calculateRemainPeriod(java.util.Date date) {
         if (startTime.isLessThan(date) && endTime.isMoreThan(date)) {
-            return endTime.calculateDiffBySecond(date);
+            return endTime.calculateDiffByMinute(date);
         }
         else return null;
+    }
+
+    public void recordFeedbackDate() {
+        java.util.Date now = DateUtil.getNow();
+        if (this.latestFeedbackDate != null && DateUtil.isSameDay(DateUtil.getNow(), new Date(this.latestFeedbackDate.getTime()))) {
+            throw new RuntimeException("이미 피드백 하셨습니다");
+        } else {
+            this.latestFeedbackDate = new Date(now.getTime());
+        }
     }
 }
