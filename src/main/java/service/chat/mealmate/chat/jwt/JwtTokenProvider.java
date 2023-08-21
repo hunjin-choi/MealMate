@@ -23,6 +23,8 @@ public class JwtTokenProvider {
     private String readWrite = "ReadWrite";
     private String chatRoomId = "ChatRoomId";
     private String chatPeriodId = "ChatPeriodId";
+
+    static public String CHAT_TOKEN = "chatJWT";
     @PostConstruct
     protected void init() {
         secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());

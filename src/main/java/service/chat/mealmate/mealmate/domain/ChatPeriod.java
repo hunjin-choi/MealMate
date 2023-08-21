@@ -28,21 +28,19 @@ public class ChatPeriod {
     })
     ChatTime endTime;
 
-    // java.sql.Date 타입으로 @Temporal 어노테이션 필요 없음
-    Date latestFeedbackDate;
     @ManyToOne
-    MealMate mealMate;
+    ChatRoom chatRoom;
 
     @Value("")
     private int maxPeriod = 500000;
 
-    public ChatPeriod(int startHour, int startMinute, int endHour, int endMinute, MealMate mealMate) {
+    public ChatPeriod(int startHour, int startMinute, int endHour, int endMinute, ChatRoom chatRoom) {
         ChatTime startChatTime = new ChatTime(startHour, startMinute);
         ChatTime endChatTime = new ChatTime(endHour, endMinute);
         this.startTime = startChatTime;
         this.endTime = endChatTime;
         if (startTime.isLessThanMaxPeriod(endTime, maxPeriod) == false) throw new RuntimeException("");
-        this.mealMate = mealMate;
+        this.chatRoom = chatRoom;
     }
 
     public Integer calculateRemainPeriod(java.util.Date date) {

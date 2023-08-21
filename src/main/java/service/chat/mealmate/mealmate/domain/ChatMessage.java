@@ -16,13 +16,9 @@ public class ChatMessage {
     private String message;
 
     @Temporal(value = TemporalType.DATE)
-    private Date date;
+    private Date sentAt;
 
-    @ManyToOne
-    @JoinColumns({
-            @JoinColumn(name = "mealmate_id", referencedColumnName = "mealmate_id"),
-            @JoinColumn(name = "giver_id", referencedColumnName = "giver_id")
-    })
+    @ManyToOne()
     private MealMate mealMate;
 
     public ChatMessage(String message, Date date, MealMate mealMate) {

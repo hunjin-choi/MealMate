@@ -54,7 +54,7 @@ class MemberServiceTest {
         // then
         Assertions.assertEquals(pastMHCount + 1, currentMHCount);
         Assertions.assertEquals(0, mileageHistory.getMileage().getCurrentMileage());
-        Assertions.assertEquals(MileageChangeReason.INIT, mileageHistory.getMileageChangeReason());
+        Assertions.assertEquals(MileageChangeReason.INIT, mileageHistory.getChangeReason());
 //        Assertions.assertNull(mileageHistory.getFeedBackHistory());
 //        Assertions.assertNull(mileageHistory.getOrders());
         Assertions.assertTrue(DateUtil.isSameDateWithoutTime(new Date(), mileageHistory.getDate()));

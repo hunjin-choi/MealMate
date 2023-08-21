@@ -15,7 +15,7 @@ public class MileageDto {
 
     public MileageDto (MileageHistory mileageHistory) {
         this.mileage = mileageHistory.getMileage();
-        this.mileageChangeReason = mileageHistory.getMileageChangeReason();
+        this.mileageChangeReason = mileageHistory.getChangeReason();
         this.date = mileageHistory.getDate();
     }
 }

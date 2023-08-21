@@ -21,8 +21,9 @@ public class MileageHistory {
     private Date date;
 
     @Enumerated(EnumType.STRING) // index 걸어야 하는데..
-    private MileageChangeReason mileageChangeReason;
+    private MileageChangeReason changeReason;
 
+    private String changeReasonDetail;
     @ManyToOne
     private Member member;
 
@@ -37,18 +38,18 @@ public class MileageHistory {
     @JoinColumn(name = "event_id")
     private Long eventId = null;
 
-    public MileageHistory(Mileage mileage, Date date, MileageChangeReason mileageChangeReason, Member member, Long fk) {
+    public MileageHistory(Mileage mileage, Date date, MileageChangeReason changeReason, Member member, Long fk) {
         this.mileage = mileage;
         this.date = date;
         this.member = member;
-        this.mileageChangeReason = mileageChangeReason;
-        if (mileageChangeReason == MileageChangeReason.INIT) {
+        this.changeReason = changeReason;
+        if (changeReason == MileageChangeReason.INIT) {
             this.ordersId = null; this.feedBackHistoryId = null; this.eventId = null;
-        } else if (mileageChangeReason == MileageChangeReason.FEEDBACK) {
+        } else if (changeReason == MileageChangeReason.FEEDBACK) {
             this.ordersId = null; this.feedBackHistoryId = fk; this.eventId = null;
-        } else if (mileageChangeReason == MileageChangeReason.PRODUCT_ORDER) {
+        } else if (changeReason == MileageChangeReason.PRODUCT_ORDER) {
             this.ordersId = fk; this.feedBackHistoryId = null; this.eventId = null;
-        } else if (mileageChangeReason == MileageChangeReason.EVENT) {
+        } else if (changeReason == MileageChangeReason.EVENT) {
             this.ordersId = null; this.feedBackHistoryId = null; this.eventId = fk;
         }else {
             throw new RuntimeException("적절하지 않은 MileageChangeReason 입니다.");

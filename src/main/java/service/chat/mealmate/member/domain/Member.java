@@ -12,7 +12,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-@Entity @NoArgsConstructor(access = AccessLevel.PROTECTED) @Getter
+@Entity @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
 public class Member {
     @Id()
     private String memberId;
@@ -20,10 +21,18 @@ public class Member {
     private String name;
 
     @Column(nullable = false)
-    private String email;
+    private String nickname;
 
-    @Column
-    private String picture;
+    @Column(nullable = false)
+    private String password;
+
+    @Column(nullable = false)
+    private Date created_at;
+
+    @Column(nullable = false)
+    private Date deleted_at;
+    @Column(nullable = false)
+    private String email;
 
     @Column(length = 500)
     private String refreshToken = null;
@@ -36,14 +45,11 @@ public class Member {
         this.memberId = memberId;
         this.name = name;
         this.email = email;
-        this.picture = picture;
         this.role = role;
     }
 
     public Member update(String name, String picture){
         this.name = name;
-        this.picture = picture;
-
         return this;
     }
 
@@ -63,13 +69,11 @@ public class Member {
     public void changeNickname(String nickname) {
         this.name = nickname;
     }
-
     public void connectChatRoom(String refreshToken) {
         this.refreshToken = refreshToken;
     }
     public void reConnectChatRoom(String refreshToken) {
         this.refreshToken = refreshToken;
     }
-
     public void disconnectChatRoom(String refreshToken) { this.refreshToken = refreshToken; }
 }

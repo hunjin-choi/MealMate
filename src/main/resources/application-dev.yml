@@ -1,0 +1,32 @@
+spring:
+  devtools:
+    livereload:
+      enabled: true
+    restart:
+      enabled: false
+  freemarker:
+    cache: false
+    suffix: .ftl
+  redis:
+    host: localhost
+    port: 6379
+    database: 0
+    lettuce:
+      shutdown-timeout: 2s # 임베디드 레디스 종료 안되는 문제떄문에 임시로 timeout 시간 설정
+  jwt:
+    secret: secreto
+  h2:
+    console:
+      enabled: true
+  datasource:
+    url: jdbc:h2:mem:mydb
+    username: sa
+    password: password
+    driverClassName: org.h2.Driver
+  jpa:
+    spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
+    generate-ddl: true
+    #    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+#      format_sql: true

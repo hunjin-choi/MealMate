@@ -55,14 +55,17 @@ public class StompHandler implements ChannelInterceptor {
         ChannelInterceptor.super.postSend(message, channel, sent);
     }
 
-
     @Override
-    @Transactional
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
+        if (accessor.getCommand() == StompCommand.CONNECT) {
+            accessor.setNativeHeader("testJWT", "testJWT");
+        }
         System.out.println("accessor.getCommand() = " + accessor.getCommand());
         return message;
     }
+
+
     public Message<?> preSend2(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
         Principal user = accessor.getUser(); // springSecurity 연계한 편의기능***

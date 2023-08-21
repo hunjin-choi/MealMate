@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
@@ -13,7 +14,6 @@ import service.chat.mealmate.chat.dto.ChatMessageDto;
 import service.chat.mealmate.chat.dto.ChatRoom;
 import service.chat.mealmate.chat.dto.LoginInfo;
 import service.chat.mealmate.chat.jwt.JwtTokenProvider;
-import service.chat.mealmate.mealmate.domain.ChatMessage;
 import service.chat.mealmate.mealmate.domain.ChatPeriod;
 import service.chat.mealmate.mealmate.domain.MealMate;
 import service.chat.mealmate.mealmate.repository.ChatMessageRepository;
@@ -86,6 +86,7 @@ public class ChatRoomController {
 
     @GetMapping("/user/{roomId}")
     @ResponseBody
+    @Transactional
     public LoginInfo getUserInfo(HttpServletRequest httpRequest, HttpServletResponse httpResponse, @PathVariable("roomId") String roomId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String name = auth.getName();
@@ -102,6 +103,7 @@ public class ChatRoomController {
 //        }
         String readOnlyJWT = null;
         String readWriteJWT = null;
+        String chatJWT = null;
         // 이 name을 이용하여 readonly-jwt 발급조건 만족하는지 검증
         // 이 name을 이용하여 readWrite-jwt 발급조건 만족하는지 검증
         List<AppUserRole> lst = new ArrayList<>();
@@ -159,14 +161,17 @@ public class ChatRoomController {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST);
             }
         }
-        Cookie readOnlyCookie = new Cookie("readOnlyCookie", readOnlyJWT);
+        chatJWT = readWriteJWT;
+        Cookie chatJWTCookie = new Cookie(JwtTokenProvider.CHAT_TOKEN, chatJWT);
         Cookie readWriteCookie = new Cookie("readWriteCookie", readWriteJWT);
-        readOnlyCookie.setPath("/"); readWriteCookie.setPath("/");
-//        httpResponse.addCookie(readOnlyCookie);  httpResponse.addCookie(readWriteCookie);
+
+        chatJWTCookie.setPath("/"); readWriteCookie.setPath("/"); // 이거 안하면 path=/chat/user 로 설정됨
+//        chatJWTCookie.setHttpOnly(true); readWriteCookie.setHttpOnly(true);
+//        chatJWTCookie.setSecure(true); readWriteCookie.setSecure(true);
+        chatJWTCookie.setMaxAge(3600); readWriteCookie.setMaxAge(3600);
+        httpResponse.addCookie(chatJWTCookie);  httpResponse.addCookie(readWriteCookie);
         // 아래 방식처럼 jwt 값 전달하는 방식 안 좋음. 나중에 바꿀 것.
-        return new LoginInfo(name, null, null, null);
-//        return new LoginInfo(name, readWriteJWT, readWriteJWT, readWriteJWT);
+//        return new LoginInfo(name, null, null, null);
+        return new LoginInfo(name, readWriteJWT, readWriteJWT, readWriteJWT);
     }
-
-
 }

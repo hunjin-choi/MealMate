@@ -57,7 +57,7 @@ public class MealmateService {
         feedbackHistoryRepository.save(feedbackHistory);
 
         MileageHistory latestMileageHistory = mileageHistoryRepository.findFirstByMemberOrderByDateDesc(receiver);
-        MileageHistory newMileageHistory = latestMileageHistory.createNewHistory(feedbackHistory.getMileagePerFeedback(), MileageChangeReason.FEEDBACK, feedbackHistory.getFeedBackHistoryId(), now);
+        MileageHistory newMileageHistory = latestMileageHistory.createNewHistory(feedbackHistory.getFeedbackMileage(), MileageChangeReason.FEEDBACK, feedbackHistory.getFeedBackHistoryId(), now);
         mileageHistoryRepository.save(newMileageHistory);
     }
 
