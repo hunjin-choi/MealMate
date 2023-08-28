@@ -11,29 +11,33 @@ import java.time.LocalTime;
 import java.util.Date;
 
 @Entity
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"feedback_date", "chat_period_id", "giver_id", "receiver_id"}))
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Getter
-public class FeedbackHistory {
+public class FeedbackHistory implements MileageObject{
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long feedBackHistoryId;
+    private Long feedbackHistoryId;
 
+    @Getter
     private Integer feedbackMileage;
 
     private String feedbackMention;
 
     @Temporal(value = TemporalType.DATE)
-    private LocalDate feedBackDate;
+    private LocalDate feedbackDate;
 
     @Temporal(value = TemporalType.TIME)
     private LocalTime feedBackTime;
 
     @ManyToOne
+    @Column(name = "giver_id")
     private MealMate giver;
 
     @ManyToOne
+    @Column(name = "receiver_id")
     private MealMate receiver;
 
     @OneToOne(targetEntity = ChatPeriod.class)
+    @Column(name = "chat_period_id")
     private ChatPeriod chatPeriod;
     @Transient
     private int maxFeedbackMileage = 100;
@@ -44,7 +48,7 @@ public class FeedbackHistory {
         this.giver = giver;
         this.receiver = receiver;
         this.chatPeriod = chatPeriod;
-        this.feedBackDate = feedBackDate;
+        this.feedbackDate = feedBackDate;
         this.feedBackTime = feedbackTime;
         if (feedbackMileage > this.maxFeedbackMileage || feedbackMileage < this.minFeedbackMileage) throw new RuntimeException("");
         this.feedbackMileage = feedbackMileage;

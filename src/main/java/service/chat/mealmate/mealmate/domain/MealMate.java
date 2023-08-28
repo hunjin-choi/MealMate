@@ -47,8 +47,8 @@ public class MealMate implements Serializable {
         this.leavedAt = leaved_at;
     }
 
-    public Voter createVoteAndVoting(String title, String content, VoteType voteType, VoterStatus voterStatus) {
-        Vote vote = new Vote(title, content, voteType);
+    public Voter createVoteAndVoting(String title, String content, VotingMethodType votingMethodType, VoterStatus voterStatus) {
+        Vote vote = new Vote(title, content, votingMethodType);
         // cascade option
         Voter voter = new Voter(vote, this, voterStatus, true);
         return voter;

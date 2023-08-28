@@ -10,7 +10,7 @@ public class Mileage {
     private Integer appendValue;
     private Integer currentMileage;
 
-    public Mileage createNewMileage(int appendValue) {
+    public Mileage createMileage(int appendValue) {
         Mileage mileage = new Mileage(appendValue);
         mileage.currentMileage += this.currentMileage;
         return mileage;

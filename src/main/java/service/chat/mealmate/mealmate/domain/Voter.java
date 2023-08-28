@@ -1,6 +1,7 @@
 package service.chat.mealmate.mealmate.domain;
 
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.Entity;
@@ -13,6 +14,7 @@ public class Voter {
     private Vote vote;
     @ManyToOne @Id
     private MealMate mealMate;
+    @Getter
     private VoterStatus voterStatus;
     private Boolean isCreator;
 
@@ -22,4 +24,6 @@ public class Voter {
         this.voterStatus = voterStatus;
         this.isCreator = isCreator;
     }
+
+
 }

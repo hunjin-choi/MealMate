@@ -23,7 +23,7 @@ public class ChatMessage {
 
     public ChatMessage(String message, Date date, MealMate mealMate) {
         this.message = message;
-        this.date = date;
+        this.sentAt = date;
         this.mealMate = mealMate;
     }
 }

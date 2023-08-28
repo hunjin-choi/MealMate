@@ -8,17 +8,13 @@ import org.springframework.transaction.annotation.Transactional;
 import service.chat.mealmate.mealmate.domain.*;
 import service.chat.mealmate.mealmate.dto.ChatPeriodDto;
 import service.chat.mealmate.mealmate.dto.FeedbackDto;
-import service.chat.mealmate.mealmate.repository.ChatPeriodRepository;
-import service.chat.mealmate.mealmate.repository.FeedbackHistoryRepository;
-import service.chat.mealmate.mealmate.repository.MealMateRepository;
+import service.chat.mealmate.mealmate.repository.*;
 import service.chat.mealmate.mileageHistory.domain.MileageChangeReason;
 import service.chat.mealmate.mileageHistory.domain.MileageHistory;
 import service.chat.mealmate.mileageHistory.repository.MileageHistoryRepository;
-import service.chat.mealmate.member.domain.Member;
 import service.chat.mealmate.member.repository.MemberRepository;
-import service.chat.mealmate.utils.DateUtil;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service @RequiredArgsConstructor
@@ -29,6 +25,8 @@ public class MealmateService {
     private final FeedbackHistoryRepository feedbackHistoryRepository;
     private final MileageHistoryRepository mileageHistoryRepository;
     private final ChatPeriodRepository chatPeriodRepository;
+    private final VoteRepository voteRepository;
+    private final ChatRoomRepository chatRoomRepository;
 
 //    public void connectMealMate(String member1_id, String member2_id, String chatRoomId) {
 //        Date now = DateUtil.getNow();
@@ -46,30 +44,39 @@ public class MealmateService {
 //        // cookie.setMaxAge(0)을 통해 쿠키 삭제 유;
 //    }
 
-    public void confirm(String senderId, FeedbackDto feedbackDto, String roomId, Long chatPeriodId) {
+    public void confirm(String senderId, String receiverId, FeedbackDto feedbackDto, String roomId, Long chatPeriodId) {
         String confirmMessage = feedbackDto.getFeedbackMention();
         int feedbackMileage = feedbackDto.getMileage();
-        Date now = DateUtil.getNow();
-        MealMate mealMate = mealMateRepository.findActiveMealMateByGiverIdAndChatRoomId(senderId, roomId).orElseThrow(() -> new RuntimeException("밀 메이트가 없습니다"));
-        Member receiver = memberRepository.findById(mealMate.getReceiverId()).orElse(null);
+        LocalDateTime now = LocalDateTime.now();
+        MealMate giver = mealMateRepository.findActiveMealMateByGiverIdAndChatRoomId(senderId, roomId).orElseThrow(() -> new RuntimeException("밀 메이트가 없습니다"));
+        MealMate receiver = mealMateRepository.findActiveMealMateByGiverIdAndChatRoomId(senderId, roomId).orElseThrow(() -> new RuntimeException("밀 메이트가 없습니다"));
 
-        FeedbackHistory feedbackHistory = mealMate.confirm(confirmMessage, now, feedbackMileage);
+        ChatPeriod chatPeriod = chatPeriodRepository.findById(chatPeriodId).orElseThrow(() -> new RuntimeException(""));
+        FeedbackHistory feedbackHistory = FeedbackHistory.of(confirmMessage, giver, receiver, chatPeriod, now, feedbackMileage);
         feedbackHistoryRepository.save(feedbackHistory);
 
-        MileageHistory latestMileageHistory = mileageHistoryRepository.findFirstByMemberOrderByDateDesc(receiver);
-        MileageHistory newMileageHistory = latestMileageHistory.createNewHistory(feedbackHistory.getFeedbackMileage(), MileageChangeReason.FEEDBACK, feedbackHistory.getFeedBackHistoryId(), now);
+        MileageHistory latestMileageHistory = mileageHistoryRepository.findFirstByMemberOrderByDateDesc(receiver.getMember());
+        MileageHistory newMileageHistory = latestMileageHistory.createHistory(feedbackHistory.getFeedbackMileage(), MileageChangeReason.FEEDBACK, feedbackHistory, now);
         mileageHistoryRepository.save(newMileageHistory);
     }
 
-    public void addChatPeriod(String giverId, ChatPeriodDto chatPeriodDto) {
-        MealMate mealMate = mealMateRepository.findActiveMealmateByGiverId(giverId).orElse(null);
-        mealMate.addChatPeriod(chatPeriodDto.getStartHour(), chatPeriodDto.getStartMinute(), chatPeriodDto.getEndHour(), chatPeriodDto.getEndMinute());
-        // chatRepository.save(chatPeriod);
+    protected ChatRoom voteComplete(String chatRoomId, int voteId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 업습니다"));
+        Vote vote = voteRepository.findById(voteId).orElseThrow(() -> new RuntimeException(""));
+        Long totalMember = mealMateRepository.countActiveMealmateByChatRoomId(chatRoomId);
+        vote.complete(totalMember);
+        return chatRoom;
+    }
+    public void addChatPeriod(String chatRoomId, int voteId, ChatPeriodDto chatPeriodDto) {
+        ChatRoom chatRoom = voteComplete(chatRoomId, voteId);
+        // insert cascade?
+        chatRoom.addChatPeriod(chatPeriodDto.getStartHour(), chatPeriodDto.getStartMinute(), chatPeriodDto.getEndHour(), chatPeriodDto.getEndMinute());
     }
 
-    public void deleteChatPeriod(String giverId, Long chatPeriodId) {
-        MealMate mealMate = mealMateRepository.findActiveMealmateByGiverId(giverId).orElse(null);
-        mealMate.deleteChatPeriod(chatPeriodId);
+    public void deleteChatPeriod(String chatRoomId, int voteId, Long chatPeriodId) {
+        ChatRoom chatRoom = voteComplete(chatRoomId, voteId);
+        // delete cascade?
+        chatRoom.deleteChatPeriod(chatPeriodId);
     }
 
     public void saveChatMessage(String chatMessage, String chatRoomId, String giverId) {

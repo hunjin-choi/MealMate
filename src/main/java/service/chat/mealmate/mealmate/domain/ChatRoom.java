@@ -49,22 +49,12 @@ public class ChatRoom {
         return chatPeriod;
     }
 
-    private ChatPeriod addChatPeriod() {
-
-    }
     // 24시간을 넘어가면 문제임
     // 임시채팅시간대에 피드백을 하면 문제임
     // 값을 반환하는 이유는 jwt 만들 때 만료시간 설정할 때 사용하기 위함
-    public ChatPeriod addTempChatPeriod() {
-        if (!this.chatPeriodList.isEmpty()) return chatPeriodList.get(0);
-        Date now = DateUtil.getNow();
-        int hour = DateUtil.getHour(now);
-        int minute = DateUtil.getMinute(now);
-        Date expiredAt = new Date(now.getTime() + 24 * 60 * 60 * 1000L);
-        int expiredHour = DateUtil.getHour(expiredAt);
-        int expiredMinute = DateUtil.getMinute(expiredAt);
-//        chatPeriodList.clear();
-        return addChatPeriod(hour, minute, expiredHour, expiredMinute);
+    public LocalDateTime getTemporalChatPeriod() {
+        if (this.lockedAt != null) throw new RuntimeException("잠금상태의 채팅방에서 임시시간대를 설정할 수 없습니다.");
+        return this.expectedClosedAt;
     }
     public void deleteChatPeriod(Long chatPeriodId) {
         if (this.lockedAt == null) throw new RuntimeException("채팅방이 잠금상태가 아닙니다.");

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import service.chat.mealmate.mealmate.domain.ChatMessage;
 import service.chat.mealmate.mealmate.domain.MealMate;
 
+import javax.persistence.NamedNativeQuery;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,7 +24,8 @@ public interface MealMateRepository extends JpaRepository<MealMate, Long> {
     public Optional<MealMate> findActiveMealMateByGiverIdAndChatRoomId(String giverId, String chatRoomId);
     @Query("select mm from MealMate mm where mm.giverId = :receiverId and mm.actualDisconnectDate is null and mm.chatRoomId = :roomId")
     public Optional<MealMate> findActiveMealmateByReceiverIdAndChatRoomId(String receiverId, String roomId);
-
+    @Query(value = "select count(*) from MealMate as mm where mm.chat_room_id = :chatRoomId and mm.leaved_at is null", nativeQuery = true)
+    public Long countActiveMealmateByChatRoomId(String chatRoomId);
     @Query("select count(mm) from MealMate mm where mm.giverId = :giverId and mm.actualDisconnectDate is null and mm.chatRoomId <> :roomId")
     public Long countMemberAttendOtherMealmate(String giverId, String roomId);
 

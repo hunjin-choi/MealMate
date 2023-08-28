@@ -4,9 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import service.chat.mealmate.mealmate.domain.FeedbackHistory;
+import service.chat.mealmate.mealmate.domain.MileageObject;
 import service.chat.mealmate.member.domain.Member;
 
 import javax.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity @Builder @NoArgsConstructor @AllArgsConstructor @Getter
@@ -18,7 +22,7 @@ public class MileageHistory {
     private Mileage mileage;
 
     @Temporal(value = TemporalType.TIMESTAMP)
-    private Date date;
+    private LocalDateTime date;
 
     @Enumerated(EnumType.STRING) // index 걸어야 하는데..
     private MileageChangeReason changeReason;
@@ -27,37 +31,36 @@ public class MileageHistory {
     @ManyToOne
     private Member member;
 
-//    @OneToOne()
+    @OneToOne()
     @JoinColumn(name = "feedback_history_id")
-    private Long feedBackHistoryId = null;
+    private FeedbackHistory feedBackHistory = null;
 
-//    @OneToOne()
-    @JoinColumn(name = "orders_id")
-    private Long ordersId = null;
-
+    @OneToOne
     @JoinColumn(name = "event_id")
-    private Long eventId = null;
+    private Event event = null;
 
-    public MileageHistory(Mileage mileage, Date date, MileageChangeReason changeReason, Member member, Long fk) {
+    public MileageHistory(Member member, int mileage, LocalDateTime date, MileageChangeReason changeReason) {
+        if (changeReason != MileageChangeReason.INIT) throw new RuntimeException("적절하지 않은 MileageChangeReason 입니다.");
+        this.member = member;
+        this.changeReason = changeReason;
+        this.mileage = new Mileage(mileage);
+    }
+    protected MileageHistory(Mileage mileage, LocalDateTime date, MileageChangeReason changeReason, Member member, MileageObject object) {
         this.mileage = mileage;
         this.date = date;
         this.member = member;
         this.changeReason = changeReason;
-        if (changeReason == MileageChangeReason.INIT) {
-            this.ordersId = null; this.feedBackHistoryId = null; this.eventId = null;
-        } else if (changeReason == MileageChangeReason.FEEDBACK) {
-            this.ordersId = null; this.feedBackHistoryId = fk; this.eventId = null;
-        } else if (changeReason == MileageChangeReason.PRODUCT_ORDER) {
-            this.ordersId = fk; this.feedBackHistoryId = null; this.eventId = null;
+        if (changeReason == MileageChangeReason.FEEDBACK) {
+            this.feedBackHistory = (FeedbackHistory) object; this.event = null;
         } else if (changeReason == MileageChangeReason.EVENT) {
-            this.ordersId = null; this.feedBackHistoryId = null; this.eventId = fk;
-        }else {
+            this.feedBackHistory = null; this.event = (Event) object;
+        }else { // INIT은 여기로 오게 됩니다
             throw new RuntimeException("적절하지 않은 MileageChangeReason 입니다.");
         }
     }
 
-    public MileageHistory createNewHistory(Integer unitMileage, MileageChangeReason mileageChangeReason, Long fk, Date now) {
-        Mileage mileage = this.mileage.createNewMileage(unitMileage);
-        return new MileageHistory(mileage, now, mileageChangeReason, this.member, fk);
+    public MileageHistory createHistory(Integer unitMileage, MileageChangeReason mileageChangeReason, MileageObject object, LocalDateTime date) {
+        Mileage mileage = this.mileage.createMileage(unitMileage);
+        return new MileageHistory(mileage, date, mileageChangeReason, this.member, object);
     }
 }
