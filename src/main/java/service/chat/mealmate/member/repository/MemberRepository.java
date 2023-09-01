@@ -14,6 +14,7 @@ public interface MemberRepository extends JpaRepository<Member, String> {
     Optional<Member> findFirstByName(String name);
     Optional<Member> findByEmail(String email);
 
+    Optional<Member> findByName(String name);
 //    @EntityGraph(attributePaths = {"mealMateList"})
 
 

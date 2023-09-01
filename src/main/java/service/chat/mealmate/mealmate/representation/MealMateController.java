@@ -12,7 +12,7 @@ import service.chat.mealmate.mealmate.domain.FeedbackHistory;
 import service.chat.mealmate.mealmate.domain.MealMate;
 import service.chat.mealmate.mealmate.dto.ChatPeriodDto;
 import service.chat.mealmate.mealmate.dto.FeedbackDto;
-import service.chat.mealmate.mealmate.service.MealmateService;
+import service.chat.mealmate.mealmate.service.MealMateService;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -23,24 +23,56 @@ import java.util.List;
 @RequiredArgsConstructor
 @ControllerAdvice
 public class MealMateController {
-    private final MealmateService mealmateService;
+    private final MealMateService mealmateService;
     private final JwtTokenProvider jwtTokenProvider;
-    @GetMapping("/confirm")
-    public void confirm(Long senderId, Long receiverId) {
-        String confirmMessage = "---";
+    @PostMapping("/addPeriod/{roomId}")
+    @ResponseBody
+    public void addChatPeriod(HttpServletRequest httpRequest, @PathVariable("roomId") String roomId, @PathVariable("voteId") Long voteId, @RequestBody ChatPeriodDto chatPeriodDto) throws IOException {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String name = auth.getName();
+        String readWriteToken = httpRequest.getHeader("readWriteToken");
+        String userName = jwtTokenProvider.getUserNameFromJwt(readWriteToken).orElseThrow(() -> new RuntimeException(""));
+        // chatPeriod 개수 체크, chatPeriod 겹치지 않는지 체크
+        // find mealmate -> add ChatPeriod
+        mealmateService.addChatPeriod(name, voteId, chatPeriodDto);
+    }
+
+    @GetMapping("/deletePeriod/{roomId}/{voteId}/{chatPeriodId}")
+    @ResponseBody
+    public void deleteChatPeriod(HttpServletRequest httpRequest, @PathVariable("roomId") String roomId, @PathVariable("voteId") Long voteId, @PathVariable("chatPeriodId") Long chatPeriodId) throws IOException {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String name = auth.getName();
+        String readWriteToken = httpRequest.getHeader("readWriteToken");
+        String userName = jwtTokenProvider.getUserNameFromJwt(readWriteToken).orElseThrow(() -> new RuntimeException(""));
+        mealmateService.deleteChatPeriod(name, voteId, chatPeriodId);
+    }
+
+    @PostMapping("/feedback/{roomId}")
+    @ResponseBody
+    public void addFeedback(HttpServletRequest httpRequest, @PathVariable("roomId") String roomId, @PathVariable("voteId") Long voteId, @RequestBody FeedbackDto feedbackDto) throws IOException {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String senderName = auth.getName();
+        String readWriteToken = httpRequest.getHeader("readWriteToken");
+        String userName = jwtTokenProvider.getUserNameFromJwt(readWriteToken).orElseThrow(() -> new RuntimeException(""));
+        String roomIdFromJwt = jwtTokenProvider.getChatRoomIdFromJWT(readWriteToken).orElseThrow(() -> new RuntimeException(""));
+        if (!roomIdFromJwt.equals(roomId)) throw new RuntimeException("");
+        Long chatPeriodId = jwtTokenProvider.getChatPeriodIdFromJWT(readWriteToken).orElseThrow(() -> new RuntimeException(""));
+        // chatPeriod 개수 체크, chatPeriod 겹치지 않는지 체크
+        // find mealmate -> add ChatPeriod
+        mealmateService.feedback(senderName, feedbackDto.getReceiverName(), feedbackDto, roomId, chatPeriodId);
     }
 
     @GetMapping("/list")
-    public String findMealmate(Model model) {
+    public String findMealMates(Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String name = auth.getName();
-        List<MealMate> mealMateList = mealmateService.findALlMealmate(name);
+        List<MealMate> mealMateList = mealmateService.getMealMates(name);
         model.addAttribute("mealmateList", mealMateList);
         return "mealmate/mealmateList";
     }
     @GetMapping("/feedback/history/{mealmateId}")
-    public String findMileageHistory(Model model, @PathVariable("mealmateId") Long mealmateId) {
-        List<FeedbackHistory> feedbackList = mealmateService.findAllFeedbackHistory(mealmateId);
+    public String findReceivedFeedbackHistories(Model model, @PathVariable("mealmateId") Long mealmateId) {
+        List<FeedbackHistory> feedbackList = mealmateService.getReceivedFeedbackHistories(mealmateId);
         model.addAttribute("feedbackList", feedbackList);
         return "mealmate/feedbackList";
     }
@@ -50,46 +82,9 @@ public class MealMateController {
     public List<ChatPeriodDto> findChatPeriod(Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String name = auth.getName();
-        List<ChatPeriod> chatPeriodList = mealmateService.findAllChatPeriod(name);
+        List<ChatPeriod> chatPeriodList = mealmateService.getChatPeriods(name);
         return ChatPeriodDto.entityToDtoList(chatPeriodList);
 //        model.addAttribute("chatPeriodList", chatPeriodList);
 //        return "mealmate/chatPeriodList";
-    }
-
-    @PostMapping("/addPeriod/{roomId}")
-    @ResponseBody
-    public void addChatPeriod(HttpServletRequest httpRequest, @PathVariable("roomId") String roomId, @RequestBody ChatPeriodDto chatPeriodDto) throws IOException {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String name = auth.getName();
-        String readWriteToken = httpRequest.getHeader("readWriteToken");
-        String userName = jwtTokenProvider.getUserNameFromJwt(readWriteToken).orElseThrow(() -> new RuntimeException(""));
-        // chatPeriod 개수 체크, chatPeriod 겹치지 않는지 체크
-        // find mealmate -> add ChatPeriod
-        mealmateService.addChatPeriod(name, chatPeriodDto);
-    }
-
-    @GetMapping("/deletePeriod/{roomId}/{chatPeriodId}")
-    @ResponseBody
-    public void deleteChatPeriod(HttpServletRequest httpRequest, @PathVariable("roomId") String roomId, @PathVariable("chatPeriodId") Long chatPeriodId) throws IOException {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String name = auth.getName();
-        String readWriteToken = httpRequest.getHeader("readWriteToken");
-        String userName = jwtTokenProvider.getUserNameFromJwt(readWriteToken).orElseThrow(() -> new RuntimeException(""));
-        mealmateService.deleteChatPeriod(name, chatPeriodId);
-    }
-
-    @PostMapping("/feedback/{roomId}")
-    @ResponseBody
-    public void addFeedback(HttpServletRequest httpRequest, @PathVariable("roomId") String roomId, @RequestBody FeedbackDto feedbackDto) throws IOException {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String name = auth.getName();
-        String readWriteToken = httpRequest.getHeader("readWriteToken");
-        String userName = jwtTokenProvider.getUserNameFromJwt(readWriteToken).orElseThrow(() -> new RuntimeException(""));
-        String roomIdFromJwt = jwtTokenProvider.getChatRoomIdFromJWT(readWriteToken).orElseThrow(() -> new RuntimeException(""));
-        if (!roomIdFromJwt.equals(roomId)) throw new RuntimeException("");
-        Long chatPeriodId = jwtTokenProvider.getChatPeriodIdFromJWT(readWriteToken).orElseThrow(() -> new RuntimeException(""));
-        // chatPeriod 개수 체크, chatPeriod 겹치지 않는지 체크
-        // find mealmate -> add ChatPeriod
-        mealmateService.confirm(name, feedbackDto, roomId, chatPeriodId);
     }
 }

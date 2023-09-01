@@ -18,7 +18,7 @@ import service.chat.mealmate.mealmate.domain.ChatPeriod;
 import service.chat.mealmate.mealmate.domain.MealMate;
 import service.chat.mealmate.mealmate.repository.ChatMessageRepository;
 import service.chat.mealmate.mealmate.repository.MealMateRepository;
-import service.chat.mealmate.mealmate.service.MealmateService;
+import service.chat.mealmate.mealmate.service.MealMateService;
 import service.chat.mealmate.utils.DateUtil;
 
 import javax.servlet.http.Cookie;
@@ -35,7 +35,7 @@ import java.util.List;
 public class ChatRoomController {
     private final ChatRoomRepository chatRoomRepository;
     private final MealMateRepository mealMateRepository;
-    private final MealmateService mealmateService;
+    private final MealMateService mealmateService;
     private final JwtTokenProvider jwtTokenProvider;
     private final ChatMessageRepository chatMessageRepository;
     // 채팅 리스트 화면
@@ -151,7 +151,7 @@ public class ChatRoomController {
                 List<ChatPeriod> chatPeriodList = mealMate.getChatPeriodList();
                 for (ChatPeriod chatPeriod : chatPeriodList) {
                     Integer minutes = null;
-                    if ((minutes = chatPeriod.calculateRemainPeriod(DateUtil.getNow())) != null) {
+                    if ((minutes = chatPeriod.calculateRemainMinute(DateUtil.getNow())) != null) {
                         expiredDate = DateUtil.addMinute(DateUtil.getNow(), minutes);
                         chatPeriodId = chatPeriod.getChatPeriodId();
                         readWriteJWT = jwtTokenProvider.generateReadWriteToken(name, roomId, chatPeriodId, lst, expiredDate);

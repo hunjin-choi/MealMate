@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.context.request.RequestContextHolder;
 import service.chat.mealmate.chat.dto.ChatMessageDto;
 import service.chat.mealmate.chat.jwt.JwtTokenProvider;
-import service.chat.mealmate.mealmate.service.MealmateService;
+import service.chat.mealmate.mealmate.service.MealMateService;
 
 import javax.servlet.http.HttpServletRequest;
 import java.security.Principal;
@@ -22,7 +22,7 @@ public class ChatController {
     private final RedisTemplate<String, Object> redisTemplate;
     private final JwtTokenProvider jwtTokenProvider;
     private final ChannelTopic channelTopic;
-    private final MealmateService mealmateService;
+    private final MealMateService mealmateService;
     /**
      * websocket "/pub/chat/message"로 들어오는 메시징을 처리한다.
      */

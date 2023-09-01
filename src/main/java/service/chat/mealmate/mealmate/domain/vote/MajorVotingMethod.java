@@ -1,4 +1,6 @@
-package service.chat.mealmate.mealmate.domain;
+package service.chat.mealmate.mealmate.domain.vote;
+
+import service.chat.mealmate.mealmate.domain.vote.VotingMethod;
 
 public class MajorVotingMethod implements VotingMethod {
     @Override

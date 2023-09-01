@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -16,12 +18,12 @@ public class ChatMessage {
     private String message;
 
     @Temporal(value = TemporalType.DATE)
-    private Date sentAt;
+    private LocalDateTime sentAt;
 
     @ManyToOne()
     private MealMate mealMate;
 
-    public ChatMessage(String message, Date date, MealMate mealMate) {
+    public ChatMessage(String message, LocalDateTime date, MealMate mealMate) {
         this.message = message;
         this.sentAt = date;
         this.mealMate = mealMate;

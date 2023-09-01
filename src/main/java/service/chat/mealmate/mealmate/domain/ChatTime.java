@@ -1,51 +1,71 @@
 package service.chat.mealmate.mealmate.domain;
 
 import lombok.*;
-import service.chat.mealmate.utils.DateUtil;
 
 import javax.persistence.Embeddable;
-import java.util.Date;
+import java.time.LocalTime;
 
 @Embeddable @Getter @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ChatTime {
     private int hour;
-    private int minutes;
+    private int minute;
 
-    public ChatTime(int hour, int minutes) {
+    public ChatTime(int hour, int minute) {
         if (hour < 0 || hour > 23) throw new RuntimeException("");
-        if (minutes <0 || minutes >60) throw new RuntimeException("");
+        if (minute <0 || minute >60) throw new RuntimeException("");
         this.hour = hour;
-        this.minutes = minutes;
+        this.minute = minute;
     }
 
     // ChatTime 객체의 시간 차이 계산
     public boolean isLessThanMaxPeriod(ChatTime other, int maxPeriod) {
-        int thisTimeInMinutes = this.hour * 60 + this.minutes;
-        int otherTimeInMinutes = other.hour * 60 + other.minutes;
+        int thisTimeInMinutes = this.hour * 60 + this.minute;
+        int otherTimeInMinutes = other.hour * 60 + other.minute;
 
         int diff = Math.abs(thisTimeInMinutes - otherTimeInMinutes);
         return diff <= maxPeriod;
     }
 
-    public boolean isMoreThan(Date other) {
-        int hour = DateUtil.getHour(other);
-        int minutes = DateUtil.getMinute(other);
-        int thisTimeInMinutes = this.hour * 60 + this.minutes;
+    public boolean isMoreThan(LocalTime other) {
+        int hour = other.getHour();
+        int minutes = other.getMinute();
+        int thisTimeInMinutes = this.hour * 60 + this.minute;
         int otherTimeInMinutes = hour * 60 + minutes;
         return thisTimeInMinutes >= otherTimeInMinutes;
     }
-    public boolean isLessThan(Date other) {
-        int hour = DateUtil.getHour(other);
-        int minutes = DateUtil.getMinute(other);
-        int thisTimeInMinutes = this.hour * 60 + this.minutes;
+    public boolean isMoreThan(ChatTime other) {
+        int hour = other.getHour();
+        int minutes = other.getMinute();
+        int thisTimeInMinutes = this.hour * 60 + this.minute;
+        int otherTimeInMinutes = hour * 60 + minutes;
+        return thisTimeInMinutes >= otherTimeInMinutes;
+    }
+    public boolean isLessThan(LocalTime other) {
+        int hour = other.getHour();
+        int minutes = other.getMinute();
+        int thisTimeInMinutes = this.hour * 60 + this.minute;
         int otherTimeInMinutes = hour * 60 + minutes;
         return thisTimeInMinutes <= otherTimeInMinutes;
     }
+    public boolean isLessThan(ChatTime other) {
+        int hour = other.getHour();
+        int minutes = other.getMinute();
+        int thisTimeInMinutes = this.hour * 60 + this.minute;
+        int otherTimeInMinutes = hour * 60 + minutes;
+        return thisTimeInMinutes <= otherTimeInMinutes;
+    }
+    public int calculateDiffByMinute(LocalTime other) {
+        int hour = other.getHour();
+        int minutes = other.getMinute();
+        int thisTimeInMinutes = this.hour * 60 + this.minute;
+        int otherTimeInMinutes = hour * 60 + minutes;
 
-    public int calculateDiffByMinute(Date other) {
-        int hour = DateUtil.getHour(other);
-        int minutes = DateUtil.getMinute(other);
-        int thisTimeInMinutes = this.hour * 60 + this.minutes;
+        return Math.abs(thisTimeInMinutes - otherTimeInMinutes);
+    }
+    public int calculateDiffByMinute(ChatTime other) {
+        int hour = other.getHour();
+        int minutes = other.getMinute();
+        int thisTimeInMinutes = this.hour * 60 + this.minute;
         int otherTimeInMinutes = hour * 60 + minutes;
 
         return Math.abs(thisTimeInMinutes - otherTimeInMinutes);

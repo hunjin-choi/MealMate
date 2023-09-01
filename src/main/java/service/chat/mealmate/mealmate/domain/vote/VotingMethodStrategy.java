@@ -1,5 +1,8 @@
-package service.chat.mealmate.mealmate.domain;
+package service.chat.mealmate.mealmate.domain.vote;
 
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;

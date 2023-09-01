@@ -1,19 +1,16 @@
 package service.chat.mealmate.mealmate.domain;
 
 import lombok.*;
-import service.chat.mealmate.mileageHistory.domain.Mileage;
-import service.chat.mealmate.utils.DateUtil;
 
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Date;
 
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"feedback_date", "chat_period_id", "giver_id", "receiver_id"}))
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class FeedbackHistory implements MileageObject{
+public class FeedbackHistory implements MileageHistoryReferable {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long feedbackHistoryId;
 
@@ -50,7 +47,7 @@ public class FeedbackHistory implements MileageObject{
         this.chatPeriod = chatPeriod;
         this.feedbackDate = feedBackDate;
         this.feedBackTime = feedbackTime;
-        if (feedbackMileage > this.maxFeedbackMileage || feedbackMileage < this.minFeedbackMileage) throw new RuntimeException("");
+        if (feedbackMileage > this.maxFeedbackMileage || feedbackMileage < this.minFeedbackMileage) throw new RuntimeException("적절한 마일리지 값이 아닙니다.");
         this.feedbackMileage = feedbackMileage;
     }
 

@@ -17,7 +17,7 @@ import java.util.List;
 public class Member {
     @Id()
     private String memberId;
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String name;
 
     @Column(nullable = false)

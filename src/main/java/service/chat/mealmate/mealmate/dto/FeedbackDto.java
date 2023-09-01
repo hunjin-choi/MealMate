@@ -6,4 +6,5 @@ import lombok.Getter;
 public class FeedbackDto {
     private String feedbackMention;
     private int mileage;
+    private String receiverName;
 }

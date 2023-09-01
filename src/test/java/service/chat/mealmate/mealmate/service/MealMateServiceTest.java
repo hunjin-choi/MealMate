@@ -4,24 +4,16 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.commons.annotation.Testable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import service.chat.mealmate.mealmate.domain.ChatMessage;
-import service.chat.mealmate.mealmate.domain.FeedbackHistory;
 import service.chat.mealmate.mealmate.repository.FeedbackHistoryRepository;
-import service.chat.mealmate.mealmate.domain.MealMate;
 import service.chat.mealmate.mealmate.repository.MealMateRepository;
 import service.chat.mealmate.member.domain.Member;
 import service.chat.mealmate.member.repository.MemberRepository;
 import service.chat.mealmate.member.service.MemberService;
-import service.chat.mealmate.mileageHistory.domain.MileageChangeReason;
-import service.chat.mealmate.mileageHistory.domain.MileageHistory;
 import service.chat.mealmate.mileageHistory.repository.MileageHistoryRepository;
 
 import javax.persistence.EntityManager;
@@ -31,7 +23,7 @@ import java.util.List;
 @SpringBootTest @Transactional
 class MealMateServiceTest {
     @Autowired
-    private MealmateService mealMateService;
+    private MealMateService mealMateService;
     @Autowired
     private MemberService memberService;
     @Autowired
@@ -67,7 +59,7 @@ class MealMateServiceTest {
         mealMateService.connectMealMate(lhs_m1.getMemberId(), rhs_m1.getMemberId(), chatRoomId);
         mealMateService.saveChatMessage(chatMessage, chatRoomId, lhs_m1.getMemberId());
         // then
-        List<ChatMessage> content = mealMateService.findChatMessagePageable(chatRoomId, lhs_m1.getMemberId(), 0, 1);
+        List<ChatMessage> content = mealMateService.getChatMessagesPageable(chatRoomId, lhs_m1.getMemberId(), 0, 1);
         Assertions.assertEquals(1, content.size());
         Assertions.assertEquals(chatMessage, content.get(0).getMessage());
     }

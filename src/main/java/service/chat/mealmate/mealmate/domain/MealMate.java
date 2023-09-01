@@ -3,10 +3,15 @@ package service.chat.mealmate.mealmate.domain;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import service.chat.mealmate.mealmate.domain.vote.Vote;
+import service.chat.mealmate.mealmate.domain.vote.Voter;
+import service.chat.mealmate.mealmate.domain.vote.VoterStatus;
+import service.chat.mealmate.mealmate.domain.vote.VotingMethodType;
 import service.chat.mealmate.member.domain.Member;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -21,13 +26,13 @@ public class MealMate implements Serializable {
     private Long mealmateId;
 
     @Temporal(value = TemporalType.TIMESTAMP)
-    private Date joinedAt;
+    private LocalDateTime joinedAt;
 
     // disconnect '예정' 날짜
     // 정해진 시간이 지나도록 disconnect 버튼을 클릭하지 않는 사람은 어떻게 처리?
     // 스케쥴러 돌려야 하나?
     @Temporal(value = TemporalType.TIMESTAMP)
-    private Date leavedAt = null;
+    private LocalDateTime leavedAt = null;
     // 실제 disconnect 버튼을 클릭한 날짜 <- isActive 컬럼보다는 이게 더 많은 정보를 포함하기에 확장성이 있음
 
     @ManyToOne()
@@ -37,16 +42,19 @@ public class MealMate implements Serializable {
 
     @OneToMany(mappedBy =  "mealMate")
     private List<Voter> voterList = new ArrayList<Voter>();
-    public MealMate(Member member, ChatRoom chatRoom, Date joinedAt) {
+    public MealMate(Member member, ChatRoom chatRoom, LocalDateTime joinedAt) {
         this.member = member;
         this.chatRoom = chatRoom;
         this.joinedAt = joinedAt;
         chatRoom.addPersonnel();
     }
-    public void leave(Date leaved_at) {
-        this.leavedAt = leaved_at;
+    public void leave(LocalDateTime leavedAt) {
+        this.leavedAt = leavedAt;
     }
 
+    public boolean isActive() {
+        return this.leavedAt == null;
+    }
     public Voter createVoteAndVoting(String title, String content, VotingMethodType votingMethodType, VoterStatus voterStatus) {
         Vote vote = new Vote(title, content, votingMethodType);
         // cascade option
@@ -58,5 +66,11 @@ public class MealMate implements Serializable {
         // 중복체크를 이 함수밖인 service 계층에서 select문을 통해 할 것인가?
         Voter voter = new Voter(vote, this, voterStatus, false);
         return voter;
+    }
+
+    public ChatMessage addChatMessage(String message) {
+        // chatMesageList에 add 하지 않는 이유: 불필요한 데이터 load
+        return new ChatMessage(message, LocalDateTime.now(), this);
+
     }
 }

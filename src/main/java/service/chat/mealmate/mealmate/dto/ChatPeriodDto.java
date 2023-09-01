@@ -14,21 +14,19 @@ public class ChatPeriodDto {
     private int startMinute;
     private int endHour;
     private int endMinute;
-    private Date latestFeedbackDate;
 
 
-    public ChatPeriodDto(Long chatPeriodId, int startHour, int startMinute, int endHour, int endMinute, Date latestFeedbackDate) {
+    public ChatPeriodDto(Long chatPeriodId, int startHour, int startMinute, int endHour, int endMinute) {
         this.chatPeriodId = chatPeriodId;
         this.startHour = startHour;
         this.startMinute = startMinute;
         this.endHour = endHour;
         this.endMinute = endMinute;
-        this.latestFeedbackDate = latestFeedbackDate;
     }
 
     static public ChatPeriodDto entityToDto(ChatPeriod chatPeriod) {
         return new ChatPeriodDto(chatPeriod.getChatPeriodId(), chatPeriod.getStartTime().getHour(), chatPeriod.getEndTime().getHour()
-        , chatPeriod.getStartTime().getMinutes(), chatPeriod.getEndTime().getMinutes(), chatPeriod.getLatestFeedbackDate());
+        , chatPeriod.getStartTime().getMinute(), chatPeriod.getEndTime().getMinute());
     }
 
     static public List<ChatPeriodDto> entityToDtoList(List<ChatPeriod> chatPeriodList) {

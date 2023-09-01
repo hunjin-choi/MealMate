@@ -1,8 +1,9 @@
-package service.chat.mealmate.mealmate.domain;
+package service.chat.mealmate.mealmate.domain.vote;
 
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import service.chat.mealmate.mealmate.domain.MealMate;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;

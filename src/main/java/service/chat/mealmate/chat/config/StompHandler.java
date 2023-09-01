@@ -3,25 +3,13 @@ package service.chat.mealmate.chat.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.server.ServerHttpRequest;
-import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
-import org.springframework.messaging.support.MessageBuilder;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.socket.WebSocketHandler;
-import org.springframework.web.socket.server.HandshakeInterceptor;
 import service.chat.mealmate.chat.jwt.JwtTokenProvider;
 import service.chat.mealmate.chat.service.ChatService;
 import service.chat.mealmate.mealmate.domain.ChatPeriod;
@@ -116,7 +104,7 @@ public class StompHandler implements ChannelInterceptor {
                 List<ChatPeriod> chatPeriodList = mealMate.getChatPeriodList();
                 for (ChatPeriod chatPeriod : chatPeriodList) {
                     Integer minutes = null;
-                    if ((minutes = chatPeriod.calculateRemainPeriod(DateUtil.getNow())) != null) {
+                    if ((minutes = chatPeriod.calculateRemainMinute(DateUtil.getNow())) != null) {
                         expiredDate = DateUtil.addMinute(DateUtil.getNow(), minutes);
                         chatPeriodId = chatPeriod.getChatPeriodId();
                     }
@@ -164,7 +152,7 @@ public class StompHandler implements ChannelInterceptor {
                     List<ChatPeriod> chatPeriodList = mealMate.getChatPeriodList();
                     for (ChatPeriod chatPeriod : chatPeriodList) {
                         Integer minutes = null;
-                        if ((minutes = chatPeriod.calculateRemainPeriod(DateUtil.getNow())) != null) {
+                        if ((minutes = chatPeriod.calculateRemainMinute(DateUtil.getNow())) != null) {
                             expiredDate = DateUtil.addMinute(DateUtil.getNow(), minutes);
                             chatPeriodId = chatPeriod.getChatPeriodId();
                         }
@@ -205,7 +193,7 @@ public class StompHandler implements ChannelInterceptor {
                     List<ChatPeriod> chatPeriodList = mealMate.getChatPeriodList();
                     for (ChatPeriod chatPeriod : chatPeriodList) {
                         Integer minutes = null;
-                        if ((minutes = chatPeriod.calculateRemainPeriod(DateUtil.getNow())) != null) {
+                        if ((minutes = chatPeriod.calculateRemainMinute(DateUtil.getNow())) != null) {
                             expiredDate = DateUtil.addMinute(DateUtil.getNow(), minutes);
                             chatPeriodId = chatPeriod.getChatPeriodId();
                         }
