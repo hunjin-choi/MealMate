@@ -11,6 +11,7 @@ import java.util.Map;
 @Component
 public class VotingMethodStrategy {
     // hashCode 정의?
+//    private Map<String, VotingMethod> votingMethodMap = new HashMap<>();
     private Map<VotingMethodType, VotingMethod> votingMethodMap = new HashMap<>();
 
     public VotingMethodStrategy() {
@@ -18,8 +19,8 @@ public class VotingMethodStrategy {
         votingMethodMap.put(VotingMethodType.UNANIMOUS, new UnanimousVotingMethod());
         votingMethodMap.put(VotingMethodType.NONE, new NonVotingMethod());
         for (VotingMethodType votingMethodType : VotingMethodType.values()) {
-            if (votingMethodMap.containsKey(votingMethodType) != false) {
-                throw new RuntimeException("일부 strategy 설정이 빠졌습니다");
+            if (votingMethodMap.containsKey(votingMethodType) == false) {
+                throw new RuntimeException("일부 strategy 설정이 빠졌습니다: " + votingMethodType.name());
             }
         }
     }

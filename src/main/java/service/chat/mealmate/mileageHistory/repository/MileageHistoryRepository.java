@@ -8,17 +8,13 @@ import service.chat.mealmate.member.dto.MileageDto;
 import service.chat.mealmate.mileageHistory.domain.MileageHistory;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface MileageHistoryRepository extends JpaRepository<MileageHistory, Long> {
-    public MileageHistory findFirstByMemberOrderByDateDesc(Member member);
-    public Optional<MileageHistory> findFirstByFeedBackHistoryIdOrderByDateDesc(Long feedbackHistoryId);
-    public Long countAllByMember(Member member);
-
-    @Query("select new service.chat.mealmate.member.dto.MileageDto(mh) from MileageHistory mh where mh.member = :member order by mh.date ASC")
+    public MileageHistory findFirstByMemberOrderByCreatedAtDesc(Member member);
+    @Query("select new service.chat.mealmate.member.dto.MileageDto(mh) from MileageHistory mh where mh.member = :member order by mh.createdAt ASC")
     public List<MileageDto> dynamicTest(Member member);
 
-    public List<MileageHistory> findByMemberOrderByDateAsc(Member member);
+    public List<MileageHistory> findByMemberOrderByCreatedAtAsc(Member member);
 
 }

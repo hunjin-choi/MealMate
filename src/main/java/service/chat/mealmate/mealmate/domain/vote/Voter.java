@@ -8,9 +8,11 @@ import service.chat.mealmate.mealmate.domain.MealMate;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Entity @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Voter {
+public class Voter implements Serializable {
     @ManyToOne @Id
     private Vote vote;
     @ManyToOne @Id
@@ -19,6 +21,7 @@ public class Voter {
     private VoterStatus voterStatus;
     private Boolean isCreator;
 
+    private LocalDateTime votedAt;
     public Voter(Vote vote, MealMate mealMate, VoterStatus voterStatus, Boolean isCreator) {
         this.vote = vote;
         this.mealMate = mealMate;

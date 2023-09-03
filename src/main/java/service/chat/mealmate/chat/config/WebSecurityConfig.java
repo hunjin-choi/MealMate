@@ -47,15 +47,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.inMemoryAuthentication()
                 .withUser("hunjin")
-                .password("{noop}1234")
+                .password("{noop}hunjin")
                 .roles(Role.USER.name())
                 .and()
                 .withUser("test")
-                .password("{noop}1234")
+                .password("{noop}test")
                 .roles(Role.USER.name())
                 .and()
                 .withUser("guest")
-                .password("{noop}1234")
+                .password("{noop}guest")
                 .roles(Role.GUEST.name());
         memberService.signUp("hunjin", Role.USER);
         memberService.signUp("test", Role.USER);

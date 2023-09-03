@@ -8,7 +8,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.context.request.RequestContextHolder;
-import service.chat.mealmate.chat.dto.ChatMessageDto;
+import service.chat.mealmate.chat.dto.RedisChatMessageDto;
 import service.chat.mealmate.chat.jwt.JwtTokenProvider;
 import service.chat.mealmate.mealmate.service.MealMateService;
 
@@ -18,7 +18,7 @@ import java.security.Principal;
 @RequiredArgsConstructor
 @Controller
 @ControllerAdvice
-public class ChatController {
+public class RedisChatController {
     private final RedisTemplate<String, Object> redisTemplate;
     private final JwtTokenProvider jwtTokenProvider;
     private final ChannelTopic channelTopic;
@@ -27,7 +27,7 @@ public class ChatController {
      * websocket "/pub/chat/message"로 들어오는 메시징을 처리한다.
      */
     @MessageMapping("/chat/message/{roomId}") // 아래에서 인가 로직 부분은 나중에 AOP 방식이나 혹은 Security 쪽에서 처리하게 바꿀 예정
-    public void message(ChatMessageDto message, @Header("token") String token, Principal principal) {
+    public void message(RedisChatMessageDto message, @Header("token") String token, Principal principal) {
         // 아래에 httpServletRequest 객체의 참조값이 null이 나오는 이유 설명
         HttpServletRequest requestAttributes = (HttpServletRequest) RequestContextHolder.getRequestAttributes();
         String nickname = jwtTokenProvider.getUserNameFromJwt(token).orElseThrow(() -> new RuntimeException(""));
@@ -36,7 +36,7 @@ public class ChatController {
         if (nickname == null) nickname = "TempNickname";
         message.setSender(nickname);
         // 채팅방 입장시에는 대화명과 메시지를 자동으로 세팅한다.
-        if (ChatMessageDto.MessageType.ENTER.equals(message.getType())) {
+        if (RedisChatMessageDto.MessageType.ENTER.equals(message.getType())) {
             message.setSender("[알림]");
             message.setMessage(nickname + "님이 입장하셨습니다.");
         } else {

@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
-import service.chat.mealmate.chat.dto.ChatMessageDto;
+import service.chat.mealmate.chat.dto.RedisChatMessageDto;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -19,10 +19,10 @@ public class RedisSubscriber{
     public void sendMessage(String publishMessage) {
         try {
             // ChatMessage 객채로 맵핑
-            ChatMessageDto chatMessageDto = objectMapper.readValue(publishMessage, ChatMessageDto.class);
-            System.out.println("chatMessage.getMessage() = " + chatMessageDto.getMessage());
+            RedisChatMessageDto redisChatMessageDto = objectMapper.readValue(publishMessage, RedisChatMessageDto.class);
+            System.out.println("chatMessage.getMessage() = " + redisChatMessageDto.getMessage());
             // 채팅방을 구독한 클라이언트에게 메시지 발송
-            messagingTemplate.convertAndSend("/sub/chat/room/" + chatMessageDto.getRoomId(), chatMessageDto);
+            messagingTemplate.convertAndSend("/sub/chat/room/" + redisChatMessageDto.getRoomId(), redisChatMessageDto);
         } catch (Exception e) {
             log.error("Exception {}", e);
         }

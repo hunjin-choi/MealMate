@@ -9,6 +9,5 @@ import java.util.List;
 
 @Repository
 public interface FeedbackHistoryRepository extends JpaRepository<FeedbackHistory, Long> {
-    public List<FeedbackHistory> findByReceiverAndOrderByFeedbackDate(MealMate mealMate);
-    public Long countAllByMealMate(MealMate mealMate);
+    public List<FeedbackHistory> findByReceiverOrderByFeedbackDateDesc(MealMate mealMate);
 }

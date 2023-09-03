@@ -17,7 +17,6 @@ public class ChatMessage {
 
     private String message;
 
-    @Temporal(value = TemporalType.DATE)
     private LocalDateTime sentAt;
 
     @ManyToOne()

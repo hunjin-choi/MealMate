@@ -16,8 +16,7 @@ import java.util.List;
 @Transactional
 public class ScheduleService {
     private final ChatPeriodRepository chatPeriodRepository;
-
-    @Scheduled(cron = "0 0 1 * * * *")
+    @Scheduled(cron = "0 0 1 * * * ")
     public void chatPeriodSchedule() {
         LocalDate today = LocalDate.now();
         List<ChatPeriod> reservedChatPeriods = chatPeriodRepository.reservedChatPeriodAt(today);

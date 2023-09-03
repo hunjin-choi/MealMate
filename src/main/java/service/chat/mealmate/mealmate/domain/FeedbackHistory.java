@@ -3,6 +3,8 @@ package service.chat.mealmate.mealmate.domain;
 import lombok.*;
 
 import javax.persistence.*;
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -19,22 +21,21 @@ public class FeedbackHistory implements MileageHistoryReferable {
 
     private String feedbackMention;
 
-    @Temporal(value = TemporalType.DATE)
+    @Column(name = "feedback_date")
     private LocalDate feedbackDate;
 
-    @Temporal(value = TemporalType.TIME)
     private LocalTime feedBackTime;
 
     @ManyToOne
-    @Column(name = "giver_id")
+    @JoinColumn(name = "giver_id")
     private MealMate giver;
 
     @ManyToOne
-    @Column(name = "receiver_id")
+    @JoinColumn(name = "receiver_id")
     private MealMate receiver;
 
     @OneToOne(targetEntity = ChatPeriod.class)
-    @Column(name = "chat_period_id")
+    @JoinColumn(name = "chat_period_id")
     private ChatPeriod chatPeriod;
     @Transient
     private int maxFeedbackMileage = 100;

@@ -15,12 +15,9 @@ import java.time.LocalDateTime;
 public class MileageHistory {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long mileageHistoryId;
-
     @Embedded
     private Mileage mileage;
-
-    @Temporal(value = TemporalType.TIMESTAMP)
-    private LocalDateTime date;
+    private LocalDateTime createdAt;
 
     @Enumerated(EnumType.STRING)
     private MileageChangeReason changeReason;
@@ -37,15 +34,16 @@ public class MileageHistory {
     @JoinColumn(name = "event_id")
     private Event event = null;
 
-    public MileageHistory(Member member, int mileage, LocalDateTime date, MileageChangeReason changeReason) {
+    public MileageHistory(Member member, int mileage, LocalDateTime createdAt, MileageChangeReason changeReason) {
         if (changeReason != MileageChangeReason.INIT) throw new RuntimeException("적절하지 않은 MileageChangeReason 입니다.");
         this.member = member;
         this.changeReason = changeReason;
+        this.createdAt = createdAt;
         this.mileage = new Mileage(mileage);
     }
-    protected MileageHistory(Mileage mileage, LocalDateTime date, MileageChangeReason changeReason, Member member, MileageHistoryReferable object) {
+    protected MileageHistory(Mileage mileage, LocalDateTime createdAt, MileageChangeReason changeReason, Member member, MileageHistoryReferable object) {
         this.mileage = mileage;
-        this.date = date;
+        this.createdAt = createdAt;
         this.member = member;
         this.changeReason = changeReason;
         if (changeReason == MileageChangeReason.FEEDBACK) {

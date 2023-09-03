@@ -53,7 +53,7 @@ public class MealMateService {
         FeedbackHistory feedbackHistory = FeedbackHistory.of(feedbackMention, giver, receiver, chatPeriod, now, feedbackMileage);
         feedbackHistoryRepository.save(feedbackHistory);
 
-        MileageHistory latestMileageHistory = mileageHistoryRepository.findFirstByMemberOrderByDateDesc(receiveMember);
+        MileageHistory latestMileageHistory = mileageHistoryRepository.findFirstByMemberOrderByCreatedAtDesc(receiveMember);
         MileageHistory newMileageHistory = latestMileageHistory.createHistory(feedbackHistory.getFeedbackMileage(), MileageChangeReason.FEEDBACK, feedbackHistory, now);
         mileageHistoryRepository.save(newMileageHistory);
     }
@@ -113,7 +113,7 @@ public class MealMateService {
     }
     public List<FeedbackHistory> getReceivedFeedbackHistories(Long mealmateId) {
         MealMate receiver = mealMateRepository.findById(mealmateId).orElseThrow(() -> new RuntimeException(""));
-        return feedbackHistoryRepository.findByReceiverAndOrderByFeedbackDate(receiver);
+        return feedbackHistoryRepository.findByReceiverOrderByFeedbackDateDesc(receiver);
     }
 
     public List<ChatPeriod> getChatPeriods(String chatRoomId) {

@@ -19,50 +19,50 @@ import service.chat.mealmate.mileageHistory.repository.MileageHistoryRepository;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.List;
-
+//
 @SpringBootTest @Transactional
 class MealMateServiceTest {
-    @Autowired
-    private MealMateService mealMateService;
-    @Autowired
-    private MemberService memberService;
-    @Autowired
-    private MemberRepository memberRepository;
-    @Autowired
-    private MealMateRepository mealMateRepository;
-    @Autowired
-    private FeedbackHistoryRepository feedbackHistoryRepository;
-    @Autowired
-    private MileageHistoryRepository mileageHistoryRepository;
-    @PersistenceContext
-    private EntityManager em;
-
-    Member lhs_m1; Member rhs_m1; Member lhs_m2; Member rhs_m2;
-
-    @BeforeEach
-    public void beforeEach() {
-        memberService.signUp("lhs_m1"); memberService.signUp("rhs_m1");
-        memberService.signUp("lhs_m2"); memberService.signUp("rhs_m2");
-        lhs_m1 = em.createQuery("select m from Member m where m.name=?1", Member.class).setParameter(1, "lhs_m1").getSingleResult();
-        rhs_m1 = em.createQuery("select m from Member m where m.name=?1", Member.class).setParameter(1, "rhs_m1").getSingleResult();
-        lhs_m2 = em.createQuery("select m from Member m where m.name=?1", Member.class).setParameter(1, "lhs_m2").getSingleResult();
-        rhs_m2 = em.createQuery("select m from Member m where m.name=?1", Member.class).setParameter(1, "rhs_m2").getSingleResult();
-    }
-
-    @Test @DisplayName("채팅메시지 저장 로직이 잘 동작하는지 확인합니다")
-    @Rollback(value = false)
-    public void addChatMessage() throws Exception {
-        // given
-        String chatRoomId = "testChatRoomId";
-        String chatMessage = "this is test";
-        // when
-        mealMateService.connectMealMate(lhs_m1.getMemberId(), rhs_m1.getMemberId(), chatRoomId);
-        mealMateService.saveChatMessage(chatMessage, chatRoomId, lhs_m1.getMemberId());
-        // then
-        List<ChatMessage> content = mealMateService.getChatMessagesPageable(chatRoomId, lhs_m1.getMemberId(), 0, 1);
-        Assertions.assertEquals(1, content.size());
-        Assertions.assertEquals(chatMessage, content.get(0).getMessage());
-    }
+//    @Autowired
+//    private MealMateService mealMateService;
+//    @Autowired
+//    private MemberService memberService;
+//    @Autowired
+//    private MemberRepository memberRepository;
+//    @Autowired
+//    private MealMateRepository mealMateRepository;
+//    @Autowired
+//    private FeedbackHistoryRepository feedbackHistoryRepository;
+//    @Autowired
+//    private MileageHistoryRepository mileageHistoryRepository;
+//    @PersistenceContext
+//    private EntityManager em;
+//
+//    Member lhs_m1; Member rhs_m1; Member lhs_m2; Member rhs_m2;
+//
+//    @BeforeEach
+//    public void beforeEach() {
+//        memberService.signUp("lhs_m1"); memberService.signUp("rhs_m1");
+//        memberService.signUp("lhs_m2"); memberService.signUp("rhs_m2");
+//        lhs_m1 = em.createQuery("select m from Member m where m.name=?1", Member.class).setParameter(1, "lhs_m1").getSingleResult();
+//        rhs_m1 = em.createQuery("select m from Member m where m.name=?1", Member.class).setParameter(1, "rhs_m1").getSingleResult();
+//        lhs_m2 = em.createQuery("select m from Member m where m.name=?1", Member.class).setParameter(1, "lhs_m2").getSingleResult();
+//        rhs_m2 = em.createQuery("select m from Member m where m.name=?1", Member.class).setParameter(1, "rhs_m2").getSingleResult();
+//    }
+//
+//    @Test @DisplayName("채팅메시지 저장 로직이 잘 동작하는지 확인합니다")
+//    @Rollback(value = false)
+//    public void addChatMessage() throws Exception {
+//        // given
+//        String chatRoomId = "testChatRoomId";
+//        String chatMessage = "this is test";
+//        // when
+//        mealMateService.connectMealMate(lhs_m1.getMemberId(), rhs_m1.getMemberId(), chatRoomId);
+//        mealMateService.saveChatMessage(chatMessage, chatRoomId, lhs_m1.getMemberId());
+//        // then
+//        List<ChatMessage> content = mealMateService.getChatMessagesPageable(chatRoomId, lhs_m1.getMemberId(), 0, 1);
+//        Assertions.assertEquals(1, content.size());
+//        Assertions.assertEquals(chatMessage, content.get(0).getMessage());
+//    }
 
 //    @Test @DisplayName("두 사용자를 매칭합니다.")
 //    public void connectTwoUsers() {

@@ -18,26 +18,26 @@ import java.util.List;
 
 @Entity @Table(uniqueConstraints = {
         // table의 column 이름
-        @UniqueConstraint(name = "unique_index", columnNames = {"mealmate_id", "giver_id", "receiver_id"})
+        @UniqueConstraint(name = "unique_index", columnNames = {"chat_room_id", "member_id"})
 })@Getter @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MealMate implements Serializable {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "mealmate_id")
     private Long mealmateId;
 
-    @Temporal(value = TemporalType.TIMESTAMP)
     private LocalDateTime joinedAt;
 
     // disconnect '예정' 날짜
     // 정해진 시간이 지나도록 disconnect 버튼을 클릭하지 않는 사람은 어떻게 처리?
     // 스케쥴러 돌려야 하나?
-    @Temporal(value = TemporalType.TIMESTAMP)
     private LocalDateTime leavedAt = null;
     // 실제 disconnect 버튼을 클릭한 날짜 <- isActive 컬럼보다는 이게 더 많은 정보를 포함하기에 확장성이 있음
 
     @ManyToOne()
+    @JoinColumn(name = "member_id")
     private Member member;
     @ManyToOne()
+    @JoinColumn(name = "chat_room_id")
     private ChatRoom chatRoom;
 
     @OneToMany(mappedBy =  "mealMate")

@@ -4,16 +4,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import service.chat.mealmate.mealmate.domain.ChatMessage;
-import service.chat.mealmate.mealmate.dto.ChatPeriodDto;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Getter
 @Setter
 @NoArgsConstructor
-public class ChatMessageDto {
+public class RedisChatMessageDto {
     // 메시지 타입 : 입장, 채팅
     public enum MessageType {
         ENTER, JOIN, TALK
@@ -22,26 +21,26 @@ public class ChatMessageDto {
     private String roomId; // 방번호
     private String sender; // 메시지 보낸사람
     private String message; // 메시지
-    private Date date;
+    private LocalDateTime date;
 
-    public ChatMessageDto(String message, Date date) {
+    public RedisChatMessageDto(String message, LocalDateTime date) {
         this.message = message;
         this.date = date;
     }
 
-    public ChatMessageDto(String message, Date date, String sender, String roomId) {
+    public RedisChatMessageDto(String message, LocalDateTime date, String sender, String roomId) {
         this.message = message;
         this.date = date;
         this.sender = sender;
         this.roomId = roomId;
     }
-    static public ChatMessageDto entityToDto(ChatMessage chatMessage) {
-        return new ChatMessageDto(chatMessage.getMessage(), chatMessage.getDate());
+    static public RedisChatMessageDto entityToDto(ChatMessage chatMessage) {
+        return new RedisChatMessageDto(chatMessage.getMessage(), chatMessage.getSentAt());
     }
 
-    static public List<ChatMessageDto> entityToDtoList(List<ChatMessage> chatMessageList) {
+    static public List<RedisChatMessageDto> entityToDtoList(List<ChatMessage> chatMessageList) {
         return chatMessageList.stream()
-                .map(ChatMessageDto::entityToDto)
+                .map(RedisChatMessageDto::entityToDto)
                 .collect(Collectors.toList());
     }
 }

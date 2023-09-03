@@ -1,5 +1,6 @@
 package service.chat.mealmate.mealmate.domain;
 
+import com.nimbusds.openid.connect.sdk.claims.Gender;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,7 +17,7 @@ import java.util.stream.Stream;
 @Entity @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class ChatRoom {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
     private String chatRoomId;
 
     private String title;
@@ -34,7 +35,8 @@ public class ChatRoom {
 
     @OneToMany(mappedBy = "chatRoom")
     private List<MealMate> mealMateList = new ArrayList<>();
-    public ChatRoom(String title, LocalDateTime openedAt, short maxPersonnel) {
+    public ChatRoom(String chatRoomId, String title, LocalDateTime openedAt, short maxPersonnel) {
+        this.chatRoomId = chatRoomId;
         this.title = title;
         this.opened_at = openedAt;
         this.expectedClosedAt = LocalDateTime.now().plusDays(1);// 24시간 뒤의 시간
@@ -85,9 +87,10 @@ public class ChatRoom {
     // 24시간을 넘어가면 문제임
     // 임시채팅시간대에 피드백을 하면 문제임
     // 값을 반환하는 이유는 jwt 만들 때 만료시간 설정할 때 사용하기 위함
-    public LocalDateTime getTemporalChatPeriod() {
-        if (this.lockedAt != null) throw new RuntimeException("잠금상태의 채팅방에서 임시시간대를 설정할 수 없습니다.");
-        return this.expectedClosedAt;
+
+    public ChatPeriod getTemporalChatPeriod() {
+        if (this.lockedAt != null) throw new RuntimeException("잠금상태의 채팅방에서 임시시간대가 있을 수 없습니다.");
+        return new ChatPeriod(opened_at.toLocalTime(), expectedClosedAt.toLocalTime(), this);
     }
     public void lock(LocalDateTime lockedAt) {
         this.expectedClosedAt = LocalDateTime.MAX;

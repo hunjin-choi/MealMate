@@ -166,7 +166,7 @@ public class JwtTokenProvider {
 
     public Optional<Long> getChatPeriodIdFromJWT(String jwt) {
         try{
-            return Optional.ofNullable( new Long((int)getClaims(jwt).getBody().get(chatPeriodId)));
+            return Optional.ofNullable( (Long)getClaims(jwt).getBody().get(chatPeriodId));
         }catch (Exception e) {
             return Optional.empty();
         }

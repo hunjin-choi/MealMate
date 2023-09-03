@@ -54,6 +54,13 @@ public class ChatPeriod {
         this.endTime = LocalTime.of(endHour, endMinute);
         this.chatRoom = chatRoom;
     }
+
+    public ChatPeriod(LocalTime startTime, LocalTime endTime, ChatRoom chatRoom) {
+        isLessThanMaxPeriod(startTime.getHour(), startTime.getMinute(), endTime.getHour(), endTime.getMinute());
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.chatRoom = chatRoom;
+    }
     public Integer calculateRemainMinute(LocalTime localTime) {
         if (startTime.isBefore(localTime) && endTime.isAfter(localTime)) {
             return calculateDiffByMinute(startTime, localTime);

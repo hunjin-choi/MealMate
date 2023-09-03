@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import service.chat.mealmate.mileageHistory.domain.MileageHistory;
 
 import javax.persistence.*;
-import java.math.BigInteger;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -27,24 +27,27 @@ public class Member {
     private String password;
 
     @Column(nullable = false)
-    private Date created_at;
+    private LocalDateTime createdAt;
 
-    @Column(nullable = false)
-    private Date deleted_at;
+    @Column(nullable = true)
+    private LocalDateTime deletedAt;
     @Column(nullable = false)
     private String email;
 
     @Column(length = 500)
     private String refreshToken = null;
     @Enumerated(EnumType.STRING)
-    @Column(nullable = true)
+    @Column(nullable = false)
     private Role role;
 
     @Builder
     public Member(String memberId, String name, String email, String picture, Role role){
         this.memberId = memberId;
         this.name = name;
+        this.nickname = name;
+        this.password = "123"; // @JsonIgnore @ToString(exclued = "password")
         this.email = email;
+        this.createdAt = LocalDateTime.now();
         this.role = role;
     }
 

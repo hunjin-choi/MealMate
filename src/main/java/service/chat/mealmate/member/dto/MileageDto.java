@@ -5,17 +5,17 @@ import service.chat.mealmate.mileageHistory.domain.Mileage;
 import service.chat.mealmate.mileageHistory.domain.MileageChangeReason;
 import service.chat.mealmate.mileageHistory.domain.MileageHistory;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Getter
 public class MileageDto {
     private Mileage mileage;
     private MileageChangeReason mileageChangeReason;
-    private Date date;
+    private LocalDateTime date;
 
     public MileageDto (MileageHistory mileageHistory) {
         this.mileage = mileageHistory.getMileage();
         this.mileageChangeReason = mileageHistory.getChangeReason();
-        this.date = mileageHistory.getDate();
+        this.date = mileageHistory.getCreatedAt();
     }
 }
