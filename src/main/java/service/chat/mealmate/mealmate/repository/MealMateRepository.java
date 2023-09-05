@@ -34,8 +34,8 @@ public interface MealMateRepository extends JpaRepository<MealMate, Long> {
     public Long countMemberAttendOtherMealmate(String giverId, String roomId);
     @Query(value = "select mm from MealMate mm where mm.member_id = :memberId and mm.chat_room_id = :chatRoomId ", nativeQuery = true)
     public Optional<MealMate> findByChatRoomIdAndGiverId(String memberId, String chatRoomId);
-    @Query(value = "select cm from ChatMessage cm join cm.mealMate mm where mm.chatRoomId = :chatRoomId and mm.giverId = :giverId", nativeQuery = true)
-    public List<ChatMessage> findAllChatMessage(String chatRoomId, String giverId);
+    @Query(value = "select cm from ChatMessage cm join cm.mealMate mm where mm.chat_room_id = :chatRoomId and mm. = :giverId")
+    public List<ChatMessage> findAllChatMessage(ChatRoom chatRoom, String giverId);
 
     @Query(value = "select cm from ChatMessage cm join cm.mealMate mm where mm.chatRoomId = :chatRoomId and mm.giverId = :giverId", nativeQuery = true)
     public Page<ChatMessage> findChatMessagePageable(String chatRoomId, String giverId, Pageable pageable);

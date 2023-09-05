@@ -1,10 +1,12 @@
 package service.chat.mealmate.mealmate.dto;
 
+import lombok.Data;
 import lombok.Getter;
+import lombok.Value;
 
-@Getter
+@Data
 public class FeedbackDto {
-    private String feedbackMention;
-    private int mileage;
-    private String receiverName;
+    public String feedbackMention;
+    public int mileage;
+    public String receiverName;
 }

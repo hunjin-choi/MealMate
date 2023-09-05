@@ -41,18 +41,15 @@ public class FeedbackHistory implements MileageHistoryReferable {
     private int maxFeedbackMileage = 100;
     @Transient
     private int minFeedbackMileage = 0;
-    protected FeedbackHistory(String feedbackMention, MealMate giver, MealMate receiver, ChatPeriod chatPeriod, LocalDate feedBackDate, LocalTime feedbackTime, Integer feedbackMileage) {
+
+    public FeedbackHistory(String feedbackMention, MealMate giver, MealMate receiver, ChatPeriod chatPeriod, LocalDateTime feedBackDateTime, Integer feedbackMileage) {
         this.feedbackMention = feedbackMention;
         this.giver = giver;
         this.receiver = receiver;
         this.chatPeriod = chatPeriod;
-        this.feedbackDate = feedBackDate;
-        this.feedBackTime = feedbackTime;
+        this.feedbackDate = feedBackDateTime.toLocalDate();
+        this.feedBackTime = feedBackDateTime.toLocalTime();
         if (feedbackMileage > this.maxFeedbackMileage || feedbackMileage < this.minFeedbackMileage) throw new RuntimeException("적절한 마일리지 값이 아닙니다.");
         this.feedbackMileage = feedbackMileage;
-    }
-
-    static public FeedbackHistory of(String feedbackMention, MealMate giver, MealMate receiver, ChatPeriod chatPeriod, LocalDateTime feedBackDateTime, Integer feedbackMileage) {
-        return new FeedbackHistory(feedbackMention, giver, receiver, chatPeriod, feedBackDateTime.toLocalDate(), feedBackDateTime.toLocalTime(),feedbackMileage);
     }
 }

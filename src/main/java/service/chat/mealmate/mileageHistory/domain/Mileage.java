@@ -9,16 +9,18 @@ import javax.persistence.Embeddable;
 public class Mileage {
     private Integer appendValue;
     private Integer currentMileage;
-
-    public Mileage createMileage(int appendValue) {
-        Mileage mileage = new Mileage(appendValue);
-        mileage.currentMileage += this.currentMileage;
-        return mileage;
+    protected Mileage(Mileage latestMileage, int appendValue) {
+        this.appendValue = appendValue;
+        this.currentMileage = latestMileage.currentMileage + appendValue;
     }
 
     public Mileage(Integer initValue) {
         this.appendValue = initValue;
         this.currentMileage = 0 + appendValue;
+    }
+
+    public Mileage createMileage(int appendValue) {
+        return new Mileage(this, appendValue);
     }
 
 }

@@ -40,17 +40,16 @@ public class MealMateService {
         Long totalMember = mealMateRepository.countByChatRoomAndAndLeavedAtIsNotNull(chatRoom);
         vote.complete(totalMember, votingMethodStrategy);
     }
-    public void feedback(String senderId, String receiverName, FeedbackDto feedbackDto, String chatRoomId, Long chatPeriodId) {
+    public void feedback(String senderId, String receiverName, FeedbackDto dto, String chatRoomId, Long chatPeriodId) {
         LocalDateTime now = LocalDateTime.now();
-        Integer feedbackMileage = feedbackDto.getMileage();
-        String feedbackMention = feedbackDto.getFeedbackMention();
         MealMate giver = mealMateRepository.findActiveMealMateByGiverIdAndChatRoomId(senderId, chatRoomId).orElseThrow(() -> new RuntimeException("밀 메이트가 없습니다"));
         Member receiveMember = memberRepository.findByName(receiverName).orElseThrow(() -> new RuntimeException("멤버가 없습니다."));
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 없습니다"));
+
         MealMate receiver = mealMateRepository.findByMemberAndChatRoomAndLeavedAtIsNull(receiveMember, chatRoom).orElseThrow(() -> new RuntimeException("밀 메이트가 없습니다."));
         ChatPeriod chatPeriod = chatPeriodRepository.findById(chatPeriodId).orElseThrow(() -> new RuntimeException(""));
 
-        FeedbackHistory feedbackHistory = FeedbackHistory.of(feedbackMention, giver, receiver, chatPeriod, now, feedbackMileage);
+        FeedbackHistory feedbackHistory = new FeedbackHistory(dto.feedbackMention, giver, receiver, chatPeriod, now, dto.mileage);
         feedbackHistoryRepository.save(feedbackHistory);
 
         MileageHistory latestMileageHistory = mileageHistoryRepository.findFirstByMemberOrderByCreatedAtDesc(receiveMember);

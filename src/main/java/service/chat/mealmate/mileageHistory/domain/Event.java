@@ -13,7 +13,6 @@ import javax.persistence.Id;
 public class Event implements MileageHistoryReferable {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long eventId;
-
     private String name;
     private String description;
     private int mileagePerEvent;
