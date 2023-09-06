@@ -5,5 +5,7 @@ import service.chat.mealmate.mealmate.domain.vote.VoterStatus;
 
 @Data
 public class VotingDto {
-    public VoterStatus voterStatus;
+    private String chatRoomId;
+    private Long voteId;
+    private VoterStatus voterStatus;
 }

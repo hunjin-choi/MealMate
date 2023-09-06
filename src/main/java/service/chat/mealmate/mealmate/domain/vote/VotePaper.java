@@ -12,7 +12,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Voter implements Serializable {
+public class VotePaper implements Serializable {
     @ManyToOne @Id
     private Vote vote;
     @ManyToOne @Id
@@ -22,7 +22,7 @@ public class Voter implements Serializable {
     private Boolean isCreator;
 
     private LocalDateTime votedAt;
-    public Voter(Vote vote, MealMate mealMate, VoterStatus voterStatus, Boolean isCreator) {
+    public VotePaper(Vote vote, MealMate mealMate, VoterStatus voterStatus, Boolean isCreator) {
         this.vote = vote;
         this.mealMate = mealMate;
         this.voterStatus = voterStatus;

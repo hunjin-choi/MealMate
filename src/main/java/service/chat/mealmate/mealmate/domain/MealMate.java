@@ -4,7 +4,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import service.chat.mealmate.mealmate.domain.vote.Vote;
-import service.chat.mealmate.mealmate.domain.vote.Voter;
+import service.chat.mealmate.mealmate.domain.vote.VotePaper;
 import service.chat.mealmate.mealmate.domain.vote.VoterStatus;
 import service.chat.mealmate.mealmate.domain.vote.VotingMethodType;
 import service.chat.mealmate.member.domain.Member;
@@ -13,7 +13,6 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Entity @Table(uniqueConstraints = {
@@ -41,7 +40,7 @@ public class MealMate implements Serializable {
     private ChatRoom chatRoom;
 
     @OneToMany(mappedBy =  "mealMate")
-    private List<Voter> voterList = new ArrayList<Voter>();
+    private List<VotePaper> votePaperList = new ArrayList<VotePaper>();
     public MealMate(Member member, ChatRoom chatRoom, LocalDateTime joinedAt) {
         this.member = member;
         this.chatRoom = chatRoom;
@@ -55,17 +54,18 @@ public class MealMate implements Serializable {
     public boolean isActive() {
         return this.leavedAt == null;
     }
-    public Voter createVoteAndVoting(String title, String content, VotingMethodType votingMethodType, VoterStatus voterStatus) {
-        Vote vote = new Vote(title, content, votingMethodType);
+    public VotePaper createVoteAndVoting(String title, String content, VotingMethodType votingMethodType, VoterStatus voterStatus, ChatRoom chatRoom) {
+        Vote vote = new Vote(title, content, votingMethodType, chatRoom);
         // cascade option
-        Voter voter = new Voter(vote, this, voterStatus, true);
-        return voter;
+        VotePaper votePaper = new VotePaper(vote, this, voterStatus, true);
+        return votePaper;
     }
-    public Voter voting(Vote vote, VoterStatus voterStatus) {
-        // 중복체크를 voterList를 순회하면서 할 것인가?
-        // 중복체크를 이 함수밖인 service 계층에서 select문을 통해 할 것인가?
-        Voter voter = new Voter(vote, this, voterStatus, false);
-        return voter;
+    public VotePaper voting(Vote vote, VoterStatus voterStatus) {
+        // 중복체크를 voterList를 순회하면서 할 것인지?
+        // 중복체크를 이 함수밖인 service 계층에서 select문을 통해 할 것인지?
+        // 중복체크를 composite unique index를 통해서 할 것인지?
+        VotePaper votePaper = new VotePaper(vote, this, voterStatus, false);
+        return votePaper;
     }
 
     public ChatMessage addChatMessage(String message) {

@@ -3,10 +3,9 @@ package service.chat.mealmate.mealmate.domain.vote;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import service.chat.mealmate.mealmate.domain.ChatRoom;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,17 +23,22 @@ public class Vote {
 //    private VotingMethodStrategy votingMethodStrategy;
 
     @OneToMany(mappedBy = "vote")
-    private List<Voter> voterList = new ArrayList<>();
-    public Vote(String title, String content, VotingMethodType votingMethodType) {
+    private List<VotePaper> votePaperList = new ArrayList<>();
+
+    @ManyToOne()
+    private ChatRoom chatRoom;
+    public Vote(String title, String content, VotingMethodType votingMethodType, ChatRoom chatRoom) {
         this.title = title;
         this.content = content;
         this.votingMethodType = votingMethodType;
+        this.chatRoom = chatRoom;
     }
     // 의존관계 사용
     public void complete(Long totalMember, VotingMethodStrategy votingMethodStrategy) {
-        Long agree = voterList.stream().filter((i) -> i.getVoterStatus() == VoterStatus.AGREE).count();
-        Long disagree = voterList.stream().filter((i) -> i.getVoterStatus() == VoterStatus.DISAGREE).count();
-        if (!votingMethodStrategy.executable(this.votingMethodType, totalMember, agree, disagree)) throw new RuntimeException("제안이 실행될 조건을 만족하지 못합니다.");
+        Long agree = votePaperList.stream().filter((i) -> i.getVoterStatus() == VoterStatus.AGREE).count();
+        Long disagree = votePaperList.stream().filter((i) -> i.getVoterStatus() == VoterStatus.DISAGREE).count();
+        if (!votingMethodStrategy.executable(this.votingMethodType, totalMember, agree, disagree))
+            throw new RuntimeException("제안이 실행될 조건을 만족하지 못합니다.");
         this.completedDate = LocalDateTime.now();
     }
 }

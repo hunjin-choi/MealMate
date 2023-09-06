@@ -1,33 +1,23 @@
 package service.chat.mealmate.chat;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.HttpClientErrorException;
-import service.chat.mealmate.chat.config.AppUserRole;
 import service.chat.mealmate.chat.dto.RedisChatRoom;
 import service.chat.mealmate.chat.dto.LoginInfo;
 import service.chat.mealmate.chat.jwt.JwtTokenProvider;
-import service.chat.mealmate.mealmate.domain.ChatPeriod;
-import service.chat.mealmate.mealmate.domain.ChatRoom;
 import service.chat.mealmate.mealmate.domain.MealMate;
 import service.chat.mealmate.mealmate.repository.ChatMessageRepository;
 import service.chat.mealmate.mealmate.repository.ChatRoomRepository;
 import service.chat.mealmate.mealmate.repository.MealMateRepository;
 import service.chat.mealmate.mealmate.service.MealMateService;
-import service.chat.mealmate.utils.DateUtil;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -57,7 +47,7 @@ public class RedisChatRoomController {
     @ResponseBody
     public RedisChatRoom myRoom() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        MealMate mealMate = mealMateRepository.findActiveMealmateByGiverId(auth.getName()).orElse(null);
+        MealMate mealMate = mealMateRepository.findActiveMealmate(auth.getName()).orElse(null);
         if (mealMate == null) return null;
         String chatRoomId = mealMate.getChatRoom().getChatRoomId();
         return redisChatRoomRepository.findRoomById(chatRoomId);

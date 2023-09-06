@@ -49,9 +49,10 @@ public class MealMateController {
 
     @PostMapping("/feedback/{roomId}")
     @ResponseBody
-    public void addFeedback(HttpServletRequest httpRequest, @PathVariable("roomId") String roomId, @PathVariable("voteId") Long voteId, @RequestBody FeedbackDto feedbackDto) throws IOException {
+    public void addFeedback(HttpServletRequest httpRequest, @PathVariable("roomId") String roomId, @RequestBody FeedbackDto feedbackDto) throws IOException {
+        // roomId를 pathVaraiable로 넣지 말고, jwt에서 payload로 넣어 둔 값을 가져오는 식으로 하자
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String senderName = auth.getName();
+        String senderId = auth.getName();
         String readWriteToken = httpRequest.getHeader("readWriteToken");
         String userName = jwtTokenProvider.getUserNameFromJwt(readWriteToken).orElseThrow(() -> new RuntimeException(""));
         String roomIdFromJwt = jwtTokenProvider.getChatRoomIdFromJWT(readWriteToken).orElseThrow(() -> new RuntimeException(""));
@@ -59,7 +60,7 @@ public class MealMateController {
         Long chatPeriodId = jwtTokenProvider.getChatPeriodIdFromJWT(readWriteToken).orElseThrow(() -> new RuntimeException(""));
         // chatPeriod 개수 체크, chatPeriod 겹치지 않는지 체크
         // find mealmate -> add ChatPeriod
-        mealmateService.feedback(senderName, feedbackDto.getReceiverName(), feedbackDto, roomId, chatPeriodId);
+        mealmateService.feedback(senderId, roomId, chatPeriodId, feedbackDto);
     }
 
     @GetMapping("/list")
