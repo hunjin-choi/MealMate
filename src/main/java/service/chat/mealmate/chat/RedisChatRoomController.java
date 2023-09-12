@@ -9,7 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import service.chat.mealmate.chat.dto.RedisChatRoom;
 import service.chat.mealmate.chat.dto.LoginInfo;
-import service.chat.mealmate.chat.jwt.JwtTokenProvider;
+import service.chat.mealmate.security.jwt.JwtTokenProvider;
 import service.chat.mealmate.mealmate.domain.MealMate;
 import service.chat.mealmate.mealmate.repository.ChatMessageRepository;
 import service.chat.mealmate.mealmate.repository.ChatRoomRepository;
@@ -47,7 +47,7 @@ public class RedisChatRoomController {
     @ResponseBody
     public RedisChatRoom myRoom() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        MealMate mealMate = mealMateRepository.findActiveMealmate(auth.getName()).orElse(null);
+        MealMate mealMate = mealMateRepository.findActivatedBy(auth.getName()).orElse(null);
         if (mealMate == null) return null;
         String chatRoomId = mealMate.getChatRoom().getChatRoomId();
         return redisChatRoomRepository.findRoomById(chatRoomId);

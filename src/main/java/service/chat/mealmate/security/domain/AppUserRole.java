@@ -1,4 +1,4 @@
-package service.chat.mealmate.chat.config;
+package service.chat.mealmate.security.domain;
 
 import org.springframework.security.core.GrantedAuthority;
 

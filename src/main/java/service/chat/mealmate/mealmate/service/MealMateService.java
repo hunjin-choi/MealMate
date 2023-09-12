@@ -114,6 +114,7 @@ public class MealMateService {
         MealMate mealMate = this.mealMateRepository.findById(voterId)
                 .orElseThrow(() -> new RuntimeException("밀 메이트를 찾을 수 없습니다"));
         VotePaper votePaper = mealMate.voting(vote, dto.getVoterStatus());
+        // 만약 기존에 했던 투표를 취소하고 싶다면? 아직 구현X
         // 만약 기존에 했던 투표를 바꾸고 싶다면? 아직 구현X
         // cascade 하면 될텐데
         this.votePaperRepository.save(votePaper);

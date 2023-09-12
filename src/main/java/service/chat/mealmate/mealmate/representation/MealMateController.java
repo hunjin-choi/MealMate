@@ -6,7 +6,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import service.chat.mealmate.chat.jwt.JwtTokenProvider;
+import service.chat.mealmate.security.jwt.JwtTokenProvider;
 import service.chat.mealmate.mealmate.domain.ChatPeriod;
 import service.chat.mealmate.mealmate.domain.FeedbackHistory;
 import service.chat.mealmate.mealmate.domain.MealMate;

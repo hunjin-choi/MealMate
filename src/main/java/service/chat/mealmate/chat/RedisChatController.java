@@ -9,7 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.context.request.RequestContextHolder;
 import service.chat.mealmate.chat.dto.RedisChatMessageDto;
-import service.chat.mealmate.chat.jwt.JwtTokenProvider;
+import service.chat.mealmate.security.jwt.JwtTokenProvider;
 import service.chat.mealmate.mealmate.service.MealMateService;
 
 import javax.servlet.http.HttpServletRequest;

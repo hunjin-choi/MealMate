@@ -10,17 +10,12 @@ import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.stereotype.Component;
-import service.chat.mealmate.chat.jwt.JwtTokenProvider;
+import service.chat.mealmate.security.jwt.JwtTokenProvider;
 import service.chat.mealmate.chat.service.ChatService;
-import service.chat.mealmate.mealmate.domain.ChatPeriod;
-import service.chat.mealmate.mealmate.domain.MealMate;
 import service.chat.mealmate.mealmate.repository.MealMateRepository;
-import service.chat.mealmate.member.domain.Member;
 import service.chat.mealmate.member.repository.MemberRepository;
-import service.chat.mealmate.utils.DateUtil;
 
 import java.security.Principal;
-import java.util.*;
 
 @Slf4j
 @RequiredArgsConstructor

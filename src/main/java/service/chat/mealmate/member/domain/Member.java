@@ -9,22 +9,23 @@ import service.chat.mealmate.mileageHistory.domain.MileageHistory;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class Member {
-    @Id()
-    private String memberId;
-    @Column(nullable = false, unique = true)
-    private String name;
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long memberId;
 
     @Column(nullable = false)
     private String nickname;
 
+    @Column(nullable = false, unique = true)
+    private String loginId = null;
     @Column(nullable = false)
-    private String password;
+    private String password = null;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
@@ -36,28 +37,38 @@ public class Member {
 
     @Column(length = 500)
     private String refreshToken = null;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role;
+    @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "member_id"))
+    private Set<Role> roles = new HashSet<>();
 
-    @Builder
-    public Member(String memberId, String name, String email, String picture, Role role){
+    @Embedded
+    private Oauth2Info oauth2Info;
+
+    protected void of (String loginId, String email, String picture, Role role, Oauth2Info oauth2Info) {
         this.memberId = memberId;
-        this.name = name;
-        this.nickname = name;
+        this.loginId = loginId;
+        this.nickname = loginId;
         this.password = "123"; // @JsonIgnore @ToString(exclued = "password")
         this.email = email;
         this.createdAt = LocalDateTime.now();
-        this.role = role;
+        this.roles.add(role);
+        this.oauth2Info = oauth2Info;
+    }
+    public Member(String loginId, String email, String picture, Role role){
+        this.of(loginId, email, picture, role, null);
+    }
+
+    @Builder
+    public Member(String loginId, String email, String picture, Role role, Oauth2Info oauth2Info){
+        this.of(loginId, email, picture, role, oauth2Info);
     }
 
     public Member update(String name, String picture){
-        this.name = name;
+        this.loginId = name;
         return this;
-    }
-
-    public String getRoleKey(){
-        return this.role.getKey();
     }
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
@@ -70,7 +81,7 @@ public class Member {
 //    private List<Orders> ordersList = new ArrayList<>();
 
     public void changeNickname(String nickname) {
-        this.name = nickname;
+        this.loginId = nickname;
     }
     public void connectChatRoom(String refreshToken) {
         this.refreshToken = refreshToken;

@@ -1,8 +1,10 @@
-package service.chat.mealmate.chat.config;
+package service.chat.mealmate.security.Oauth2;
 
 import lombok.Builder;
 import lombok.Getter;
 import service.chat.mealmate.member.domain.Member;
+import service.chat.mealmate.member.domain.Oauth2Info;
+import service.chat.mealmate.member.domain.Oauth2Platform;
 import service.chat.mealmate.member.domain.Role;
 
 import java.util.Map;
@@ -38,13 +40,14 @@ public class OAuthAttributes {
                 .build();
     }
 
-    public Member toEntity(){
+    public Member toEntity() {
+        Oauth2Info oauth2Info = new Oauth2Info(Oauth2Platform.GOOGLE, (String) attributes.get(nameAttributeKey));
         return Member.builder()
-                .memberId((String)attributes.get(nameAttributeKey))
-                .name(name)
+                .loginId(null)
                 .email(email)
                 .picture(picture)
                 .role(Role.USER)
+                .oauth2Info(oauth2Info)
                 .build();
     }
 }

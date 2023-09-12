@@ -8,11 +8,8 @@ import java.util.Optional;
 
 @Repository
 public interface MemberRepository extends JpaRepository<Member, String> {
-    Optional<Member> findFirstByName(String name);
     Optional<Member> findByEmail(String email);
-
-    Optional<Member> findOneByName(String name);
-//    @EntityGraph(attributePaths = {"mealMateList"})
+    Optional<Member> findByLoginId(String loginId);
 
 
 }

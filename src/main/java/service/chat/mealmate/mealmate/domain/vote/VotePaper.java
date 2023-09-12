@@ -5,17 +5,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import service.chat.mealmate.mealmate.domain.MealMate;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(uniqueConstraints = @UniqueConstraint(columnNames={"vote_id", "meal_mate_id"}))
 public class VotePaper implements Serializable {
-    @ManyToOne @Id
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long votePaperId;
+    @ManyToOne @JoinColumn(name = "vote_id")
     private Vote vote;
-    @ManyToOne @Id
+    @ManyToOne @JoinColumn(name = "meal_mate_id")
     private MealMate mealMate;
     @Getter
     private VoterStatus voterStatus;

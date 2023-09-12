@@ -1,11 +1,11 @@
-package service.chat.mealmate.chat.jwt;
+package service.chat.mealmate.security.jwt;
 
 import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
-import service.chat.mealmate.chat.config.AppUserRole;
+import service.chat.mealmate.security.domain.AppUserRole;
 import service.chat.mealmate.utils.DateUtil;
 
 import javax.annotation.PostConstruct;

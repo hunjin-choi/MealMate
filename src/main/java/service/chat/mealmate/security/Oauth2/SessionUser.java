@@ -1,4 +1,4 @@
-package service.chat.mealmate.chat.config;
+package service.chat.mealmate.security.Oauth2;
 
 import lombok.Getter;
 import service.chat.mealmate.member.domain.Member;
@@ -11,7 +11,7 @@ public class SessionUser implements Serializable {
     private String email;
 
     public SessionUser(Member member) {
-        this.name = member.getName();
+        this.name = member.getLoginId();
         this.email = member.getEmail();
     }
 }

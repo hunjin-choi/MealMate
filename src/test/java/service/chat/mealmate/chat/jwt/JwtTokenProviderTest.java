@@ -1,16 +1,9 @@
 package service.chat.mealmate.chat.jwt;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
-import service.chat.mealmate.chat.config.AppUserRole;
-import service.chat.mealmate.utils.DateUtil;
-
-import java.util.ArrayList;
-
-import static org.junit.jupiter.api.Assertions.*;
+import service.chat.mealmate.security.jwt.JwtTokenProvider;
 
 @SpringBootTest
 @Transactional

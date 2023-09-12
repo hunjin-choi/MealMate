@@ -1,14 +1,16 @@
-package service.chat.mealmate.chat.config;
+package service.chat.mealmate.security;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import service.chat.mealmate.member.domain.Member;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import service.chat.mealmate.security.Oauth2.CustomOAuth2UserService;
 import service.chat.mealmate.member.domain.Role;
-import service.chat.mealmate.member.repository.MemberRepository;
 import service.chat.mealmate.member.service.MemberService;
 
 /**
@@ -60,6 +62,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         memberService.signUp("hunjin", Role.USER);
         memberService.signUp("test", Role.USER);
         memberService.signUp("guest", Role.GUEST);
+    }
 
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 }
