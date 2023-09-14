@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final MemberRepository memberRepository;
-    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional // 스프링 예제 참고
@@ -44,7 +43,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     private User createUserDetails(Member member) {
         Set<Role> roles = member.getRoles();
         Set<String> stringRoles = roles.stream().map(i -> i.name()).collect(Collectors.toSet());
-        return new SecurityMember(member, passwordEncoder, buildUserAuthority(stringRoles));
+        return new SecurityMember(member, buildUserAuthority(stringRoles));
     }
 
     private List<GrantedAuthority> buildUserAuthority(Set<String> userRoles) {

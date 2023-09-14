@@ -7,17 +7,22 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import service.chat.mealmate.chat.dto.RedisChatMessageDto;
 import service.chat.mealmate.chat.dto.RedisChatRoom;
 import service.chat.mealmate.chat.dto.LoginInfo;
+import service.chat.mealmate.mealMate.domain.ChatRoom;
+import service.chat.mealmate.security.ChatPeriodCheck;
+import service.chat.mealmate.security.domain.SecurityMember;
 import service.chat.mealmate.security.jwt.JwtTokenProvider;
-import service.chat.mealmate.mealmate.domain.MealMate;
-import service.chat.mealmate.mealmate.repository.ChatMessageRepository;
-import service.chat.mealmate.mealmate.repository.ChatRoomRepository;
-import service.chat.mealmate.mealmate.repository.MealMateRepository;
-import service.chat.mealmate.mealmate.service.MealMateService;
+import service.chat.mealmate.mealMate.domain.MealMate;
+import service.chat.mealmate.mealMate.repository.ChatMessageRepository;
+import service.chat.mealmate.mealMate.repository.ChatRoomRepository;
+import service.chat.mealmate.mealMate.repository.MealMateRepository;
+import service.chat.mealmate.mealMate.service.MealMateService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -47,7 +52,9 @@ public class RedisChatRoomController {
     @ResponseBody
     public RedisChatRoom myRoom() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        MealMate mealMate = mealMateRepository.findActivatedBy(auth.getName()).orElse(null);
+        SecurityMember principal = (SecurityMember) auth.getPrincipal();
+        MealMate mealMate = mealMateRepository.findActivatedBy(principal.getMemberId())
+                .orElse(null);
         if (mealMate == null) return null;
         String chatRoomId = mealMate.getChatRoom().getChatRoomId();
         return redisChatRoomRepository.findRoomById(chatRoomId);
@@ -55,21 +62,32 @@ public class RedisChatRoomController {
     // 채팅방 생성
     @PostMapping("/room")
     @ResponseBody
-    public RedisChatRoom createRoom(@RequestParam String name) {
-        return redisChatRoomRepository.createChatRoom(name);
+    public RedisChatRoom createRoom(@RequestParam String chatRoomTitle) {
+        SecurityMember principal = (SecurityMember) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long memberId = principal.getMemberId();
+        RedisChatRoom chatRoom = redisChatRoomRepository.createChatRoom(chatRoomTitle);
+        String chatRoomId = chatRoom.getRoomId();
+        MealMate mealMate = mealmateService.createAndJoin(memberId, chatRoomId, chatRoomTitle);
+        principal.setChatInfo(mealMate.getMealMateId(), chatRoomId, mealMate.findMatchedChatPeriodEndTime(LocalDateTime.now()));
+        return chatRoom;
     }
     // 채팅방 입장 화면
-    @GetMapping("/room/enter/{roomId}")
-    public String roomDetail(Model model, @PathVariable String roomId) {
-        model.addAttribute("roomId", roomId);
+    @GetMapping("/room/enter/{chatRoomId}")
+    public String joinRoom(Model model, @PathVariable String chatRoomId) {
+        SecurityMember principal = (SecurityMember) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long memberId = principal.getMemberId();
+        MealMate mealMate = mealmateService.join(memberId, chatRoomId);
+        principal.setChatInfo(mealMate.getMealMateId(), chatRoomId, mealMate.findMatchedChatPeriodEndTime(LocalDateTime.now()));
+        model.addAttribute("roomId", chatRoomId);
         return "/chat/roomdetail";
     }
-
-//    @GetMapping("/room/messages/{roomId}")
-//    @ResponseBody
-//    public List<ChatMessageDto> roomMessages(@PathVariable String roomId) {
-//        return chatMessageRepository.findAllChatMessage(roomId);
-//    }
+    @GetMapping("/room/messages/{roomId}")
+    @ResponseBody
+    public List<RedisChatMessageDto> roomMessages(@PathVariable String roomId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 없습니다."));
+        return chatMessageRepository.findAllChatMessage(chatRoom);
+    }
     // 특정 채팅방 조회
     @GetMapping("/room/{roomId}")
     @ResponseBody
@@ -79,8 +97,10 @@ public class RedisChatRoomController {
 
     @GetMapping("/user/{roomId}")
     @ResponseBody
-    @Transactional
-    public LoginInfo getUserInfo(HttpServletRequest httpRequest, HttpServletResponse httpResponse, @PathVariable("roomId") String roomId) {
-        return new LoginInfo("huchoi", "token", "token", "token");
+    @ChatPeriodCheck
+    public LoginInfo startChat(HttpServletRequest httpRequest, HttpServletResponse httpResponse, @PathVariable("roomId") String roomId) {
+        SecurityMember securityMember = (SecurityMember) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return new LoginInfo(securityMember.getUsername(), "token", "token", "token");
     }
+
 }

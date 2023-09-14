@@ -171,62 +171,31 @@
             _this.readWriteToken = response.data.readWriteToken;
             ///////////
             sock = new SockJS("/ws-stomp");
-            sock.addEventListener('close', () => {
-                console.log("close!")
-            })
             ws = Stomp.over(sock);
-            try {
-                console.log("before connect");
-                await new Promise((resolve, reject) => {
-                    ws.connect(
-                        {
-                            "token": _this.token,
-                            "readOnlyToken": _this.readOnlyToken,
-                            "readWriteToken": _this.readWriteToken,
-                            "chatRoomId": localStorage.getItem('wschat.roomId')
-                        },
-                        resolve,
-                        reject
-                    );
+
+            console.log("before connect");
+            this.roomId = localStorage.getItem('wschat.roomId');
+            this.roomName = localStorage.getItem('wschat.roomName');
+            var _this = this;
+            axios.get('/chat/user/' + this.roomId).then(response => {
+                _this.token = response.data.token;
+                ws.connect({"token":_this.token}, function(frame) {
+                    ws.subscribe("/sub/chat/room/"+_this.roomId, function(message) {
+                        var recv = JSON.parse(message.body);
+                        _this.recvMessage(recv);
+                    });
+                    _this.sendMessage('ENTER');
+                }, function(error) {
+                    alert("서버 연결에 실패 하였습니다. 다시 접속해 주십시요.");
+                    location.href="/chat/room";
                 });
-                console.log("after connect");
-
-                console.log(_this.roomId);
-                alert("구독 신청");
-
-                await new Promise((resolve, reject) => {
-                    ws.subscribe(
-                        "/sub/chat/room/" + _this.roomId,
-                        function (message) {
-                            var recv = JSON.parse(message.body);
-                            _this.tempValue = message;
-                            console.log(message);
-                            _this.recvMessage(recv);
-                            resolve(); // 구독 완료 시 Promise를 해결합니다.
-                        },
-                        {
-                            "accessToken": _this.accessToken,
-                            "refreshToken": _this.refreshToken
-                        }
-                    );
-                });
-                _this.sendMessage('ENTER');
-                console.log(_this.tempValue);
-                alert("서버 접속 성공!");
-
-                const response = await axios.get('/chat/room/messages/' + _this.roomId);
-                console.log(response);
-                _this.messages = response.data;
-                console.log(response.data);
-                console.log(_this.messages);
-                _this.isDataFetched = true;
-            } catch (error) {
-                alert("서버 연결에 실패 하였습니다. 다시 접속해 주십시요.");
-                location.href = "/chat/room";
-            }
-            ///////////
-            console.log("good");
-
+            });
+            const resp = await axios.get('/chat/room/messages/' + _this.roomId);
+            console.log(resp);
+            _this.messages = resp.data;
+            console.log(resp.data);
+            console.log(_this.messages);
+            _this.isDataFetched = true;
         },
         beforeDestroy() {
             this.roomId = null;

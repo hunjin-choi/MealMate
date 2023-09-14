@@ -7,7 +7,7 @@ import service.chat.mealmate.member.domain.Member;
 import java.util.Optional;
 
 @Repository
-public interface MemberRepository extends JpaRepository<Member, String> {
+public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findByEmail(String email);
     Optional<Member> findByLoginId(String loginId);
 

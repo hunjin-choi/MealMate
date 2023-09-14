@@ -1,4 +1,5 @@
 <!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
     <title>Websocket Chat</title>
@@ -92,7 +93,7 @@
                     return;
                 } else {
                     var params = new URLSearchParams();
-                    params.append("name",this.room_name);
+                    params.append("chatRoomTitle",this.room_name);
                     axios.post('/chat/room', params)
                         .then(
                             response => {

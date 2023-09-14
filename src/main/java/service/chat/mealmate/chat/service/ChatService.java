@@ -2,7 +2,7 @@ package service.chat.mealmate.chat.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import service.chat.mealmate.mealmate.service.MealMateService;
+import service.chat.mealmate.mealMate.service.MealMateService;
 
 @Service @RequiredArgsConstructor
 public class ChatService {

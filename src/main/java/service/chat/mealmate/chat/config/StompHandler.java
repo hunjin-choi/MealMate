@@ -12,7 +12,7 @@ import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.stereotype.Component;
 import service.chat.mealmate.security.jwt.JwtTokenProvider;
 import service.chat.mealmate.chat.service.ChatService;
-import service.chat.mealmate.mealmate.repository.MealMateRepository;
+import service.chat.mealmate.mealMate.repository.MealMateRepository;
 import service.chat.mealmate.member.repository.MemberRepository;
 
 import java.security.Principal;

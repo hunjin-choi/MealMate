@@ -7,6 +7,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import service.chat.mealmate.security.Oauth2.CustomOAuth2UserService;
@@ -22,6 +23,8 @@ import service.chat.mealmate.member.service.MemberService;
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final MemberService memberService;
+    private final CustomUserDetailsService customUserDetailsService;
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
@@ -47,21 +50,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
      */
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication()
-                .withUser("hunjin")
-                .password("{noop}hunjin")
-                .roles(Role.USER.name())
-                .and()
-                .withUser("test")
-                .password("{noop}test")
-                .roles(Role.USER.name())
-                .and()
-                .withUser("guest")
-                .password("{noop}guest")
-                .roles(Role.GUEST.name());
-        memberService.signUp("hunjin", Role.USER);
-        memberService.signUp("test", Role.USER);
-        memberService.signUp("guest", Role.GUEST);
+        auth.userDetailsService(customUserDetailsService);
+        PasswordEncoder encoder = passwordEncoder();
+
+        memberService.signUp("hunjin", encoder.encode("hunjin"), Role.USER);
+        memberService.signUp("test", encoder.encode("test"), Role.USER);
+        memberService.signUp("guest", encoder.encode("guest"), Role.GUEST);
     }
 
     @Bean

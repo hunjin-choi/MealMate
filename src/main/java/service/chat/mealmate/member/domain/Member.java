@@ -47,23 +47,23 @@ public class Member {
     @Embedded
     private Oauth2Info oauth2Info;
 
-    protected void of (String loginId, String email, String picture, Role role, Oauth2Info oauth2Info) {
-        this.memberId = memberId;
+    protected void of (String loginId, String password, String email, String picture, Role role, Oauth2Info oauth2Info) {
         this.loginId = loginId;
+        this.password = password;
         this.nickname = loginId;
-        this.password = "123"; // @JsonIgnore @ToString(exclued = "password")
+        this.password = password; // @JsonIgnore @ToString(exclued = "password")
         this.email = email;
         this.createdAt = LocalDateTime.now();
         this.roles.add(role);
         this.oauth2Info = oauth2Info;
     }
-    public Member(String loginId, String email, String picture, Role role){
-        this.of(loginId, email, picture, role, null);
+    public Member(String loginId, String password, String email, String picture, Role role){
+        this.of(loginId, password, email, picture, role, null);
     }
 
     @Builder
-    public Member(String loginId, String email, String picture, Role role, Oauth2Info oauth2Info){
-        this.of(loginId, email, picture, role, oauth2Info);
+    public Member(String loginId, String password, String email, String picture, Role role, Oauth2Info oauth2Info){
+        this.of(loginId, password, email, picture, role, oauth2Info);
     }
 
     public Member update(String name, String picture){

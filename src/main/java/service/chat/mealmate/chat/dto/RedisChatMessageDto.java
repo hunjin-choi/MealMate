@@ -3,7 +3,7 @@ package service.chat.mealmate.chat.dto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import service.chat.mealmate.mealmate.domain.ChatMessage;
+import service.chat.mealmate.mealMate.domain.ChatMessage;
 
 import java.time.LocalDateTime;
 import java.util.List;

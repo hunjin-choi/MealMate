@@ -2,7 +2,7 @@ package service.chat.mealmate.mileageHistory.domain;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import service.chat.mealmate.mealmate.domain.MileageHistoryReferable;
+import service.chat.mealmate.mealMate.domain.MileageHistoryReferable;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;

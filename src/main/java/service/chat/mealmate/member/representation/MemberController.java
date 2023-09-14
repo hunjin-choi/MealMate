@@ -12,6 +12,7 @@ import service.chat.mealmate.member.repository.MemberRepository;
 import service.chat.mealmate.member.service.MemberService;
 import service.chat.mealmate.mileageHistory.domain.MileageHistory;
 import service.chat.mealmate.mileageHistory.repository.MileageHistoryRepository;
+import service.chat.mealmate.security.domain.SecurityMember;
 
 import java.util.List;
 
@@ -29,23 +30,23 @@ public class MemberController {
     @GetMapping("/change/nickname/{nickname}")
     public void changeNickname(@PathVariable("nickname") String nickname) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String member_id = auth.getName();
-        memberService.changeNickname(member_id, nickname);
+        SecurityMember principal = (SecurityMember) auth.getPrincipal();
+        memberService.changeNickname(principal.getMemberId(), nickname);
     }
     @GetMapping("/mileage/history/json")
     @ResponseBody
     public List<MileageDto> findMileageHistoryJson() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String name = auth.getName();
-        return memberService.dynamicTest(name);
-
+        SecurityMember principal = (SecurityMember) auth.getPrincipal();
+        return memberService.dynamicTest(principal.getMemberId());
     }
 
     @GetMapping("/mileage/history")
     public String findMileageHistory(Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String name = auth.getName();
-        List<MileageHistory> mileageHistoryList = memberService.findAllMileageHistory(name);
+        SecurityMember principal = (SecurityMember) auth.getPrincipal();
+        List<MileageHistory> mileageHistoryList = memberService.findAllMileageHistory(principal.getMemberId());
         model.addAttribute("mileageHistoryList", mileageHistoryList);
         return "member/mileageHistoryList";
     }

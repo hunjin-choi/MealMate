@@ -4,8 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import service.chat.mealmate.mealmate.domain.FeedbackHistory;
-import service.chat.mealmate.mealmate.domain.MileageHistoryReferable;
+import service.chat.mealmate.mealMate.domain.FeedbackHistory;
+import service.chat.mealmate.mealMate.domain.MileageHistoryReferable;
 import service.chat.mealmate.member.domain.Member;
 
 import javax.persistence.*;
