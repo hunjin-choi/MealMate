@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import service.chat.mealmate.mealMate.domain.vote.Vote;
 import service.chat.mealmate.mealMate.domain.vote.VotePaper;
 import service.chat.mealmate.mealMate.domain.vote.VoterStatus;
-import service.chat.mealmate.mealMate.domain.vote.VotingMethodType;
+import service.chat.mealmate.mealMate.domain.vote.VoteMethodType;
 import service.chat.mealmate.member.domain.Member;
 
 import javax.persistence.*;
@@ -54,8 +54,8 @@ public class MealMate implements Serializable {
     public boolean isActive() {
         return this.leavedAt == null;
     }
-    public VotePaper createVoteAndVoting(String title, String content, VotingMethodType votingMethodType, VoterStatus voterStatus, ChatRoom chatRoom) {
-        Vote vote = new Vote(title, content, votingMethodType, chatRoom);
+    public VotePaper createVoteAndVoting(String title, String content, VoteMethodType voteMethodType, VoterStatus voterStatus, ChatRoom chatRoom) {
+        Vote vote = new Vote(title, content, voteMethodType, chatRoom);
         // cascade option
         VotePaper votePaper = new VotePaper(vote, this, voterStatus, true);
         return votePaper;

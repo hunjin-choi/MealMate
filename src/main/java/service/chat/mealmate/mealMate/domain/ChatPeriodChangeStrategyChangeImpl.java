@@ -6,7 +6,7 @@ import service.chat.mealmate.mealMate.dto.ChatPeriodDto;
 import java.time.LocalTime;
 
 @Component
-public class ChatPeriodStrategyImpl implements ChatPeriodStrategy {
+public class ChatPeriodChangeStrategyChangeImpl implements ChatPeriodChangeStrategy {
     protected boolean onlyAfterThanEndTime(LocalTime now, ChatPeriod chatPeriod) {
         LocalTime startTime = chatPeriod.startTime;
         LocalTime endTime = chatPeriod.endTime;

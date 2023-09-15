@@ -6,13 +6,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import service.chat.mealmate.mealMate.dto.*;
+import service.chat.mealmate.mealMate.repository.MealMateRepository;
+import service.chat.mealmate.mealMate.repository.VoteRepository;
 import service.chat.mealmate.security.domain.SecurityMember;
 import service.chat.mealmate.security.jwt.JwtTokenProvider;
 import service.chat.mealmate.mealMate.domain.ChatPeriod;
 import service.chat.mealmate.mealMate.domain.FeedbackHistory;
 import service.chat.mealmate.mealMate.domain.MealMate;
-import service.chat.mealmate.mealMate.dto.ChatPeriodDto;
-import service.chat.mealmate.mealMate.dto.FeedbackDto;
 import service.chat.mealmate.mealMate.service.MealMateService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,7 +27,70 @@ import java.util.List;
 public class MealMateController {
     private final MealMateService mealmateService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final MealMateRepository mealMateRepository;
+    private final VoteRepository voteRepository;
 
+    @GetMapping("/vote/chatPeriod/list/{chatRoomId}")
+    @ResponseBody
+    public List<VoteChatPeriodChangeDto> voteChatPeriodList(@PathVariable String chatRoomId) {
+        SecurityMember principal = (SecurityMember) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long memberId = principal.getMemberId();
+        MealMate mealMate = mealMateRepository.findOneActivatedCompositeBy(memberId, chatRoomId)
+                .orElseThrow(() -> new RuntimeException(""));
+        return voteRepository.findAllChatPeriodChangeVote(mealMate.getChatRoom());
+    }
+    @GetMapping("/vote/chatPeriod/list/all/{chatRoomId}")
+    @ResponseBody
+    public List<VoteChatPeriodChangeDto> voteChatPeriodListAll(@PathVariable String chatRoomId) {
+        SecurityMember principal = (SecurityMember) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long memberId = principal.getMemberId();
+        MealMate mealMate = mealMateRepository.findOneActivatedCompositeBy(memberId, chatRoomId)
+                .orElseThrow(() -> new RuntimeException(""));
+        return voteRepository.findAllChatPeriodChangeVote(mealMate.getChatRoom());
+    }
+
+    @GetMapping("/vote/title/list/{chatRoomId}")
+    @ResponseBody
+    public List<VoteTitleChangeDto> voteTitleList(@PathVariable String chatRoomId) {
+        SecurityMember principal = (SecurityMember) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long memberId = principal.getMemberId();
+        MealMate mealMate = mealMateRepository.findOneActivatedCompositeBy(memberId, chatRoomId)
+                .orElseThrow(() -> new RuntimeException(""));
+        return voteRepository.findActivatedTitleChangeVote(mealMate.getChatRoom());
+    }
+    @GetMapping("/vote/title/list/all/{chatRoomId}")
+    @ResponseBody
+    public List<VoteTitleChangeDto> voteTitleListAll(@PathVariable String chatRoomId) {
+        SecurityMember principal = (SecurityMember) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long memberId = principal.getMemberId();
+        MealMate mealMate = mealMateRepository.findOneActivatedCompositeBy(memberId, chatRoomId)
+                .orElseThrow(() -> new RuntimeException(""));
+        return voteRepository.findAllTitleChangeVote(mealMate.getChatRoom());
+    }
+    @PostMapping("/create/vote/voting/{chatRoomId}")
+    @ResponseBody
+    public void createVoteAndVoting(@RequestBody() CreateVoteAndVotingDto dto, @PathVariable String chatRoomId) {
+        SecurityMember principal = (SecurityMember) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long memberId = principal.getMemberId();
+        mealmateService.createVoteAndVoting(memberId, chatRoomId, dto);
+        // /chat/vote/list API가 있어서 굳이 voteId 반환 안해도 될 거 같음
+        // int voteId = 0;
+        // return voteId;
+    }
+    @PostMapping("/voting/{chatRoomId}")
+    @ResponseBody
+    public VotingStatusDto voting(@RequestBody() VotingDto votingDto, @PathVariable String chatRoomId) {
+        int agreeCount = 0;
+        SecurityMember principal = (SecurityMember) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long memberId = principal.getMemberId();
+        mealmateService.voting(memberId, chatRoomId, votingDto);
+        return mealmateService.votingStatus(votingDto.getVoteId(), chatRoomId);
+    }
+    @GetMapping("/voting/status/{chatRoomId}/{voteId}")
+    @ResponseBody
+    public VotingStatusDto votingStatus(@PathVariable String chatRoomId, @PathVariable Long voteId) {
+        return mealmateService.votingStatus(voteId, chatRoomId);
+    }
     @PostMapping("/addPeriod/{roomId}")
     @ResponseBody
     public void addChatPeriod(HttpServletRequest httpRequest, @PathVariable("roomId") String roomId, @PathVariable("voteId") Long voteId, @RequestBody ChatPeriodDto chatPeriodDto) throws IOException {
@@ -40,7 +104,6 @@ public class MealMateController {
     }
 
     @PostMapping ("/deletePeriod/{roomId}/{voteId}/{chatPeriodId}")
-    @ResponseBody
     public void deleteChatPeriod(HttpServletRequest httpRequest, @PathVariable("roomId") String roomId, @PathVariable("voteId") Long voteId, @PathVariable("chatPeriodId") Long chatPeriodId) throws IOException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String name = auth.getName();
@@ -49,9 +112,35 @@ public class MealMateController {
         mealmateService.deleteChatPeriod(name, voteId, chatPeriodId);
     }
 
-    @PostMapping("/feedback/{roomId}")
+    @PostMapping("/updatePeriod/{voteId}")
+    public void updateChatPeriod() {
+
+    }
+
+    @PostMapping("/lock")
+    public void lockChatRoom() {
+
+    }
+    @PostMapping("/feedback/one/{roomId}")
     @ResponseBody
-    public void addFeedback(HttpServletRequest httpRequest, @PathVariable("roomId") String roomId, @RequestBody FeedbackDto feedbackDto) throws IOException {
+    public void addFeedbackOne(HttpServletRequest httpRequest, @PathVariable("roomId") String roomId, @RequestBody FeedbackDto feedbackDto) throws IOException {
+        // roomId를 pathVaraiable로 넣지 말고, jwt에서 payload로 넣어 둔 값을 가져오는 식으로 하자
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String senderId = auth.getName();
+        SecurityMember principal = (SecurityMember) auth.getPrincipal();
+        String readWriteToken = httpRequest.getHeader("readWriteToken");
+        String userName = jwtTokenProvider.getUserNameFromJwt(readWriteToken).orElseThrow(() -> new RuntimeException(""));
+        String roomIdFromJwt = jwtTokenProvider.getChatRoomIdFromJWT(readWriteToken).orElseThrow(() -> new RuntimeException(""));
+        if (!roomIdFromJwt.equals(roomId)) throw new RuntimeException("");
+        Long chatPeriodId = jwtTokenProvider.getChatPeriodIdFromJWT(readWriteToken).orElseThrow(() -> new RuntimeException(""));
+        // chatPeriod 개수 체크, chatPeriod 겹치지 않는지 체크
+        // find mealmate -> add ChatPeriod
+        mealmateService.feedback(principal.getMemberId(), roomId, chatPeriodId, feedbackDto);
+    }
+
+    @PostMapping("/feedback/many/{roomId}")
+    @ResponseBody
+    public void addFeedbackMany(HttpServletRequest httpRequest, @PathVariable("roomId") String roomId, @RequestBody FeedbackDto feedbackDto) throws IOException {
         // roomId를 pathVaraiable로 넣지 말고, jwt에서 payload로 넣어 둔 값을 가져오는 식으로 하자
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String senderId = auth.getName();

@@ -4,7 +4,7 @@ import service.chat.mealmate.mealMate.dto.ChatPeriodDto;
 
 import java.time.LocalTime;
 
-public interface ChatPeriodStrategy {
+public interface ChatPeriodChangeStrategy {
     public boolean canDeleteImmediately(LocalTime now, ChatPeriod chatPeriod);
 
     public boolean canAddImmediately(LocalTime now, ChatPeriodDto chatPeriodDto);

@@ -27,6 +27,8 @@ public interface MealMateRepository extends JpaRepository<MealMate, Long> {
 
     @Query(value = "select * from meal_mate as mm where mm.chat_room_id = :chatRoomId and mm.leaved_at is null ", nativeQuery = true)
     public List<MealMate> findAllActiveMealMateBy(String chatRoomId);
+    @Query(value = "select count(*) from meal_mate as mm where mm.chat_room_id = :chatRoomId and mm.leaved_at is null ", nativeQuery = true)
+    public Long countAllActiveMealMateBy(String chatRoomId);
     @Query(value = "select count(*) from meal_mate as mm left join chatRoom as cr where mm.leaved_at is null and cr.chat_room_id = :chatRoomId", nativeQuery = true)
     public Long countAllActivatedBy(String chatRoomId);
     @Query(value = "select * from meal_mate as mm where mm.member_id = :memberId and mm.chat_room_id = :chatRoomId and mm.leaved_at is null ", nativeQuery = true)

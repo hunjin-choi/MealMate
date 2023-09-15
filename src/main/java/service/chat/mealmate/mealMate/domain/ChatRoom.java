@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.bytebuddy.asm.Advice;
 import org.hibernate.annotations.Cascade;
+import service.chat.mealmate.mealMate.domain.vote.Vote;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -35,6 +36,9 @@ public class ChatRoom {
 
     @OneToMany(mappedBy = "chatRoom")
     private List<MealMate> mealMateList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "chatRoom")
+    private List<Vote> voteList = new ArrayList<>();
     public ChatRoom(String chatRoomId, String title, LocalDateTime openedAt, short maxPersonnel) {
         this.chatRoomId = chatRoomId;
         this.title = title;

@@ -258,7 +258,7 @@
                     mileage: this.mileage
                 };
 
-                axios.post('http://localhost:8080/mealmate/feedback/' + this.roomId, data, {
+                axios.post('http://localhost:8080/mealmate/feedback/one/' + this.roomId, data, {
                     headers: {
                         "token":this.token,
                         "readOnlyToken" : this.readOnlyToken,
