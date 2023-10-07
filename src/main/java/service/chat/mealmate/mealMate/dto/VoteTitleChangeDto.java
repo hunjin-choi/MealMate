@@ -18,4 +18,14 @@ public class VoteTitleChangeDto {
     private LocalDateTime completedDate;
 
     private String chatRoomTitle;
+
+    public VoteTitleChangeDto(Long voteId, String voteTitle, String content, VoteMethodType voteMethodType, VoteSubject voteSubject, LocalDateTime createdAt, String chatRoomTitle) {
+        this.voteId = voteId;
+        this.voteTitle = voteTitle;
+        this.content = content;
+        this.voteMethodType = voteMethodType;
+        this.voteSubject = voteSubject;
+        this.createdAt = createdAt;
+        this.chatRoomTitle = chatRoomTitle;
+    }
 }

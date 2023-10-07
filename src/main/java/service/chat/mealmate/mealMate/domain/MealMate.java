@@ -3,10 +3,7 @@ package service.chat.mealmate.mealMate.domain;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import service.chat.mealmate.mealMate.domain.vote.Vote;
-import service.chat.mealmate.mealMate.domain.vote.VotePaper;
-import service.chat.mealmate.mealMate.domain.vote.VoterStatus;
-import service.chat.mealmate.mealMate.domain.vote.VoteMethodType;
+import service.chat.mealmate.mealMate.domain.vote.*;
 import service.chat.mealmate.member.domain.Member;
 
 import javax.persistence.*;
@@ -55,16 +52,16 @@ public class MealMate implements Serializable {
         return this.leavedAt == null;
     }
     public VotePaper createVoteAndVoting(String title, String content, VoteMethodType voteMethodType, VoterStatus voterStatus, ChatRoom chatRoom) {
-        Vote vote = new Vote(title, content, voteMethodType, chatRoom);
+        Vote vote = Vote.of(title, content, voteMethodType, VoteSubject.ADD_CHAT_PERIOD, chatRoom, LocalDateTime.now());
         // cascade option
         VotePaper votePaper = new VotePaper(vote, this, voterStatus, true);
         return votePaper;
     }
-    public VotePaper voting(Vote vote, VoterStatus voterStatus) {
+    public VotePaper voting(Vote vote, VoterStatus voterStatus, boolean isCreator) {
         // 중복체크를 voterList를 순회하면서 할 것인지?
         // 중복체크를 이 함수밖인 service 계층에서 select문을 통해 할 것인지?
         // 중복체크를 composite unique index를 통해서 할 것인지?
-        VotePaper votePaper = new VotePaper(vote, this, voterStatus, false);
+        VotePaper votePaper = new VotePaper(vote, this, voterStatus, isCreator);
         return votePaper;
     }
 

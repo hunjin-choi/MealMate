@@ -11,6 +11,7 @@ import service.chat.mealmate.mealMate.domain.vote.validate.VoteValidateDto;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,16 +35,35 @@ public class Vote {
     private List<VotePaper> votePaperList = new ArrayList<>();
     @ManyToOne()
     private ChatRoom chatRoom;
-    @OneToOne() @JoinColumn(name = "chat_period_vote")
+    @OneToOne(cascade = CascadeType.ALL) @JoinColumn(name = "chat_period_vote")
     private ChatPeriodVote chatPeriodVote;
-    @OneToOne() @JoinColumn(name = "title_vote_id")
+    @OneToOne(cascade = CascadeType.ALL) @JoinColumn(name = "title_vote_id")
     private TitleVote titleVote;
 
-    public Vote(String voteTitle, String content, VoteMethodType voteMethodType, ChatRoom chatRoom) {
+    protected Vote(String voteTitle, String content, VoteMethodType voteMethodType, VoteSubject voteSubject, ChatRoom chatRoom, LocalDateTime createdAt) {
         this.voteTitle = voteTitle;
         this.content = content;
         this.voteMethodType = voteMethodType;
+        this.voteSubject = voteSubject;
         this.chatRoom = chatRoom;
+        this.createdAt = createdAt;
+    }
+
+    public static Vote of(String voteTitle, String content, VoteMethodType voteMethodType, VoteSubject voteSubject, ChatRoom chatRoom, LocalDateTime createdAt) {
+        Vote vote = new Vote(voteTitle, content, voteMethodType, voteSubject, chatRoom, createdAt);
+        return vote;
+    }
+
+    public static Vote of(String voteTitle, String content, VoteMethodType voteMethodType, VoteSubject voteSubject, ChatRoom chatRoom, LocalDateTime createdAt, LocalTime startTime, LocalTime endTime) {
+        Vote vote = new Vote(voteTitle, content, voteMethodType, voteSubject, chatRoom, createdAt);
+        vote.chatPeriodVote = new ChatPeriodVote(startTime, endTime);
+        return vote;
+    }
+
+    public static Vote of(String voteTitle, String content, VoteMethodType voteMethodType, VoteSubject voteSubject, ChatRoom chatRoom, LocalDateTime createdAt, String chatRoomTitle) {
+        Vote vote = new Vote(voteTitle, content, voteMethodType, voteSubject, chatRoom, createdAt);
+        vote.titleVote = new TitleVote(chatRoomTitle);
+        return vote;
     }
     protected boolean timeInfoNeed() {
         List<VoteSubject> voteSubjects = List.of(new VoteSubject[]{VoteSubject.ADD_CHAT_PERIOD, VoteSubject.UPDATE_CHAT_PERIOD});

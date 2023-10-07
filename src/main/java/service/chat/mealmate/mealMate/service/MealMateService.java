@@ -6,11 +6,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import service.chat.mealmate.mealMate.domain.*;
-import service.chat.mealmate.mealMate.domain.vote.Vote;
-import service.chat.mealmate.mealMate.domain.vote.VotePaper;
-import service.chat.mealmate.mealMate.domain.vote.VoterStatus;
+import service.chat.mealmate.mealMate.domain.vote.*;
 import service.chat.mealmate.mealMate.domain.vote.validate.VoteValidateDto;
-import service.chat.mealmate.mealMate.domain.vote.VotingMethodStrategy;
 import service.chat.mealmate.mealMate.dto.*;
 import service.chat.mealmate.mealMate.repository.*;
 import service.chat.mealmate.member.domain.Member;
@@ -27,7 +24,7 @@ import java.util.List;
 @Transactional
 public class MealMateService {
     private final VotingMethodStrategy votingMethodStrategy;
-    private final ChatPeriodChangeStrategy chatPeriodChangeStrategy;
+    private final ChatPeriodChangePolicy chatPeriodChangePolicy;
     private final MealMateRepository mealMateRepository;
     private final MemberRepository memberRepository;
     private final FeedbackHistoryRepository feedbackHistoryRepository;
@@ -37,6 +34,7 @@ public class MealMateService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final VotePaperRepository votePaperRepository;
+    private final CreateVoteStrategy createVoteStrategy;
 
     protected void voteComplete(String chatRoomId, Long voteId, VoteValidateDto dto) {
         Vote vote = voteRepository.findOneWithChatRoom(voteId, chatRoomId)
@@ -100,7 +98,7 @@ public class MealMateService {
 
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 업습니다"));
-        boolean immediately = chatPeriodChangeStrategy.canAddImmediately(LocalTime.now(), dto);
+        boolean immediately = chatPeriodChangePolicy.canAddImmediately(LocalTime.now(), dto);
         chatRoom.addChatPeriod(dto.getStartHour(), dto.getStartMinute(), dto.getEndHour(), dto.getEndMinute(), immediately);
         // 즉시/예약 여부를 프론트에서 알 수 있게끔 처리
     }
@@ -111,7 +109,7 @@ public class MealMateService {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 업습니다"));
         ChatPeriod chatPeriod = chatRoom.findMatchedChatPeriod(chatPeriodId);
-        boolean immediately = chatPeriodChangeStrategy.canDeleteImmediately(LocalTime.now(), chatPeriod);
+        boolean immediately = chatPeriodChangePolicy.canDeleteImmediately(LocalTime.now(), chatPeriod);
         chatRoom.deleteChatPeriod(chatPeriodId, immediately);
         // 즉시/예약 여부를 프론트에서 알 수 있게끔 처리
     }
@@ -123,7 +121,7 @@ public class MealMateService {
                 .orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 업습니다"));
         Long chatPeriodId = dto.getChatPeriodId();
         ChatPeriod chatPeriod = chatRoom.findMatchedChatPeriod(chatPeriodId);
-        boolean immediately = chatPeriodChangeStrategy.canUpdateImmediately(LocalTime.now(), chatPeriod);
+        boolean immediately = chatPeriodChangePolicy.canUpdateImmediately(LocalTime.now(), chatPeriod);
         chatRoom.updateChatPeriod(chatPeriodId, dto.getStartHour(), dto.getStartMinute(), dto.getStartHour(), dto.getEndMinute(), immediately);
         // 즉시/예약 여부를 프론트에서 알 수 있게끔 처리
     }
@@ -139,17 +137,21 @@ public class MealMateService {
                 .orElseThrow(() -> new RuntimeException("밀 메이트를 찾을 수 없습니다"));
         ChatRoom chatRoom = this.chatRoomRepository.findOneWithMealMate(creatorId, chatRoomId)
                 .orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 없습니다"));
-        VotePaper votePaper = mealMate.createVoteAndVoting(dto.getVoteTitle(), dto.getContent(), dto.getVoteMethodType(), dto.getVotingDto().getVoterStatus(), chatRoom);
+        Vote vote = createVoteStrategy.createVote(dto, chatRoom);
+        // VotePaper votePaper = mealMate.createVoteAndVoting(dto.getVoteTitle(), dto.getContent(), dto.getVoteMethodType(), dto.getVotingDto().getVoterStatus(), chatRoom);
+        boolean isCreator = true;
+        VotePaper votePaper = mealMate.voting(vote, dto.getVotingDto().getVoterStatus(), isCreator);
         // cascade 하면 될텐데
         this.votePaperRepository.save(votePaper);
     }
 
-    public void voting(Long voterId, String chatRoomId, VotingDto dto) {
+    public void voting(Long mealMateId, String chatRoomId, VotingDto dto) {
         Vote vote = voteRepository.findOneWithChatRoom(dto.getVoteId(), chatRoomId)
                 .orElseThrow(() -> new RuntimeException("적절한 투표 대상을 찾을 수 없습니다"));
-        MealMate mealMate = this.mealMateRepository.findById(voterId)
+        MealMate mealMate = this.mealMateRepository.findById(mealMateId)
                 .orElseThrow(() -> new RuntimeException("밀 메이트를 찾을 수 없습니다"));
-        VotePaper votePaper = mealMate.voting(vote, dto.getVoterStatus());
+        boolean isCreator = false;
+        VotePaper votePaper = mealMate.voting(vote, dto.getVoterStatus(), isCreator);
         // 만약 기존에 했던 투표를 취소하고 싶다면? 아직 구현X
         // 만약 기존에 했던 투표를 바꾸고 싶다면? 아직 구현X
         // cascade 하면 될텐데

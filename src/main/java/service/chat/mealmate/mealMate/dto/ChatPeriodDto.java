@@ -1,12 +1,13 @@
 package service.chat.mealmate.mealMate.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import service.chat.mealmate.mealMate.domain.ChatPeriod;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Getter
+@Getter @AllArgsConstructor
 public class ChatPeriodDto {
     private Long chatPeriodId;
     private int startHour;
@@ -15,8 +16,7 @@ public class ChatPeriodDto {
     private int endMinute;
 
 
-    public ChatPeriodDto(Long chatPeriodId, int startHour, int startMinute, int endHour, int endMinute) {
-        this.chatPeriodId = chatPeriodId;
+    public ChatPeriodDto(int startHour, int startMinute, int endHour, int endMinute) {
         this.startHour = startHour;
         this.startMinute = startMinute;
         this.endHour = endHour;

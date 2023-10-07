@@ -20,4 +20,15 @@ public class VoteChatPeriodChangeDto {
 
     private LocalTime startTime;
     private LocalTime endTime;
+
+    public VoteChatPeriodChangeDto(Long voteId, String voteTitle, String content, VoteMethodType voteMethodType, VoteSubject voteSubject, LocalDateTime createdAt, LocalTime startTime, LocalTime endTime) {
+        this.voteId = voteId;
+        this.voteTitle = voteTitle;
+        this.content = content;
+        this.voteMethodType = voteMethodType;
+        this.voteSubject = voteSubject;
+        this.createdAt = createdAt;
+        this.startTime = startTime;
+        this.endTime = endTime;
+    }
 }

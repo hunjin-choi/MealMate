@@ -8,10 +8,14 @@ import java.time.LocalDateTime;
 
 @Data
 public class CreateVoteAndVotingDto {
+    private VoteSubject voteSubject;
     private String voteTitle;
     private String content;
     private VoteMethodType voteMethodType;
-    private VoteSubject voteSubject;
+
+    private ChatPeriodDto chatPeriodDto = null;
+    private String chatRoomTitle = null;
+    private Boolean locking = null;
 
     private VotingDto votingDto;
 }

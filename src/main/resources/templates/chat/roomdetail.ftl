@@ -32,26 +32,108 @@
         <input type="text" class="form-control" v-model="message" v-on:keypress.enter="sendMessage('TALK')" placeholder="Enter chat message here...">
         <div class="input-group-append">
             <button class="btn btn-primary" type="button" @click="sendMessage('TALK')">채팅 보내기</button>
-            <button class="btn btn-secondary" type="button" @click="chatPeriodModal = true">채팅 시간 설정</button>
+            <button class="btn btn-secondary" type="button" @click="addChatPeriodFlag = true">채팅 시간 설정</button>
             <button class="btn btn-third" type="button" @click="fetchChatPeriodList()">채팅 시간 삭제</button>
             <button class="btn btn-info" type="button" @click="feedbackModal = true">피드백 보내기</button>
-
+            <button class="btn btn-third" type="button" @click="fetchVoteList(); voteListFlag = true;" ></button>
         </div>
     </div>
 
-    <ul class="list-group" v-if="isDataFetched">
-        <li class="list-group-item d-flex justify-content-between" v-for="message in messages">
-    <span>
-      {{message.sender}} - {{message.message}}
-    </span>
-            <span>
-      {{message.date}}
-    </span>
-        </li>
+    <div class="list-group" v-if="voteListFlag">
+        <div v-if="chatPeriodVoteFlag">
+            <li class="" v-for="chatPeriodVote in allChatPeriodVoteList">
+                <span>
+                    {{chatPeriodVote.voteId}}
+                    {{chatPeriodVote.voteTitle}}
+                    {{chatPeriodVote.content}}
+                    {{chatPeriodVote.voteMethodType}}
+                    {{chatPeriodVote.voteSubject}}
+                    {{chatPeriodVote.createdAt}}
+                    {{chatPeriodVote.startTime}}
+                    {{chatPeriodVote.endTime}}
+                    {{chatPeriodVote.startTime}}
+                    {{chatPeriodVote.endTime}}
+                </span>
+                <span>
+                    agree, disagree
+                </span>
+            </li>
+        </div>
+        <div v-if="titleChangeVoteFlag">
+            <li class="" v-for="titleChangeVote in allTitleChangeVoteList">
+                <span>
+                    {{titleChangeVote.voteId}}
+                    {{titleChangeVote.voteTitle}}
+                    {{titleChangeVote.content}}
+                    {{titleChangeVote.voteMethodType}}
+                    {{titleChangeVote.voteSubject}}
+                    {{titleChangeVote.createdAt}}
+                    {{titleChangeVote.completedDate}}
+                    {{titleChangeVote.chatRoomTitle}}
+                </span>
+                <span>
+                    agree, disagree
+                </span>
+            </li>
+        </div>
+        <div>
+            <li>
+                <div class="accordion-button" type="button" @Click()="createChatPeriodVoteFlag = true">create chatPeriod vote</div>
+                <div class="accordion-button" type="button" @Click()="createTitleVoteFlag = true">create title vote</div>
+                <div class="accordion-button" type="button" @Click()="lockVoteFlag = true">create title vote</div>
+            </li>
+        </div>
+        <div v-if="createChatPeriodVoteFlag">
+            <div>
+                <label>투표 주제: " </label>
+                <div>선택됨: {{ voteSubject }}</div>
+                <select v-model="voteSubject">
+                    <option disabled value="">다음 중 하나를 선택하세요</option>
+                    <option>ADD_CHAT_PERIOD</option>
+                    <option>DELETE_CHAT_PERIOD</option>
+                    <option>UPDATE_CHAT_PERIOD</option>
+                    <option>UPDATE_CHAT_ROOM_TITLE</option>
+                    <option>LOCK</option>
+                </select>
+                <label>투표 제목: </label>
+                <input type="text" v-model="title" minlength="1" maxlength="30"><br/>
+                <label>제안 내용 or 이유: </label>
+                <input type="text" v-model="content" minlength="0" maxlength="50"><br/>
+                <label>투표 방식: " </label>
+                    <div>선택됨: {{ voteMethodType }}</div>
+                    <select v-model="voteMethodType">
+                        <option disabled value="">다음 중 하나를 선택하세요</option>
+                        <option>MAJORITY</option>
+                        <option>UNANIMOUS</option>
+                        <option>NONE</option>
+                    </select>
+                <label>시작 시각: </label>
+                <input type="number" v-model="startHour" min="0" max="23"><br/>
+                <label>시작 분: </label>
+                <input type="number" v-model="startMinute" min="0" max="59"><br/>
+                <label>종료 시각: </label>
+                <input type="number" v-model="endHour" min="0" max="23"><br/>
+                <label>종료 분: </label>
+                <input type="number" v-model="endMinute" min="0" max="59"><br/>
+                <button @click="createChatPeriodVote()">제출</button>
+            </div>
+            <button @click="createChatPeriodVoteFlag = false; fetchChatPeriodList()">Close</button>
+        </div>
+    </div>
+
+    <ul class="list-group" v-if="messageFetchFlag">
+            <li class="list-group-item d-flex justify-content-between" v-for="message in messages">
+        <span>
+          {{message.sender}} - {{message.message}}
+        </span>
+        <span>
+          {{message.date}}
+        </span>
+            </li>
     </ul>
 
     <!-- Chat Time Period Modal -->
-    <div v-if="chatPeriodModal" class="modal-container">
+    <div v-if="addChatPeriodFlag" class="modal-container">
         <h4>Chat Time Period</h4>
         <div>
             <label>시작 시각: </label>
@@ -62,9 +144,9 @@
             <input type="number" v-model="endHour" min="0" max="23"><br/>
             <label>종료 분: </label>
             <input type="number" v-model="endMinute" min="0" max="59"><br/>
-            <button @click="submit">제출</button>
+            <button @click="addChatPeriod">제출</button>
         </div>
-        <button @click="chatPeriodModal = false; fetchChatPeriodList()">Close</button>
+        <button @click="addChatPeriodFlag = false; fetchChatPeriodList()">Close</button>
     </div>
 
     <!-- Chat Time Period Delete Modal -->
@@ -131,7 +213,7 @@
             chatPeriodList: [],
             readOnlyToken: '',
             readWriteToken: '',
-            chatPeriodModal: false,
+            addChatPeriodFlag: false,
             accessToken : null,
             refreshToken : null,
             feedbackModal: false,
@@ -142,7 +224,23 @@
             feedback: '',
             mileage: null,
             tempValue:null,
-            isDataFetched: false,
+            messageFetchFlag: false,
+
+            allChatPeriodVoteList: null,
+            allTitleChangeVoteList: null,
+            voteListFlag: false,
+            chatPeriodVoteFlag: true,
+            titleChangeVoteFlag: false,
+            createChatPeriodVoteFlag: false,
+            createTitleVoteFlag: false,
+            lockVoteFlag:  false,
+
+            contents: null,
+            voteSubject: null,
+            voteTitle: null,
+            voteMethodType: null,
+            chatRoomTitle : null,
+            locking: null,
         },
         // 아래가 vm 생성자인가보다;
         async created() {
@@ -195,7 +293,7 @@
             _this.messages = resp.data;
             console.log(resp.data);
             console.log(_this.messages);
-            _this.isDataFetched = true;
+            _this.messageFetchFlag = true;
         },
         beforeDestroy() {
             this.roomId = null;
@@ -241,7 +339,7 @@
                 })
                     .then(response => {
                         console.log(response);
-                        this.chatPeriodModal = false;
+                        this.addChatPeriodFlag = false;
                     })
                     .catch(error => {
                         console.error(error);
@@ -316,6 +414,43 @@
             },
             redirectToChatRoom: function() {
                 window.location.href = "/chat/room";
+            },
+            fetchVoteList: function () {
+                axios.get('http://localhost:8080/mealmate/vote/chatPeriod/list/all/' + this.roomId)
+                    .then(response => {
+                        this.allChatPeriodVoteList = response.data;
+                    })
+                    .catch(error => {
+                        alert("fetchVoteList fail");
+                        console.error(error);
+                    });
+                axios.get('http://localhost:8080/mealmate/vote/title/list/all/' + this.roomId)
+                    .then(response => {
+                        this.allTitleChangeVoteList = response.data;
+                    })
+                    .catch(error => {
+                        alert("fetchVoteList fail");
+                        console.error(error);
+                    });
+            },
+            createChatPeriodVote : function () {
+                axios.post('http://localhost:8080/mealmate/create/vote/voting/' + this.roomId)
+                    .body({
+                        contents : this.contents,
+                        voteSubject: this.voteSubject,
+                        voteTitle: this.voteTitle,
+                        voteMethodType: this.voteMethodType,
+
+                        startHour: this.startHour,
+                        startMinute: this.startMinute,
+                        endHour: this.endHour,
+                        endMinute: this.endMinute,
+
+                        chatRoomTitle: this.chatRoomTitle,
+
+                        locking: this.locking,
+
+                    })
             }
         }
     });
