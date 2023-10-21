@@ -6,6 +6,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import service.chat.mealmate.mealMate.domain.vote.VoteSubject;
 import service.chat.mealmate.mealMate.dto.*;
 import service.chat.mealmate.mealMate.repository.MealMateRepository;
 import service.chat.mealmate.mealMate.repository.VoteRepository;
@@ -30,6 +31,11 @@ public class MealMateController {
     private final MealMateRepository mealMateRepository;
     private final VoteRepository voteRepository;
 
+    @GetMapping
+    @ResponseBody
+    public void test(@RequestBody() CreateVoteAndVotingDto dto) {
+        System.out.println("dto = " + dto);
+    }
     @GetMapping("/vote/chatPeriod/list/{chatRoomId}")
     @ResponseBody
     public List<VoteChatPeriodChangeDto> voteChatPeriodList(@PathVariable String chatRoomId) {
@@ -71,6 +77,18 @@ public class MealMateController {
                 .orElseThrow(() -> new RuntimeException(""));
         return voteRepository.findAllTitleChangeVote(mealMate.getChatRoom());
     }
+
+    @GetMapping("/vote/lock/list/all/{chatRoomId}")
+    @ResponseBody
+    public List<VoteChatLockDto> voteLockListAll(@PathVariable String chatRoomId) {
+        SecurityMember principal = (SecurityMember) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long memberId = principal.getMemberId();
+        // 연관관계 검증
+        MealMate mealMate = mealMateRepository.findOneActivatedCompositeBy(memberId, chatRoomId)
+                .orElseThrow(() -> new RuntimeException(""));
+        return voteRepository.findAllLockChangeVote(mealMate.getChatRoom(), VoteSubject.LOCK);
+    }
+
     @PostMapping("/create/vote/voting/{chatRoomId}")
     @ResponseBody
     public void createVoteAndVoting(@RequestBody() CreateVoteAndVotingDto dto, @PathVariable String chatRoomId) {
@@ -95,16 +113,16 @@ public class MealMateController {
     public VotingStatusDto votingStatus(@PathVariable String chatRoomId, @PathVariable Long voteId) {
         return mealmateService.votingStatus(voteId, chatRoomId);
     }
-    @PostMapping("/addPeriod/{roomId}")
+    @PostMapping("/addPeriod/{roomId}/{voteId}")
     @ResponseBody
-    public void addChatPeriod(HttpServletRequest httpRequest, @PathVariable("roomId") String roomId, @PathVariable("voteId") Long voteId, @RequestBody ChatPeriodDto chatPeriodDto) throws IOException {
+    public void addChatPeriod(HttpServletRequest httpRequest, @PathVariable("roomId") String roomId, @PathVariable("voteId") Long voteId, @RequestBody ChatPeriodDto chatPeriodDto) {
         // chatPeriod 개수 체크, chatPeriod 겹치지 않는지 체크
         // find mealmate -> add ChatPeriod
         mealmateService.addChatPeriod(roomId, voteId, chatPeriodDto);
     }
 
     @PostMapping ("/deletePeriod/{roomId}/{voteId}/{chatPeriodId}")
-    public void deleteChatPeriod(HttpServletRequest httpRequest, @PathVariable("roomId") String roomId, @PathVariable("voteId") Long voteId, @PathVariable("chatPeriodId") Long chatPeriodId) throws IOException {
+    public void deleteChatPeriod(HttpServletRequest httpRequest, @PathVariable("roomId") String roomId, @PathVariable("voteId") Long voteId, @PathVariable("chatPeriodId") Long chatPeriodId) {
         //
         mealmateService.deleteChatPeriod(roomId, voteId, chatPeriodId);
     }
@@ -114,13 +132,18 @@ public class MealMateController {
         mealmateService.updateChatPeriod(rooId, voteId, chatPeriodDto);
     }
 
-    @PostMapping("/lock")
-    public void lockChatRoom() {
+    @PostMapping("/updateTitle/{chatRoomId}/{voteId}/{newTitle}")
+    public void updateChatRoomTitle(@PathVariable String chatRoomId, @PathVariable Long voteId, @PathVariable String newTitle) {
+        mealmateService.updateChatRoomTitle(chatRoomId, voteId, newTitle);
+    }
 
+    @PostMapping("/lock/{chatRoomId}/{voteId}")
+    public void lockChatRoom(@PathVariable String chatRoomId, @PathVariable Long voteId) {
+        mealmateService.lockChatRoom(chatRoomId, voteId);
     }
     @PostMapping("/feedback/one/{roomId}")
     @ResponseBody
-    public void addFeedbackOne(HttpServletRequest httpRequest, @PathVariable("roomId") String roomId, @RequestBody FeedbackDto feedbackDto) throws IOException {
+    public void addFeedbackOne(HttpServletRequest httpRequest, @PathVariable("roomId") String roomId, @RequestBody FeedbackDto feedbackDto) {
         // roomId를 pathVaraiable로 넣지 말고, jwt에서 payload로 넣어 둔 값을 가져오는 식으로 하자
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String senderId = auth.getName();
@@ -137,7 +160,7 @@ public class MealMateController {
 
     @PostMapping("/feedback/many/{roomId}")
     @ResponseBody
-    public void addFeedbackMany(HttpServletRequest httpRequest, @PathVariable("roomId") String roomId, @RequestBody FeedbackDto feedbackDto) throws IOException {
+    public void addFeedbackMany(HttpServletRequest httpRequest, @PathVariable("roomId") String roomId, @RequestBody FeedbackDto feedbackDto) {
         // roomId를 pathVaraiable로 넣지 말고, jwt에서 payload로 넣어 둔 값을 가져오는 식으로 하자
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String senderId = auth.getName();

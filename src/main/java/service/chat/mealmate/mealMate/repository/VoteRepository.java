@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import service.chat.mealmate.mealMate.domain.ChatRoom;
 import service.chat.mealmate.mealMate.domain.vote.Vote;
+import service.chat.mealmate.mealMate.domain.vote.VoteSubject;
+import service.chat.mealmate.mealMate.dto.VoteChatLockDto;
 import service.chat.mealmate.mealMate.dto.VoteChatPeriodChangeDto;
 import service.chat.mealmate.mealMate.dto.VoteTitleChangeDto;
 
@@ -13,7 +15,8 @@ import java.util.Optional;
 
 @Repository
 public interface VoteRepository extends JpaRepository<Vote, Long>{
-    @Query(value = "select v.* from vote as v left join chat_room as cr where v.vote_id = :voteId and cr.chat_room_id = :chatRoomId", nativeQuery = true)
+    @Query(value = "select v.* from vote as v left join chat_room as cr on v.chat_room_chat_room_id = cr.chat_room_id " +
+            "where v.vote_id = :voteId and cr.chat_room_id = :chatRoomId", nativeQuery = true)
     public Optional<Vote> findOneWithChatRoom(Long voteId, String chatRoomId);
 
     @Query("select new service.chat.mealmate.mealMate.dto.VoteChatPeriodChangeDto(" +
@@ -35,5 +38,13 @@ public interface VoteRepository extends JpaRepository<Vote, Long>{
             "from Vote as v inner join v.titleVote as tv where v.chatRoom = :chatRoom")
     public List<VoteTitleChangeDto> findAllTitleChangeVote(ChatRoom chatRoom);
 
+    @Query("select new service.chat.mealmate.mealMate.dto.VoteChatLockDto(" +
+            "v.voteId, v.voteTitle, v.content, v.voteMethodType, v.voteSubject, v.createdAt, v.completedDate) " +
+            "from Vote as v where v.voteSubject = :voteSubject and v.chatRoom = :chatRoom and v.completedDate is null")
+    public List<VoteChatLockDto> findActivatedLockChangeVote(ChatRoom chatRoom, VoteSubject voteSubject);
 
+    @Query("select new service.chat.mealmate.mealMate.dto.VoteChatLockDto(" +
+            "v.voteId, v.voteTitle, v.content, v.voteMethodType, v.voteSubject, v.createdAt, v.completedDate) " +
+            "from Vote as v where v.voteSubject = :voteSubject and v.chatRoom = :chatRoom")
+    public List<VoteChatLockDto> findAllLockChangeVote(ChatRoom chatRoom, VoteSubject voteSubject);
 }

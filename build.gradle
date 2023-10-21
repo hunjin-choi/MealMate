@@ -33,7 +33,7 @@ dependencies {
 	implementation 'org.webjars:stomp-websocket:2.3.4'
 	implementation 'com.google.code.gson:gson:2.10.1'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+	implementation 'org.mariadb.jdbc:mariadb-java-client'
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 	// embedded-redis 블로그에선 compile 로 되어있는데, implementation 으로 바꿈
 	implementation group: 'it.ozimov', name: 'embedded-redis', version: '0.7.2'

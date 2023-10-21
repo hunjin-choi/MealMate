@@ -24,7 +24,7 @@ import java.util.List;
 @Transactional
 public class MealMateService {
     private final VotingMethodStrategy votingMethodStrategy;
-    private final ChatPeriodChangePolicy chatPeriodChangePolicy;
+    private final ChatRoomStatusChangePolicy chatRoomStatusChangePolicy;
     private final MealMateRepository mealMateRepository;
     private final MemberRepository memberRepository;
     private final FeedbackHistoryRepository feedbackHistoryRepository;
@@ -35,7 +35,8 @@ public class MealMateService {
     private final ChatMessageRepository chatMessageRepository;
     private final VotePaperRepository votePaperRepository;
     private final CreateVoteStrategy createVoteStrategy;
-
+    private final ChatRoomJoinPolicy chatRoomJoinPolicy;
+    private final ChatRoomEnterPolicy chatRoomEnterPolicy;
     protected void voteComplete(String chatRoomId, Long voteId, VoteValidateDto dto) {
         Vote vote = voteRepository.findOneWithChatRoom(voteId, chatRoomId)
                 .orElseThrow(() -> new RuntimeException("적절한 투표 대상을 찾을 수 없습니다"));
@@ -44,27 +45,16 @@ public class MealMateService {
     }
 
     public MealMate join(Member member, ChatRoom chatRoom) {
-        MealMate mealMate = mealMateRepository.findOneActivatedCompositeBy(member.getMemberId(), chatRoom.getChatRoomId())
-                .orElse(null);
-        if (mealMate == null) {
-            mealMate = new MealMate(member, chatRoom, LocalDateTime.now());
-            mealMateRepository.save(mealMate);
-        }
-        return mealMate;
+        return join(member.getMemberId(), chatRoom.getChatRoomId());
     }
     public MealMate join(Long memberId, String chatRoomId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("멤버가 없습니다."));
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new RuntimeException("채팅방이 없습니다."));
-        MealMate mealMate = mealMateRepository.findOneActivatedCompositeBy(memberId, chatRoomId)
-                .orElse(null);
-        if (mealMate == null) {
-            mealMate = new MealMate(member, chatRoom, LocalDateTime.now());
-            mealMateRepository.save(mealMate);
-        }
-        return mealMate;
+        return chatRoomJoinPolicy.canJoinImmediately(member, chatRoom);
     }
+
     public MealMate createAndJoin(Long memberId, String chatRoomId, String chatRoomTitle) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("멤버가 없습니다."));
@@ -72,6 +62,9 @@ public class MealMateService {
         chatRoomRepository.save(chatRoom);
         MealMate mealMate = join(member, chatRoom);
         return mealMate;
+    }
+    public MealMate enter(Long memberId, String chatRoomId) {
+        return chatRoomEnterPolicy.canEnterImmediately(memberId, chatRoomId);
     }
     public void feedback(Long senderId, String chatRoomId, Long chatPeriodId, FeedbackDto feedbackDto) {
         LocalDateTime now = LocalDateTime.now();
@@ -98,7 +91,7 @@ public class MealMateService {
 
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 업습니다"));
-        boolean immediately = chatPeriodChangePolicy.canAddImmediately(LocalTime.now(), dto);
+        boolean immediately = chatRoomStatusChangePolicy.canAddImmediately(LocalTime.now(), dto);
         chatRoom.addChatPeriod(dto.getStartHour(), dto.getStartMinute(), dto.getEndHour(), dto.getEndMinute(), immediately);
         // 즉시/예약 여부를 프론트에서 알 수 있게끔 처리
     }
@@ -109,7 +102,7 @@ public class MealMateService {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 업습니다"));
         ChatPeriod chatPeriod = chatRoom.findMatchedChatPeriod(chatPeriodId);
-        boolean immediately = chatPeriodChangePolicy.canDeleteImmediately(LocalTime.now(), chatPeriod);
+        boolean immediately = chatRoomStatusChangePolicy.canDeleteImmediately(LocalTime.now(), chatPeriod);
         chatRoom.deleteChatPeriod(chatPeriodId, immediately);
         // 즉시/예약 여부를 프론트에서 알 수 있게끔 처리
     }
@@ -121,11 +114,23 @@ public class MealMateService {
                 .orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 업습니다"));
         Long chatPeriodId = dto.getChatPeriodId();
         ChatPeriod chatPeriod = chatRoom.findMatchedChatPeriod(chatPeriodId);
-        boolean immediately = chatPeriodChangePolicy.canUpdateImmediately(LocalTime.now(), chatPeriod);
+        boolean immediately = chatRoomStatusChangePolicy.canUpdateImmediately(LocalTime.now(), chatPeriod);
         chatRoom.updateChatPeriod(chatPeriodId, dto.getStartHour(), dto.getStartMinute(), dto.getStartHour(), dto.getEndMinute(), immediately);
         // 즉시/예약 여부를 프론트에서 알 수 있게끔 처리
     }
+    public void updateChatRoomTitle(String chatRoomId, Long voteId, String newTitle) {
+        voteComplete(chatRoomId, voteId, VoteValidateDto.of(newTitle));
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 업습니다"));
+        chatRoom.updateChatRoomTitle(newTitle);
+    }
 
+    public void lockChatRoom(String chatRoomId, Long voteId) {
+        voteComplete(chatRoomId, voteId, VoteValidateDto.of(true)); // null을 넣는 건 좀 아닌거 같은데;;
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 없습니다"));
+        chatRoom.lock(LocalDateTime.now());
+    }
     public void voteList(Long memberId, String chatRoomId) {
         MealMate mealMate = mealMateRepository.findOneActivatedCompositeBy(memberId, chatRoomId)
                 .orElseThrow(() -> new RuntimeException("적절한 사용자가 아닙니다."));
@@ -133,22 +138,24 @@ public class MealMateService {
 
     }
     public void createVoteAndVoting(Long creatorId, String chatRoomId, CreateVoteAndVotingDto dto) {
-        MealMate mealMate = this.mealMateRepository.findById(creatorId)
+        // 동등성 가지는 투표를 또 생성하려고 하면 예외를 발생시키자
+        MealMate mealMate = this.mealMateRepository.findOneActivatedCompositeBy(creatorId, chatRoomId)
                 .orElseThrow(() -> new RuntimeException("밀 메이트를 찾을 수 없습니다"));
-        ChatRoom chatRoom = this.chatRoomRepository.findOneWithMealMate(creatorId, chatRoomId)
+        ChatRoom chatRoom = this.chatRoomRepository.findOneWithMealMate(mealMate.getMealMateId(), chatRoomId)
                 .orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 없습니다"));
         Vote vote = createVoteStrategy.createVote(dto, chatRoom);
         // VotePaper votePaper = mealMate.createVoteAndVoting(dto.getVoteTitle(), dto.getContent(), dto.getVoteMethodType(), dto.getVotingDto().getVoterStatus(), chatRoom);
         boolean isCreator = true;
-        VotePaper votePaper = mealMate.voting(vote, dto.getVotingDto().getVoterStatus(), isCreator);
+        VotePaper votePaper = mealMate.voting(vote, dto.getVoting().getVoterStatus(), isCreator);
         // cascade 하면 될텐데
+        this.voteRepository.save(vote);
         this.votePaperRepository.save(votePaper);
     }
 
-    public void voting(Long mealMateId, String chatRoomId, VotingDto dto) {
+    public void voting(Long memberId, String chatRoomId, VotingDto dto) {
         Vote vote = voteRepository.findOneWithChatRoom(dto.getVoteId(), chatRoomId)
                 .orElseThrow(() -> new RuntimeException("적절한 투표 대상을 찾을 수 없습니다"));
-        MealMate mealMate = this.mealMateRepository.findById(mealMateId)
+        MealMate mealMate = this.mealMateRepository.findOneActivatedCompositeBy(memberId, chatRoomId)
                 .orElseThrow(() -> new RuntimeException("밀 메이트를 찾을 수 없습니다"));
         boolean isCreator = false;
         VotePaper votePaper = mealMate.voting(vote, dto.getVoterStatus(), isCreator);

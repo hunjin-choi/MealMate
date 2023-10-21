@@ -10,6 +10,8 @@ import java.util.Optional;
 
 @Repository
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, String> {
-    @Query(value = "select cr.* from chat_room as cr left join meal_mate as mm where cr.chat_roo_id = :chatRoomId and mm.meal_mate_id = :mealMateId", nativeQuery = true)
+    @Query(value = "select cr.* from chat_room as cr left join meal_mate as mm on cr.chat_room_id = mm.chat_room_id where cr.chat_room_id = :chatRoomId and mm.meal_mate_id = :mealMateId", nativeQuery = true)
     public Optional<ChatRoom> findOneWithMealMate(Long mealMateId, String chatRoomId);
+
+
 }

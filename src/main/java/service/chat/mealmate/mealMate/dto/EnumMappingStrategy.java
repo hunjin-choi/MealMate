@@ -12,7 +12,7 @@ public class EnumMappingStrategy {
 
     public static Enum<?> validate(Enum<?>[] requestEnums, String target) {
         return Arrays.stream(requestEnums)
-                .filter(i -> i.name().equals(target.replaceAll("[^a-zA-Z]", "").toUpperCase()))
+                .filter(i -> i.name().equals(target.replaceAll("[^a-zA-Z0-9_]", "").toUpperCase()))
                 .findAny()
                 .orElseThrow(() -> new RuntimeException("매핑 실패. 유요한 값들은 다음과 같습니다: " + getValidList(requestEnums)));
     }

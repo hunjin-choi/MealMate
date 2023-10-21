@@ -72,11 +72,21 @@ public class RedisChatRoomController {
         return chatRoom;
     }
     // 채팅방 입장 화면
-    @GetMapping("/room/enter/{chatRoomId}")
+    @GetMapping("/room/join/{chatRoomId}")
     public String joinRoom(Model model, @PathVariable String chatRoomId) {
         SecurityMember principal = (SecurityMember) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long memberId = principal.getMemberId();
         MealMate mealMate = mealmateService.join(memberId, chatRoomId);
+        principal.setChatInfo(mealMate.getMealMateId(), chatRoomId, mealMate.findMatchedChatPeriodEndTime(LocalDateTime.now()));
+        model.addAttribute("roomId", chatRoomId);
+        return "/chat/roomdetail";
+    }
+
+    @GetMapping("/room/enter/{chatRoomId}")
+    public String enterRoom(Model model, @PathVariable String chatRoomId) {
+        SecurityMember principal = (SecurityMember) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long memberId = principal.getMemberId();
+        MealMate mealMate = mealmateService.enter(memberId, chatRoomId);
         principal.setChatInfo(mealMate.getMealMateId(), chatRoomId, mealMate.findMatchedChatPeriodEndTime(LocalDateTime.now()));
         model.addAttribute("roomId", chatRoomId);
         return "/chat/roomdetail";

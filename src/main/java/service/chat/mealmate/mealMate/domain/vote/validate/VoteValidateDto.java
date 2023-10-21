@@ -13,9 +13,9 @@ public class VoteValidateDto {
     private Integer endHour;
     private Integer endMinute;
     // title
-    private   String title;
+    private String title;
     //
-
+    private Boolean lock;
     public VoteValidateDto() {
     }
 
@@ -32,6 +32,13 @@ public class VoteValidateDto {
     public static VoteValidateDto of(String title) {
         VoteValidateDto voteValidateDto = new VoteValidateDto();
         voteValidateDto.title = title;
+
+        return voteValidateDto;
+    }
+
+    public static VoteValidateDto of(Boolean lock) {
+        VoteValidateDto voteValidateDto = new VoteValidateDto();
+        voteValidateDto.lock = lock;
 
         return voteValidateDto;
     }

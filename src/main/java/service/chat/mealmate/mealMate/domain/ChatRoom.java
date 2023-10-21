@@ -77,6 +77,12 @@ public class ChatRoom {
         else
             chatPeriod.reservedUpdate(startHour, startMinute, endHour, endMinute);
     }
+
+    public void updateChatRoomTitle(String newTitle) {
+        if (this.lockedAt == null)
+            throw new RuntimeException("채팅방이 잠금상태가 아닙니다.");
+        this.title = newTitle;
+    }
     public void deleteChatPeriod(Long chatPeriodId, boolean immediately) {
         if (this.lockedAt == null) throw new RuntimeException("채팅방이 잠금상태가 아닙니다.");
         // chatperiod를 Map으로 바꾸는게 좋을 듯?
@@ -98,8 +104,10 @@ public class ChatRoom {
     // 값을 반환하는 이유는 jwt 만들 때 만료시간 설정할 때 사용하기 위함
     public void lock(LocalDateTime lockedAt) {
         // 종료 예상 일자는 필요해 보여서 넣어뒀는데, 아직 어떻게 활용 할 지는 모르겠음
-        this.expectedClosedAt = LocalDateTime.MAX;
+        this.expectedClosedAt = LocalDateTime.of(9999, 12, 31, 0, 0);
+        // this.expectedClosedAt = LocalDateTime.MAX; <- 년도가 비정상적으로 큰 값을 생성함;;
         this.lockedAt = lockedAt;
+        addChatPeriod(lockedAt.getHour(), lockedAt.getMinute(), lockedAt.getHour() + 1, lockedAt.getMinute(), true);
     }
     public void close(LocalDateTime closedAt) {
         for (MealMate mealMate : mealMateList) {

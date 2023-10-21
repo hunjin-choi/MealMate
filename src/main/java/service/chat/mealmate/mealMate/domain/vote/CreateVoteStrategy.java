@@ -15,7 +15,7 @@ public class CreateVoteStrategy {
     public Vote createVote(CreateVoteAndVotingDto dto, ChatRoom chatRoom) {
         VoteSubject voteSubject = dto.getVoteSubject();
         if (voteSubject == VoteSubject.ADD_CHAT_PERIOD || voteSubject == VoteSubject.UPDATE_CHAT_PERIOD) {
-            ChatPeriodDto chatPeriodDto = dto.getChatPeriodDto();
+            ChatPeriodDto chatPeriodDto = dto.getChatPeriod();
             LocalTime startTime = LocalTime.of(chatPeriodDto.getStartHour(), chatPeriodDto.getStartMinute());
             LocalTime endTime = LocalTime.of(chatPeriodDto.getEndHour(), chatPeriodDto.getEndMinute());
             return Vote.of(dto.getVoteTitle(), dto.getContent(), dto.getVoteMethodType(), dto.getVoteSubject(), chatRoom, LocalDateTime.now(), startTime, endTime);

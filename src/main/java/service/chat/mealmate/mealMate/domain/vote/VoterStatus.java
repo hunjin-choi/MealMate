@@ -6,8 +6,12 @@ import service.chat.mealmate.mealMate.dto.EnumMappingStrategy;
 
 public enum VoterStatus {
     AGREE, DISAGREE;
-    @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-    public static VoterStatus VoterStatus (@JsonProperty(value = "voterStatus") String voterStatus) {
+//    @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+//    public static VoterStatus VoterStatus (@JsonProperty(value = "voterStatus") String voterStatus) {
+//        return (VoterStatus) EnumMappingStrategy.validate(values(), voterStatus);
+//    }
+    @JsonCreator
+    public static VoterStatus of(String voterStatus) {
         return (VoterStatus) EnumMappingStrategy.validate(values(), voterStatus);
     }
 }

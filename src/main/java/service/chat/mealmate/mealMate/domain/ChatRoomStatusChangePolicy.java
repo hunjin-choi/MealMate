@@ -6,7 +6,7 @@ import service.chat.mealmate.mealMate.dto.ChatPeriodDto;
 import java.time.LocalTime;
 
 @Component
-public class ChatPeriodChangePolicy {
+public class ChatRoomStatusChangePolicy {
     protected boolean onlyAfterThanEndTime(LocalTime now, ChatPeriod chatPeriod) {
         LocalTime startTime = chatPeriod.startTime;
         LocalTime endTime = chatPeriod.endTime;
@@ -27,5 +27,9 @@ public class ChatPeriodChangePolicy {
 
     public boolean canUpdateImmediately(LocalTime now, ChatPeriod chatPeriod) {
         return onlyAfterThanEndTime(now, chatPeriod);
+    }
+
+    public boolean canUpdateTitleImmediately(LocalTime now) {
+        return true;
     }
 }
