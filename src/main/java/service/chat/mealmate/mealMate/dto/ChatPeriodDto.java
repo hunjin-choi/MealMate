@@ -2,13 +2,14 @@ package service.chat.mealmate.mealMate.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import service.chat.mealmate.mealMate.domain.ChatPeriod;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Getter
+@Getter @Data
 public class ChatPeriodDto {
     private Long chatPeriodId;
     private Integer startHour;
@@ -17,7 +18,7 @@ public class ChatPeriodDto {
     private Integer endMinute;
 
     @JsonCreator
-    public static ChatPeriodDto of (Long chatPeriodId, Integer startHour, Integer startMinute, Integer endHour, Integer endMinute) {
+    public static ChatPeriodDto of(Long chatPeriodId, Integer startHour, Integer startMinute, Integer endHour, Integer endMinute) {
         return new ChatPeriodDto(chatPeriodId, startHour, startMinute, endHour, endMinute);
     }
     public ChatPeriodDto(Long chatPeriodId, Integer startHour, Integer startMinute, Integer endHour, Integer endMinute) {

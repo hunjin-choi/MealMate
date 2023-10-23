@@ -32,10 +32,8 @@
         <input type="text" class="form-control" v-model="message" v-on:keypress.enter="sendMessage('TALK')" placeholder="Enter chat message here...">
         <div class="input-group-append">
             <button class="btn btn-primary" type="button" @click="sendMessage('TALK')">채팅 보내기</button>
-            <button class="btn btn-secondary" type="button" @click="addChatPeriodFlag = true">채팅 시간 설정</button>
-            <button class="btn btn-third" type="button" @click="fetchChatPeriodList()">채팅 시간 삭제</button>
-            <button class="btn btn-info" type="button" @click="feedbackModal = true">피드백 보내기</button>
-            <button class="btn btn-third" type="button" @click="fetchVoteList(); voteListFlag = true;" >투표 리스트</button>
+            <button class="btn btn-info" type="button" @click="feedbackModal = feedbackModal ^ true">피드백 보내기</button>
+            <button class="btn btn-third" type="button" @click="fetchVoteList(); voteListFlag = voteListFlag ^ true;" >투표 리스트</button>
 
         </div>
     </div>
@@ -50,10 +48,10 @@
                 {{chatPeriodVote.voteMethodType}}
                 {{chatPeriodVote.voteSubject}}
                 {{chatPeriodVote.createdAt}}
-                {{chatPeriodVote.startTime}}
-                {{chatPeriodVote.endTime}}
-                {{chatPeriodVote.startTime}}
-                {{chatPeriodVote.endTime}}
+                {{chatPeriodVote.startHour}}
+                {{chatPeriodVote.startMinute}}
+                {{chatPeriodVote.endHour}}
+                {{chatPeriodVote.endMinute}}
                 <span>찬성: ~~~~~</span><span>반대: ~~~~~</span>
                 <button @click="alert('test')">press me</button>
                 <button type="button" @click="votingMethod(chatPeriodVote, 'agree')">agree</button>
@@ -77,7 +75,6 @@
                     <button @click="alert('test')">press me</button>
                     <button type="button" @click="votingMethod(titleChangeVote, 'agree')">agree</button>
                     <button type="button" @click="votingMethod(titleChangeVote, 'disAgree')">disAgree</button>
-                    <button>투표 결과 실제로 반영하기</button>
                     <button @click="chatTitleVoteComplete(titleChangeVote.voteId, titleChangeVote.chatRoomTitle)">투표 결과 실제로 반영하기</button>
                 </span>
             </li>
@@ -112,7 +109,7 @@
         <button type="button" @click="createChatPeriodVoteFlag = createChatPeriodVoteFlag ^ true">create vote</button>
         <div v-if="createChatPeriodVoteFlag">
             <div>
-                <div>투표 주제:: {{ voteSubject }}
+                <div>투표 주제: {{ voteSubject }}
                     <select v-model="voteSubject">
                         <option>ADD_CHAT_PERIOD</option>
                         <option>DELETE_CHAT_PERIOD</option>
@@ -140,18 +137,18 @@
                     </select>
                 </div>
                 <div v-if="voteSubject != null && voteSubject == 'ADD_CHAT_PERIOD'">
-<#--                <div v-if="true">-->
-                    <label>시작 시각(0 ~ 23): </label>
-                    <input type="number" v-model="startHour" min="0" max="23"><br/>
-                    <label>시작 분(0 ~ 59): </label>
-                    <input type="number" v-model="startMinute" min="0" max="59"><br/>
-                    <label>종료 시각(0 ~ 23): </label>
-                    <input type="number" v-model="endHour" min="0" max="23"><br/>
-                    <label>종료 분(0 ~ 59): </label>
-                    <input type="number" v-model="endMinute" min="0" max="59"><br/>
-                </div>
-                <div v-if="voteSubject != null && voteSubject == 'UPDATE_CHAT_PERIOD'">
-                    <table>
+                <label>시작 시각(0 ~ 23): </label>
+                <input type="number" v-model="startHour" min="0" max="23"><br/>
+                <label>시작 분(0 ~ 59): </label>
+                <input type="number" v-model="startMinute" min="0" max="59"><br/>
+                <label>종료 시각(0 ~ 23): </label>
+                <input type="number" v-model="endHour" min="0" max="23"><br/>
+                <label>종료 분(0 ~ 59): </label>
+                <input type="number" v-model="endMinute" min="0" max="59"><br/>
+            </div>
+            <div v-if="voteSubject != null && voteSubject == 'UPDATE_CHAT_PERIOD'">
+                <button @click="fetchChatPeriodList()">refresh</button>
+                <table>
                         <tr>
                             <th>ChatPeriodId</th>
                             <th>startHour</th>
@@ -169,20 +166,21 @@
                             <td>{{chatPeriod.latestFeedbackDate}}</td>
                             <td><button @click="chatPeriodId = chatPeriod.chatPeriodId; updateChatPeriodForm = true;">Update Form</button></td>
                         </tr>
-                        <div v-if="updateChatPeriodForm">
-                            <label>시작 시각(0 ~ 23): </label>
-                            <input type="number" v-model="startHour" min="0" max="23"><br/>
-                            <label>시작 분(0 ~ 59): </label>
-                            <input type="number" v-model="startMinute" min="0" max="59"><br/>
-                            <label>종료 시각(0 ~ 23): </label>
-                            <input type="number" v-model="endHour" min="0" max="23"><br/>
-                            <label>종료 분(0 ~ 59): </label>
-                            <input type="number" v-model="endMinute" min="0" max="59"><br/>
-                            <button @click="updateChatPeriodForm = false;">OK</button>
-                        </div>
                     </table>
+                <div v-if="updateChatPeriodForm">
+                    <label>시작 시각(0 ~ 23): </label>
+                    <input type="number" v-model="startHour" min="0" max="23"><br/>
+                    <label>시작 분(0 ~ 59): </label>
+                    <input type="number" v-model="startMinute" min="0" max="59"><br/>
+                    <label>종료 시각(0 ~ 23): </label>
+                    <input type="number" v-model="endHour" min="0" max="23"><br/>
+                    <label>종료 분(0 ~ 59): </label>
+                    <input type="number" v-model="endMinute" min="0" max="59"><br/>
+                    <button @click="updateChatPeriodForm = false;">OK</button>
+                </div>
                 </div>
                 <div v-if="voteSubject != null && voteSubject == 'DELETE_CHAT_PERIOD'">
+                    <button @click="fetchChatPeriodList()">refresh</button>
                     <table>
                         <tr>
                             <th>ChatPeriodId</th>
@@ -420,30 +418,7 @@
                 this.message = '';
             },
             recvMessage: function(recv) {
-                this.messages.unshift({"type":recv.type,"sender":recv.sender,"message":recv.message})
-            },
-            submit: function() {
-                const data = {
-                    startHour: this.startHour,
-                    startMinute: this.startMinute,
-                    endHour: this.endHour,
-                    endMinute: this.endMinute
-                };
-
-                axios.post('http://localhost:8080/mealmate/addPeriod/' + this.roomId, data, {
-                    headers: {
-                        "token":this.token,
-                        "readOnlyToken" : this.readOnlyToken,
-                        "readWriteToken": this.readWriteToken
-                    }
-                })
-                    .then(response => {
-                        console.log(response);
-                        this.addChatPeriodFlag = false;
-                    })
-                    .catch(error => {
-                        console.error(error);
-                    });
+                this.messages.unshift({"type":recv.type,"sender":recv.sender,"message":recv.message, "date": recv.date})
             },
             submitFeedback: function() {
                 if(this.feedback.length < 5 || this.mileage < 0) {
@@ -519,16 +494,14 @@
                         "readOnlyToken" : this.readOnlyToken,
                         "readWriteToken": this.readWriteToken
                     }
-                })
-                    .then(response => {
+                }).then(response => {
                         console.log(response);
                         this.chatPeriodList = response.data;
                         this.deleteChatPeriodModal = true;
-                    })
-                    .catch(error => {
-                        console.error("chatPeriod 리스트 받아오기 실패");
-                        console.error(error);
-                    });
+                }).catch(error => {
+                    console.error("chatPeriod 리스트 받아오기 실패");
+                    console.error(error);
+                });
             },
             redirectToChatRoom: function() {
                 window.location.href = "/chat/room";
@@ -594,17 +567,23 @@
     // <option>UPDATE_CHAT_ROOM_TITLE</option>
     // <option>LOCK</option>
             chatPeriodVoteComplete: function (chatPeriodVote) {
+                for (const temp in chatPeriodVote) {
+                    console.log(temp + "|" + chatPeriodVote[temp]);
+                }
                 const voteSubject = chatPeriodVote.voteSubject;
                 switch (voteSubject){
                     case 'ADD_CHAT_PERIOD':
                         axios.post('http://localhost:8080/mealmate/addPeriod/' + this.roomId + "/" + chatPeriodVote.voteId, {
+                            voteId: chatPeriodVote.voteId,
                             startHour: chatPeriodVote.startHour,
                             startMinute: chatPeriodVote.startMinute,
                             endHour: chatPeriodVote.endHour,
                             endMinute: chatPeriodVote.endMinute,
-                        })
+                        });
+                        break;
                     case 'DELETE_CHAT_PERIOD':
-                        axios.post('http://localhost:8080/mealmate/deletePeriod/' + this.roomId + "/" + chatPeriodVote.voteId + "/" + chatPeriodVote.chatPeriodId)
+                        axios.post('http://localhost:8080/mealmate/deletePeriod/' + this.roomId + "/" + chatPeriodVote.voteId + "/" + chatPeriodVote.chatPeriodId);
+                        break;
                     case 'UPDATE_CHAT_PERIOD':
                         axios.post('http://localhost:8080/mealmate/updatePeriod/' + this.roomId + "/" + chatPeriodVote.voteId, {
                             chatPeriodId: chatPeriodVote.chatPeriodId,
@@ -612,7 +591,10 @@
                             startMinute: chatPeriodVote.startMinute,
                             endHour: chatPeriodVote.endHour,
                             endMinute: chatPeriodVote.endMinute,
-                        })
+                        });
+                        break;
+                    default:
+                        alert("chatPeriodVoteComplete fail");
                 }
             },
             chatTitleVoteComplete: function (voteId, newTitle) {

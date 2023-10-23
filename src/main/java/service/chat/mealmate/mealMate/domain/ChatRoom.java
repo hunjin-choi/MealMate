@@ -4,7 +4,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.bytebuddy.asm.Advice;
-import org.hibernate.annotations.Cascade;
 import service.chat.mealmate.mealMate.domain.vote.Vote;
 
 import javax.persistence.*;
@@ -31,7 +30,7 @@ public class ChatRoom {
     private short currentPersonnel = 0;
     @Version
     private Integer version = 1;
-    @OneToMany(mappedBy = "chatRoom") @Cascade(org.hibernate.annotations.CascadeType.ALL)
+    @OneToMany(mappedBy = "chatRoom", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<ChatPeriod> chatPeriodList = new ArrayList<>();
 
     @OneToMany(mappedBy = "chatRoom")
@@ -45,6 +44,9 @@ public class ChatRoom {
         this.openedAt = openedAt;
         this.expectedClosedAt = LocalDateTime.now().plusDays(1);// 24시간 뒤의 시간
         this.maxPersonnel = maxPersonnel;
+        for (int i = 0; i < 3; i++) {
+            chatPeriodList.add(new ChatPeriod(0, 0, 0, 0, this));
+        }
     }
     public short addPersonnel() {
         if (++this.currentPersonnel == this.maxPersonnel) lock(LocalDateTime.now());
@@ -53,9 +55,10 @@ public class ChatRoom {
     public void addChatPeriod(int startHour, int startMinute, int endHour, int endMinute, boolean immediately) {
         if (this.lockedAt == null)
             throw new RuntimeException("채팅방이 잠금상태가 아닙니다.");
+        // chatPeriodList fetchType이 LAZY이면 아래 구문에서 문제생김. list를 순회하는데 엔터티 안불러옴;
         ChatPeriod chatPeriod = this.chatPeriodList.stream()
                 // 예약을 덮어쓰기 하는 건 불가 // 삭제 예약을 덮어쓰기 하는 건 가능
-                .filter(i -> (i.deleted == true && i.reserved == false) || i.reservedDeleted == true)
+                .filter(i -> (i.deleted.equals(true) && i.reserved.equals(false)) || i.reservedDeleted.equals(true))
                 .findAny()
                 .orElseThrow(() -> new RuntimeException("채팅시간대를 더 이상 추가할 수 없습니다."));
         // cascade update

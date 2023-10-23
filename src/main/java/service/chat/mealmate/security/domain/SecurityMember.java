@@ -15,7 +15,7 @@ import java.util.List;
 @Getter
 public class SecurityMember extends User {
     private Long memberId;
-    private Long mealMateId;
+    private Long mealMateId = null;
     private String chatRoomId = null;
     private LocalDateTime chatExpiredAt = null;
     public SecurityMember(Member member, List<GrantedAuthority> authorities) {

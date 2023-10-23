@@ -6,6 +6,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import service.chat.mealmate.chat.dto.RedisChatMessageDto;
+import service.chat.mealmate.chat.service.RedisChatPublisherService;
 import service.chat.mealmate.mealMate.domain.vote.VoteSubject;
 import service.chat.mealmate.mealMate.dto.*;
 import service.chat.mealmate.mealMate.repository.MealMateRepository;
@@ -30,7 +32,7 @@ public class MealMateController {
     private final JwtTokenProvider jwtTokenProvider;
     private final MealMateRepository mealMateRepository;
     private final VoteRepository voteRepository;
-
+    private final RedisChatPublisherService redisChatPublisherService;
     @GetMapping
     @ResponseBody
     public void test(@RequestBody() CreateVoteAndVotingDto dto) {
@@ -100,24 +102,28 @@ public class MealMateController {
         // return voteId;
     }
     @PostMapping("/voting/{chatRoomId}")
-    @ResponseBody
-    public VotingStatusDto voting(@RequestBody() VotingDto dto, @PathVariable String chatRoomId) {
+    public void voting(@RequestBody() VotingDto dto, @PathVariable String chatRoomId) {
         int agreeCount = 0;
         SecurityMember principal = (SecurityMember) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long memberId = principal.getMemberId();
         mealmateService.voting(memberId, chatRoomId, dto);
-        return mealmateService.votingStatus(dto.getVoteId(), chatRoomId);
     }
     @GetMapping("/voting/status/{chatRoomId}/{voteId}")
     @ResponseBody
     public VotingStatusDto votingStatus(@PathVariable String chatRoomId, @PathVariable Long voteId) {
         return mealmateService.votingStatus(voteId, chatRoomId);
     }
+    @GetMapping("/voting/status/activated/{chatRoomId}")
+    @ResponseBody
+    public List<VotingStatusDto> votingStatusActivated(@PathVariable String chatRoomId) {
+        return mealmateService.votingStatusActivated(chatRoomId);
+    }
     @PostMapping("/addPeriod/{roomId}/{voteId}")
     @ResponseBody
     public void addChatPeriod(HttpServletRequest httpRequest, @PathVariable("roomId") String roomId, @PathVariable("voteId") Long voteId, @RequestBody ChatPeriodDto chatPeriodDto) {
         // chatPeriod 개수 체크, chatPeriod 겹치지 않는지 체크
         // find mealmate -> add ChatPeriod
+        System.out.println("chatPeriodDto = " + chatPeriodDto);
         mealmateService.addChatPeriod(roomId, voteId, chatPeriodDto);
     }
 
@@ -140,6 +146,14 @@ public class MealMateController {
     @PostMapping("/lock/{chatRoomId}/{voteId}")
     public void lockChatRoom(@PathVariable String chatRoomId, @PathVariable Long voteId) {
         mealmateService.lockChatRoom(chatRoomId, voteId);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        SecurityMember principal = (SecurityMember) authentication.getPrincipal();
+        String message = "채팅방이 잠겼음을 알립니다.";
+        String loginId = principal.getUsername();
+        Long mealMateId = principal.getMealMateId();
+        String chatRoomId1 = principal.getChatRoomId();
+        redisChatPublisherService.convertAndSend(message, loginId, chatRoomId1, mealMateId, RedisChatMessageDto.MessageType.INFO);
     }
     @PostMapping("/feedback/one/{roomId}")
     @ResponseBody
@@ -193,11 +207,10 @@ public class MealMateController {
     @GetMapping("/chatPeriod/list")
     @ResponseBody
     public List<ChatPeriodDto> findChatPeriod(Model model) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String name = auth.getName();
-        List<ChatPeriod> chatPeriodList = mealmateService.getChatPeriods(name);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        SecurityMember principal = (SecurityMember) authentication.getPrincipal();
+        String chatRoomId = principal.getChatRoomId();
+        List<ChatPeriod> chatPeriodList = mealmateService.getChatPeriods(chatRoomId);
         return ChatPeriodDto.entityToDtoList(chatPeriodList);
-//        model.addAttribute("chatPeriodList", chatPeriodList);
-//        return "mealmate/chatPeriodList";
     }
 }

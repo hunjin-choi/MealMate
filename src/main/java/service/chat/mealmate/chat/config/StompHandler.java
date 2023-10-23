@@ -9,7 +9,10 @@ import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
+import service.chat.mealmate.chat.dto.RedisChatMessageDto;
+import service.chat.mealmate.chat.service.RedisChatPublisherService;
 import service.chat.mealmate.security.jwt.JwtTokenProvider;
 import service.chat.mealmate.chat.service.ChatService;
 import service.chat.mealmate.mealMate.repository.MealMateRepository;
@@ -27,8 +30,32 @@ public class StompHandler implements ChannelInterceptor {
     private final ChatService chatService;
     private final MemberRepository memberRepository;
     private final MealMateRepository mealMateRepository;
+    private final RedisChatPublisherService redisChatPublisherService;
     // websocket을 통해 들어온 요청이 처리 되기전 실행된다.
 
+
+    @Override
+    public Message<?> preSend(Message<?> message, MessageChannel channel) {
+        StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
+        accessor.setLeaveMutable(true);
+        accessor.isMutable();
+        message = MessageBuilder.fromMessage(message).setHeader("connect", "true").build();
+        // accessor.setImmutable();
+        accessor.setHeader("connect", "true");
+        if (accessor.getCommand().equals(StompCommand.DISCONNECT)) {
+            // 프론트까지 전달 안됨
+            accessor.setHeader("connect", "false");
+            message = MessageBuilder.fromMessage(message).setHeader("connect", "false").build();
+
+//            redisChatPublisherService.convertAndSend();
+//            channel.send(message); -> 재전송
+            return message;
+        }
+//        accessor.setMessage();
+        System.out.println("accessor.getCommand() = " + accessor.getCommand());
+        return message;
+    }
+    // 매개변수 sent가 false면 전송 실패 혹은 DISCONNECT 일 것
     @Override
     public void postSend(Message<?> message, MessageChannel channel, boolean sent) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
@@ -38,16 +65,6 @@ public class StompHandler implements ChannelInterceptor {
         ChannelInterceptor.super.postSend(message, channel, sent);
     }
 
-    @Override
-    public Message<?> preSend(Message<?> message, MessageChannel channel) {
-        StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
-        if (accessor.getCommand() == StompCommand.CONNECT) {
-            accessor.setNativeHeader("testJWT", "testJWT");
-        }
-        System.out.println("accessor.getCommand() = " + accessor.getCommand());
-        return message;
-    }
-
 
     public Message<?> preSend2(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
@@ -55,4 +72,6 @@ public class StompHandler implements ChannelInterceptor {
         System.out.println("accessor.getCommand() = " + accessor.getCommand());
         return message;
     }
+
+
 }

@@ -13,7 +13,6 @@ import java.time.LocalTime;
 public class ChatPeriodVote {
     @Id @GeneratedValue
     private Long chatPeriodVoteId;
-
     private LocalTime startTime;
     private LocalTime endTime;
 

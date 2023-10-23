@@ -3,6 +3,7 @@ package service.chat.mealmate.mealMate.domain;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,22 +15,22 @@ import java.time.LocalTime;
 @Entity @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @SQLDelete(sql = "UPDATE chat_period SET deleted = true WHERE id = ?")
-@Where(clause = "deleted = false")
+//@Where(clause = "deleted = false")
 public class ChatPeriod {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long chatPeriodId;
     LocalTime startTime;
     LocalTime endTime;
-    Boolean deleted = Boolean.FALSE; // 삭제 여부 기본값 false
+    Boolean deleted = true; // 삭제 여부 기본값 false
 
     Boolean reserved = false;
     LocalDate reservedDate = null;
     LocalTime reservedStartTime = null;
     LocalTime reservedEndTime = null;
-    Boolean reservedDeleted;
+    Boolean reservedDeleted = false;
     @Version
-    Long version;
-    @ManyToOne
+    Long version = 1L;
+    @ManyToOne(cascade = CascadeType.ALL)
     ChatRoom chatRoom;
 
     @Value("") @Transient

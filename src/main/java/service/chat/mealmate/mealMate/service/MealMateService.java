@@ -19,6 +19,7 @@ import service.chat.mealmate.member.repository.MemberRepository;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service @RequiredArgsConstructor
 @Transactional
@@ -135,7 +136,6 @@ public class MealMateService {
         MealMate mealMate = mealMateRepository.findOneActivatedCompositeBy(memberId, chatRoomId)
                 .orElseThrow(() -> new RuntimeException("적절한 사용자가 아닙니다."));
         ChatRoom chatRoom = mealMate.getChatRoom();
-
     }
     public void createVoteAndVoting(Long creatorId, String chatRoomId, CreateVoteAndVotingDto dto) {
         // 동등성 가지는 투표를 또 생성하려고 하면 예외를 발생시키자
@@ -175,11 +175,29 @@ public class MealMateService {
         Long personnel = mealMateRepository.countAllActiveMealMateBy(chatRoomId);
         return new VotingStatusDto(personnel, agree, disagree);
     }
-    public void saveChatMessage(String message, Long mealMateId) {
+
+    public List<VotingStatusDto> votingStatusActivated(String chatRoomId) {
+        // 유저와 연관관계 검증을 할 필요는 없을 듯
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new RuntimeException("적절한 채팅방을 찾을 수 없습니다."));
+        List<Vote> voteList = chatRoom.getVoteList();
+
+        return voteList.stream()
+                .filter((vote) -> vote.getCompletedDate() == null)
+                .map((vote) -> {
+                List<VotePaper> votePaperList = vote.getVotePaperList();
+                Long personnel = mealMateRepository.countAllActiveMealMateBy(chatRoomId);
+                Long agree = votePaperList.stream().filter((votePaper) -> votePaper.getVoterStatus() == VoterStatus.AGREE).count();
+                Long disagree = votePaperList.stream().filter((votePaper) -> votePaper.getVoterStatus() == VoterStatus.DISAGREE).count();
+                return new VotingStatusDto(personnel, agree, disagree);
+            }).collect(Collectors.toList());
+    }
+
+    public ChatMessage saveChatMessage(String message, Long mealMateId) {
         MealMate mealMate = mealMateRepository.findById(mealMateId).orElse(null);
         ChatMessage chatMessage = mealMate.addChatMessage(message);
         // cascade 하면 될텐데
-        chatMessageRepository.save(chatMessage);
+        return chatMessageRepository.save(chatMessage);
         // DB상에 찍힌 시간을 반환하여 프론트에서 메시지 송신 시간을 표시할 수 있게 구현
     }
 
