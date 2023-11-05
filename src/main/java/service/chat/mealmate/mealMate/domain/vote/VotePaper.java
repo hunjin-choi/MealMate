@@ -19,6 +19,7 @@ public class VotePaper implements Serializable {
     @ManyToOne @JoinColumn(name = "meal_mate_id")
     private MealMate mealMate;
     @Getter
+    @Enumerated(EnumType.STRING)
     private VoterStatus voterStatus;
     private Boolean isCreator;
 

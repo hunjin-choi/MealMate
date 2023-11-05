@@ -6,10 +6,11 @@ import org.springframework.stereotype.Repository;
 import service.chat.mealmate.mealMate.domain.ChatPeriod;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
 public interface ChatPeriodRepository extends JpaRepository<ChatPeriod, Long> {
-    @Query("select cp from ChatPeriod as cp where cp.reserved = true and cp.reservedDate = :now")
-    public List<ChatPeriod> reservedChatPeriodAt(LocalDate now);
+    @Query("select cp from ChatPeriod as cp where cp.reserved = true and cp.reservedDateTime = :now")
+    public List<ChatPeriod> reservedChatPeriodAt(LocalDateTime now);
 }

@@ -14,20 +14,16 @@
             <th>Mileage Per Feedback</th>
             <th>Feedback Mention</th>
             <th>Feedback Date</th>
+            <th>Feedback Time</th>
         </tr>
         </thead>
         <tbody>
         <#list feedbackList as item>
             <tr>
-                <td>${item.mileagePerFeedback}</td>
-                <td>
-                    <#if item.feedbackMention??>
-                        ${item.feedbackMention}
-                    <#else>
-                        N/A
-                    </#if>
-                </td>
-                <td>${item.feedBackDate?string("yyyy-MM-dd HH:mm:ss")}</td>
+                <td>${item.feedbackMileage}</td>
+                <td>${item.feedbackMention}</td>
+                <td>${item.feedbackDate}</td>
+                <td>${item.feedbackTime}</td>
             </tr>
         </#list>
         </tbody>

@@ -16,25 +16,46 @@ public class VoteChatPeriodChangeDto {
     private VoteMethodType voteMethodType;
     private VoteSubject voteSubject;
     private LocalDateTime createdAt;
-    private LocalDateTime completedDate;
+    private LocalDateTime completedAt;
 
+    private LocalTime startTime;
+    private LocalTime endTime;
     private Integer startHour;
     private Integer startMinute;
     private Integer endHour;
     private Integer endMinute;
 
-    public VoteChatPeriodChangeDto(Long voteId, String voteTitle, String content, VoteMethodType voteMethodType, VoteSubject voteSubject, LocalDateTime createdAt, LocalDateTime completedDate, LocalTime startTime, LocalTime endTime) {
+    private Long agree;
+    private Long disagree;
+
+    public VoteChatPeriodChangeDto(Long voteId, String voteTitle, String content, VoteMethodType voteMethodType, VoteSubject voteSubject, LocalDateTime createdAt, LocalDateTime completedAt, LocalTime startTime, LocalTime endTime) {
         this.voteId = voteId;
         this.voteTitle = voteTitle;
         this.content = content;
         this.voteMethodType = voteMethodType;
         this.voteSubject = voteSubject;
         this.createdAt = createdAt;
-        this.completedDate = completedDate;
+        this.completedAt = completedAt;
         this.startHour = startTime.getHour();
         this.startMinute = startTime.getMinute();
         this.endHour = endTime.getHour();
         this.endMinute = endTime.getMinute();
+    }
+
+    public VoteChatPeriodChangeDto(Long voteId, String voteTitle, String content, VoteMethodType voteMethodType, VoteSubject voteSubject, LocalDateTime createdAt, LocalDateTime completedAt, LocalTime startTime, LocalTime endTime, Long agree, Long disagree) {
+        this.voteId = voteId;
+        this.voteTitle = voteTitle;
+        this.content = content;
+        this.voteMethodType = voteMethodType;
+        this.voteSubject = voteSubject;
+        this.createdAt = createdAt;
+        this.completedAt = completedAt;
+        this.startHour = startTime.getHour();
+        this.startMinute = startTime.getMinute();
+        this.endHour = endTime.getHour();
+        this.endMinute = endTime.getMinute();
+        this.agree = agree;
+        this.disagree = disagree;
     }
     public VoteChatPeriodChangeDto(Long voteId, String voteTitle, String content, VoteMethodType voteMethodType, VoteSubject voteSubject, LocalDateTime createdAt, LocalTime startTime, LocalTime endTime) {
         this.voteId = voteId;
@@ -49,4 +70,22 @@ public class VoteChatPeriodChangeDto {
         this.endMinute = endTime.getMinute();
     }
 
+    public VoteChatPeriodChangeDto(Long voteId, String voteTitle, String content, VoteMethodType voteMethodType, VoteSubject voteSubject, LocalDateTime createdAt, LocalTime startTime, LocalTime endTime, Long agree, Long disagree) {
+        this.voteId = voteId;
+        this.voteTitle = voteTitle;
+        this.content = content;
+        this.voteMethodType = voteMethodType;
+        this.voteSubject = voteSubject;
+        this.createdAt = createdAt;
+        this.startHour = startTime.getHour();
+        this.startMinute = startTime.getMinute();
+        this.endHour = endTime.getHour();
+        this.endMinute = endTime.getMinute();
+        this.agree = agree;
+        this.disagree = disagree;
+    }
+    public void setProsAndCons(Long agree, Long disagree) {
+        this.agree = agree;
+        this.disagree = disagree;
+    }
 }

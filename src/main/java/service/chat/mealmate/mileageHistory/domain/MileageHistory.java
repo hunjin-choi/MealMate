@@ -23,7 +23,8 @@ public class MileageHistory {
     private MileageChangeReason changeReason;
 
     private String changeReasonDetail;
-    @ManyToOne
+    @ManyToOne()
+    @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
     @OneToOne()

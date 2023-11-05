@@ -6,5 +6,6 @@ import lombok.Data;
 public class FeedbackDto {
     public String feedbackMention;
     public int mileage;
-    public String receiverName;
+    public Long receiverMealMateId;
+    public String receiverNickname;
 }

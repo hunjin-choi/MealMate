@@ -45,8 +45,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     /**
-     * 테스트를 위해 In-Memory에 계정을 임의로 생성한다.
-     * 서비스에 사용시에는 DB데이터를 이용하도록 수정이 필요하다.
+     * 테스트를 위해 임시로 유저를 생성
      */
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {

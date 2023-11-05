@@ -22,24 +22,22 @@ public class Vote {
     private Long voteId;
     private String voteTitle;
     private String content;
+    @Enumerated(EnumType.STRING)
     private VoteMethodType voteMethodType;
+    @Enumerated(EnumType.STRING)
     private VoteSubject voteSubject;
     private LocalDateTime createdAt;
-    private LocalDateTime completedDate;
-
-    // 연관관계 -> 의존관계로 바꾸자
-//    @Transient @Autowired https://stackoverflow.com/questions/54014047/can-we-use-autowired-on-an-entity-object-in-spring
-//    private VotingMethodStrategy votingMethodStrategy;
-
+    private LocalDateTime completedAt;
+    @Version
+    private Long version = 1L; // 두 명 이상이 동시에 투표를 완료를 요청할 수 있기 때문
     @OneToMany(mappedBy = "vote")
     private List<VotePaper> votePaperList = new ArrayList<>();
-    @ManyToOne()
+    @ManyToOne() @JoinColumn(name = "chat_room_id")
     private ChatRoom chatRoom;
     @OneToOne(cascade = CascadeType.ALL) @JoinColumn(name = "chat_period_vote")
     private ChatPeriodVote chatPeriodVote;
     @OneToOne(cascade = CascadeType.ALL) @JoinColumn(name = "title_vote_id")
     private TitleVote titleVote;
-
     protected Vote(String voteTitle, String content, VoteMethodType voteMethodType, VoteSubject voteSubject, ChatRoom chatRoom, LocalDateTime createdAt) {
         this.voteTitle = voteTitle;
         this.content = content;
@@ -75,6 +73,8 @@ public class Vote {
     }
     // 의존관계 사용
     public void complete(Long totalMember, VotingMethodStrategy votingMethodStrategy, VoteValidateDto dto) {
+        if (completedAt != null)
+            throw new RuntimeException("이미 완료된 투표입니다.");
         // 값 검증 (배민 결제 검증 하는거 처럼)
         if (timeInfoNeed()) {
             chatPeriodVote.validate(dto.getStartHour(), dto.getStartMinute(), dto.getEndHour(), dto.getEndMinute());
@@ -88,6 +88,6 @@ public class Vote {
         Long disagree = votePaperList.stream().filter((i) -> i.getVoterStatus() == VoterStatus.DISAGREE).count();
         if (!votingMethodStrategy.executable(this.voteMethodType, totalMember, agree, disagree))
             throw new RuntimeException("제안이 실행될 조건을 만족하지 못합니다.");
-        this.completedDate = LocalDateTime.now();
+        this.completedAt = LocalDateTime.now();
     }
 }

@@ -21,10 +21,12 @@ public class VoteValidateDto {
 
     public static VoteValidateDto of(ChatPeriodDto chatPeriodDto) {
         VoteValidateDto voteValidateDto = new VoteValidateDto();
-        voteValidateDto.startHour = chatPeriodDto.getStartHour();
-        voteValidateDto.startMinute = chatPeriodDto.getStartMinute();
-        voteValidateDto.endHour = chatPeriodDto.getEndHour();
-        voteValidateDto.endMinute = chatPeriodDto.getEndMinute();
+        LocalTime startTime = chatPeriodDto.getStartTime();
+        LocalTime endTime = chatPeriodDto.getEndTime();
+        voteValidateDto.startHour = startTime.getHour();
+        voteValidateDto.startMinute = startTime.getMinute();
+        voteValidateDto.endHour = endTime.getHour();
+        voteValidateDto.endMinute = endTime.getMinute();
 
         return voteValidateDto;
     }

@@ -18,14 +18,17 @@ public class SecurityMember extends User {
     private Long mealMateId = null;
     private String chatRoomId = null;
     private LocalDateTime chatExpiredAt = null;
+
+    private Long chatPeriodId = null;
     public SecurityMember(Member member, List<GrantedAuthority> authorities) {
         // 비밀번호 넣어 줄 때 encoding 하지 않으면 에러 발생함
         super(member.getLoginId(), member.getPassword(), authorities);
         this.memberId = member.getMemberId();
     }
-    public void setChatInfo(Long mealMateId, String chatRoomId, LocalDateTime chatExpiredAt) {
+    public void setChatInfo(Long mealMateId, String chatRoomId, Long chatPeriodId, LocalDateTime chatExpiredAt) {
         this.mealMateId = mealMateId;
         this.chatRoomId = chatRoomId;
+        this.chatPeriodId = chatPeriodId;
         this.chatExpiredAt = chatExpiredAt;
     }
     public SecurityMember(Member member, PasswordEncoder passwordEncoder, List<GrantedAuthority> authorities, LocalDateTime chatExpiredAt) {

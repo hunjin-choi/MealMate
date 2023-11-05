@@ -6,12 +6,16 @@ import lombok.Data;
 import lombok.Getter;
 import service.chat.mealmate.mealMate.domain.ChatPeriod;
 
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Getter @Data
 public class ChatPeriodDto {
     private Long chatPeriodId;
+
+    private LocalTime startTime;
+    private LocalTime endTime;
     private Integer startHour;
     private Integer startMinute;
     private Integer endHour;

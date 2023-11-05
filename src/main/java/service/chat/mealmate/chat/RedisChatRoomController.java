@@ -7,9 +7,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import service.chat.mealmate.chat.dto.ChatRoomDto;
 import service.chat.mealmate.chat.dto.RedisChatMessageDto;
 import service.chat.mealmate.chat.dto.RedisChatRoom;
 import service.chat.mealmate.chat.dto.LoginInfo;
+import service.chat.mealmate.mealMate.domain.ChatPeriod;
 import service.chat.mealmate.mealMate.domain.ChatRoom;
 import service.chat.mealmate.security.ChatPeriodCheck;
 import service.chat.mealmate.security.domain.SecurityMember;
@@ -23,6 +25,7 @@ import service.chat.mealmate.mealMate.service.MealMateService;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -44,32 +47,29 @@ public class RedisChatRoomController {
     // 모든 채팅방 목록 반환
     @GetMapping("/rooms")
     @ResponseBody
-    public List<RedisChatRoom> room() {
-        return redisChatRoomRepository.findAllRoom();
+    public List<ChatRoomDto> room() {
+        return chatRoomRepository.findAllChatRoom();
     }
 
     @GetMapping("/myRoom")
     @ResponseBody
-    public RedisChatRoom myRoom() {
+    public List<ChatRoomDto> myRoom() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         SecurityMember principal = (SecurityMember) auth.getPrincipal();
-        MealMate mealMate = mealMateRepository.findActivatedBy(principal.getMemberId())
-                .orElse(null);
-        if (mealMate == null) return null;
-        String chatRoomId = mealMate.getChatRoom().getChatRoomId();
-        return redisChatRoomRepository.findRoomById(chatRoomId);
+        // return redisChatRoomRepository.findRoomById(chatRoomId);
+        return chatRoomRepository.findChatRoomBy(principal.getMemberId());
     }
     // 채팅방 생성
     @PostMapping("/room")
     @ResponseBody
-    public RedisChatRoom createRoom(@RequestParam String chatRoomTitle) {
+    public ChatRoomDto createRoom(@RequestParam String chatRoomTitle) {
         SecurityMember principal = (SecurityMember) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long memberId = principal.getMemberId();
-        RedisChatRoom chatRoom = redisChatRoomRepository.createChatRoom(chatRoomTitle);
+        RedisChatRoom chatRoom = redisChatRoomRepository.createChatRoom();
         String chatRoomId = chatRoom.getRoomId();
         MealMate mealMate = mealmateService.createAndJoin(memberId, chatRoomId, chatRoomTitle);
-        principal.setChatInfo(mealMate.getMealMateId(), chatRoomId, mealMate.findMatchedChatPeriodEndTime(LocalDateTime.now()));
-        return chatRoom;
+        principal.setChatInfo(mealMate.getMealMateId(), chatRoomId, mealMate.findMatchedChatPeriodId(LocalDateTime.now()), mealMate.findMatchedChatPeriodEndTime(LocalDateTime.now()));
+        return new ChatRoomDto(chatRoomId, chatRoomTitle);
     }
     // 채팅방 입장 화면
     @GetMapping("/room/join/{chatRoomId}")
@@ -77,7 +77,7 @@ public class RedisChatRoomController {
         SecurityMember principal = (SecurityMember) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long memberId = principal.getMemberId();
         MealMate mealMate = mealmateService.join(memberId, chatRoomId);
-        principal.setChatInfo(mealMate.getMealMateId(), chatRoomId, mealMate.findMatchedChatPeriodEndTime(LocalDateTime.now()));
+        principal.setChatInfo(mealMate.getMealMateId(), chatRoomId, mealMate.findMatchedChatPeriodId(LocalDateTime.now()), mealMate.findMatchedChatPeriodEndTime(LocalDateTime.now()));
         model.addAttribute("roomId", chatRoomId);
         return "/chat/roomdetail";
     }
@@ -87,7 +87,8 @@ public class RedisChatRoomController {
         SecurityMember principal = (SecurityMember) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long memberId = principal.getMemberId();
         MealMate mealMate = mealmateService.enter(memberId, chatRoomId);
-        principal.setChatInfo(mealMate.getMealMateId(), chatRoomId, mealMate.findMatchedChatPeriodEndTime(LocalDateTime.now()));
+        ChatPeriod chatPeriod = mealMate.findMatchedChatPeriod(LocalDateTime.now());
+        principal.setChatInfo(mealMate.getMealMateId(), chatRoomId, chatPeriod.getChatPeriodId(), chatPeriod.getExpiredDateTime());
         model.addAttribute("roomId", chatRoomId);
         return "/chat/roomdetail";
     }

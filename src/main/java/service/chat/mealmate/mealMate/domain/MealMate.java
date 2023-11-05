@@ -9,6 +9,7 @@ import service.chat.mealmate.member.domain.Member;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,6 +62,8 @@ public class MealMate implements Serializable {
         // 중복체크를 voterList를 순회하면서 할 것인지?
         // 중복체크를 이 함수밖인 service 계층에서 select문을 통해 할 것인지?
         // 중복체크를 composite unique index를 통해서 할 것인지?
+        if (vote.getCompletedAt() != null)
+            throw new RuntimeException("이미 종료된 투표입니다.");
         VotePaper votePaper = new VotePaper(vote, this, voterStatus, isCreator);
         return votePaper;
     }
@@ -70,7 +73,13 @@ public class MealMate implements Serializable {
         return new ChatMessage(message, LocalDateTime.now(), this);
 
     }
+    public ChatPeriod findMatchedChatPeriod(LocalDateTime localDateTime) {
+        return chatRoom.findMatchedChatPeriod(localDateTime);
+    }
 
+    public Long findMatchedChatPeriodId(LocalDateTime localDateTime) {
+        return chatRoom.findMatchedChatPeriod(localDateTime).getChatPeriodId();
+    }
     public LocalDateTime findMatchedChatPeriodEndTime(LocalDateTime localDateTime) {
         return chatRoom.findMatchedChatPeriodEndTime(localDateTime);
     }

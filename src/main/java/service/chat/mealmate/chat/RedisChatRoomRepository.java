@@ -33,8 +33,8 @@ public class RedisChatRoomRepository {
     }
 
     // 채팅방 생성 : 서버간 채팅방 공유를 위해 redis hash에 저장한다.
-    public RedisChatRoom createChatRoom(String name) {
-        RedisChatRoom redisChatRoom = RedisChatRoom.create(name);
+    public RedisChatRoom createChatRoom() {
+        RedisChatRoom redisChatRoom = RedisChatRoom.create();
         opsHashChatRoom.put(CHAT_ROOMS, redisChatRoom.getRoomId(), redisChatRoom);
         return redisChatRoom;
     }

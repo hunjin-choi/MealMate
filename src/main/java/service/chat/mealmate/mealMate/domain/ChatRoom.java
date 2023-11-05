@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 @Entity @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class ChatRoom {
-    @Id
+    @Id() @Column(name = "chat_room_id")
     private String chatRoomId;
 
     private String title;
@@ -29,7 +29,7 @@ public class ChatRoom {
     // 낙관적 락을 위해 도입
     private short currentPersonnel = 0;
     @Version
-    private Integer version = 1;
+    private Long version = 1L;
     @OneToMany(mappedBy = "chatRoom", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<ChatPeriod> chatPeriodList = new ArrayList<>();
 
@@ -42,11 +42,15 @@ public class ChatRoom {
         this.chatRoomId = chatRoomId;
         this.title = title;
         this.openedAt = openedAt;
-        this.expectedClosedAt = LocalDateTime.now().plusDays(1);// 24시간 뒤의 시간
+        this.expectedClosedAt = LocalDateTime.now().plusHours(1);// 24시간 뒤의 시간
         this.maxPersonnel = maxPersonnel;
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 2; i++) {
             chatPeriodList.add(new ChatPeriod(0, 0, 0, 0, this));
         }
+        ChatPeriod temporalChatPeriod = new ChatPeriod(0, 0, 0, 0, this);
+        temporalChatPeriod.update(openedAt.getHour(), openedAt.getMinute(), expectedClosedAt.getHour(), expectedClosedAt.getMinute());
+        temporalChatPeriod.reservedSoftDelete(expectedClosedAt);
+        chatPeriodList.add(temporalChatPeriod);
     }
     public short addPersonnel() {
         if (++this.currentPersonnel == this.maxPersonnel) lock(LocalDateTime.now());
@@ -65,7 +69,7 @@ public class ChatRoom {
         if (immediately)
             chatPeriod.update(startHour, startMinute, endHour, endMinute);
         else
-            chatPeriod.reservedUpdate(startHour, startMinute, endHour, endMinute);
+            chatPeriod.reservedUpdate(startHour, startMinute, endHour, endMinute, LocalDateTime.now());
     }
     public void updateChatPeriod(Long chatPeriodId, int startHour, int startMinute, int endHour, int endMinute, boolean immediately) {
         if (this.lockedAt == null)
@@ -78,7 +82,7 @@ public class ChatRoom {
         if (immediately)
             chatPeriod.update(startHour, startMinute, endHour, endMinute);
         else
-            chatPeriod.reservedUpdate(startHour, startMinute, endHour, endMinute);
+            chatPeriod.reservedUpdate(startHour, startMinute, endHour, endMinute, LocalDateTime.now());
     }
 
     public void updateChatRoomTitle(String newTitle) {
@@ -100,7 +104,7 @@ public class ChatRoom {
         if (immediately)
             chatPeriod.softDelete();
         else
-            chatPeriod.reservedSoftDelete();
+            chatPeriod.reservedSoftDelete(LocalDateTime.now());
     }
     // 24시간을 넘어가면 문제임
     // 임시채팅시간대에 피드백을 하면 문제임
@@ -110,21 +114,32 @@ public class ChatRoom {
         this.expectedClosedAt = LocalDateTime.of(9999, 12, 31, 0, 0);
         // this.expectedClosedAt = LocalDateTime.MAX; <- 년도가 비정상적으로 큰 값을 생성함;;
         this.lockedAt = lockedAt;
-        addChatPeriod(lockedAt.getHour(), lockedAt.getMinute(), lockedAt.getHour() + 1, lockedAt.getMinute(), true);
+        this.chatPeriodList.stream()
+                .filter(i -> i.reservedDeleted == true)
+                .forEach(chatPeriod -> {chatPeriod.softDelete();});
+
+        addChatPeriod(lockedAt.getHour(), lockedAt.getMinute(), lockedAt.plusHours(1).getHour(), lockedAt.getMinute(), true);
     }
     public void close(LocalDateTime closedAt) {
         for (MealMate mealMate : mealMateList) {
             // 객체지향적인 코드 // 비효율적인 쿼리
-            if (mealMate.isActive()) mealMate.leave(closedAt);
+            if (mealMate.isActive())
+                mealMate.leave(closedAt);
         }
         this.closedAt = closedAt;
     }
-    public ChatPeriod findMatchedChatPeriod(LocalTime localTime) {
-        if (this.lockedAt == null) throw new RuntimeException("비잠금상태의 채팅방에는 임시시간대만 있습니다");
+    public ChatPeriod findMatchedChatPeriod(LocalDateTime localDateTime) {
+        final LocalTime localTime = localDateTime.toLocalTime();
+//        if (this.lockedAt == null) {
+//            throw new RuntimeException("비잠금상태의 채팅방에는 임시시간대만 있습니다");
+//        }
         return chatPeriodList.stream().filter(chatPeriod -> {
             LocalTime startTime = chatPeriod.getStartTime();
             LocalTime endTime = chatPeriod.getEndTime();
-            return startTime.isBefore(localTime) && endTime.isAfter(localTime);
+            if (startTime.getHour() > endTime.getHour())
+                return startTime.isBefore(localTime) || endTime.isAfter(localTime);
+            else
+                return startTime.isBefore(localTime) && endTime.isAfter(localTime);
         }).findAny().orElseThrow(() -> new RuntimeException("적절한 채팅 시간대를 찾을 수 없습니다"));
     }
 

@@ -10,9 +10,11 @@ import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
 import service.chat.mealmate.chat.dto.RedisChatMessageDto;
 import service.chat.mealmate.chat.service.RedisChatPublisherService;
+import service.chat.mealmate.security.domain.SecurityMember;
 import service.chat.mealmate.security.jwt.JwtTokenProvider;
 import service.chat.mealmate.chat.service.ChatService;
 import service.chat.mealmate.mealMate.repository.MealMateRepository;
@@ -33,7 +35,6 @@ public class StompHandler implements ChannelInterceptor {
     private final RedisChatPublisherService redisChatPublisherService;
     // websocket을 통해 들어온 요청이 처리 되기전 실행된다.
 
-
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
@@ -46,8 +47,13 @@ public class StompHandler implements ChannelInterceptor {
             // 프론트까지 전달 안됨
             accessor.setHeader("connect", "false");
             message = MessageBuilder.fromMessage(message).setHeader("connect", "false").build();
-
-//            redisChatPublisherService.convertAndSend();
+            SecurityMember securityMember = (SecurityMember) ((UsernamePasswordAuthenticationToken) accessor.getUser()).getPrincipal();
+            Long mealMateId = securityMember.getMealMateId();
+            Long memberId = securityMember.getMemberId();
+            String loginId = securityMember.getUsername();
+            String msg = loginId + "님이 퇴장하셨습니다.";
+            String chatRoomId = securityMember.getChatRoomId();
+            redisChatPublisherService.convertAndSend(msg, loginId, chatRoomId, mealMateId, RedisChatMessageDto.MessageType.QUIT);
 //            channel.send(message); -> 재전송
             return message;
         }

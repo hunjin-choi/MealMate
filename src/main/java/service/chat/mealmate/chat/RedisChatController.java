@@ -41,9 +41,6 @@ public class RedisChatController {
         SecurityMember securityMember = (SecurityMember) authentication.getPrincipal();
         String loginId = securityMember.getUsername();
         Long mealMateId = securityMember.getMealMateId();
-        if (connect != null && connect.equals("true")) {
-            message.setMessage(loginId + "님이 퇴장하셨습니다.");
-        }
         redisChatPublisherService.convertAndSend(message, loginId, mealMateId);
     }
 }

@@ -20,8 +20,9 @@
             <h3>채팅방 리스트</h3>
         </div>
         <div class="col-md-4 text-mid">
-            <button class="btn btn-info btn-sm" @click="window.location.href='/mealmate/list'">MealMate List</button>
-            <button class="btn btn-info btn-sm" @click="window.location.href='/member/mileage/history'">Mileage History</button>
+<#--            <button class="btn btn-info btn-sm" @click="window.location.href='/mealmate/list'">MealMate List</button>-->
+<#--            <button class="btn btn-info btn-sm" @click="window.location.href='/member/mileage/history'">Mileage History</button>-->
+            <button class="btn btn-info btn-sm" @click="window.location.href='/mealmate/feedback/history'">Feedback History</button>
         </div>
         <div class="col-md-4 text-right">
             <a class="btn btn-primary btn-sm" href="/logout">로그아웃</a>
@@ -49,7 +50,7 @@
     </ul>
     <!-- 나의 채팅방 -->
     <ul class="list-group" v-if="showMyRoom">
-        <li class="list-group-item list-group-item-action" v-bind:key="myRoom.roomId" v-on:click="enterRoom(myRoom.roomId, myRoom.name)">
+        <li class="list-group-item list-group-item-action" v-for="myRoom in myRooms" v-bind:key="myRoom.roomId" v-on:click="enterRoom(myRoom.roomId, myRoom.name)">
             {{myRoom.name}}
         </li>
     </ul>
@@ -64,7 +65,7 @@
             room_name : '',
             chatrooms: [
             ],
-            myRoom: null, // My Room 정보를 저장할 변수 추가
+            myRooms: null, // My Room 정보를 저장할 변수 추가
             showChatrooms: true,
             showMyRoom: false
         },
@@ -83,7 +84,7 @@
                 this.showMyRoom = false;
             },
             findMyRoom: function() { // My Room을 찾는 메소드 추가
-                axios.get('/chat/myRoom').then(response => { this.myRoom = response.data; });
+                axios.get('/chat/myRoom').then(response => { this.myRooms = response.data; });
                 this.showChatrooms = false;
                 this.showMyRoom = true;
             },

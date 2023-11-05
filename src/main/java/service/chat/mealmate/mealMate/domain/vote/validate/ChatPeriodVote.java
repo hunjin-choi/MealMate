@@ -2,6 +2,7 @@ package service.chat.mealmate.mealMate.domain.vote.validate;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import service.chat.mealmate.mealMate.domain.ChatPeriod;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -24,6 +25,7 @@ public class ChatPeriodVote {
     public boolean validate(Integer startHour, Integer startMinutes, Integer endHour, Integer endMinute) {
         if (startHour == null || startMinutes == null || endHour == null || endMinute == null)
             throw new RuntimeException("입력 값이 잘 못 되었습니다.");
+        ChatPeriod.validate(startHour, startMinutes, endHour, endMinute);
         return startTime.getHour() == startHour && startTime.getMinute() == startMinutes
                 && endTime.getHour() == endHour && endTime.getMinute() == endMinute;
     }

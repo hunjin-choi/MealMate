@@ -19,7 +19,7 @@ public class Member {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long memberId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String nickname;
 
     @Column(nullable = false, unique = true)
@@ -34,9 +34,6 @@ public class Member {
     private LocalDateTime deletedAt;
     @Column(nullable = false)
     private String email;
-
-    @Column(length = 500)
-    private String refreshToken = null;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -74,20 +71,7 @@ public class Member {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<MileageHistory> mileageHistoryList = new ArrayList<>();
 
-//    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-//    private List<MealMate> mealMateList = new ArrayList<>();
-//
-//    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-//    private List<Orders> ordersList = new ArrayList<>();
-
     public void changeNickname(String nickname) {
         this.loginId = nickname;
     }
-    public void connectChatRoom(String refreshToken) {
-        this.refreshToken = refreshToken;
-    }
-    public void reConnectChatRoom(String refreshToken) {
-        this.refreshToken = refreshToken;
-    }
-    public void disconnectChatRoom(String refreshToken) { this.refreshToken = refreshToken; }
 }

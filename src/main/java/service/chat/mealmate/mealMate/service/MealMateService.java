@@ -35,7 +35,7 @@ public class MealMateService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final VotePaperRepository votePaperRepository;
-    private final CreateVoteStrategy createVoteStrategy;
+    private final VoteFactory voteFactory;
     private final ChatRoomJoinPolicy chatRoomJoinPolicy;
     private final ChatRoomEnterPolicy chatRoomEnterPolicy;
     protected void voteComplete(String chatRoomId, Long voteId, VoteValidateDto dto) {
@@ -46,14 +46,14 @@ public class MealMateService {
     }
 
     public MealMate join(Member member, ChatRoom chatRoom) {
-        return join(member.getMemberId(), chatRoom.getChatRoomId());
+        return chatRoomJoinPolicy.joinImmediately(member, chatRoom);
     }
     public MealMate join(Long memberId, String chatRoomId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("멤버가 없습니다."));
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new RuntimeException("채팅방이 없습니다."));
-        return chatRoomJoinPolicy.canJoinImmediately(member, chatRoom);
+        return chatRoomJoinPolicy.joinImmediately(member, chatRoom);
     }
 
     public MealMate createAndJoin(Long memberId, String chatRoomId, String chatRoomTitle) {
@@ -64,24 +64,27 @@ public class MealMateService {
         MealMate mealMate = join(member, chatRoom);
         return mealMate;
     }
+    // enter 후에 웹소켓 연결과정에서도 인가 절차가 있음. 그럼에도 enter 인가 절차는 필요
+    // enter에서 하는 인가절차는 채팅방의 멤버인지 확인하는 것이고
+    // 웹소켓 연결과정에서 하는 인가절차는 현재 채팅방에서 대화를 할 수 있는지 확인하는 것
     public MealMate enter(Long memberId, String chatRoomId) {
         return chatRoomEnterPolicy.canEnterImmediately(memberId, chatRoomId);
     }
-    public void feedback(Long senderId, String chatRoomId, Long chatPeriodId, FeedbackDto feedbackDto) {
+    public void feedback(Long senderId, Long receiverId, String chatRoomId, Long chatPeriodId, FeedbackDto feedbackDto) {
         LocalDateTime now = LocalDateTime.now();
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new RuntimeException("채팅방이 없습니다."));
         MealMate giver = mealMateRepository.findOneActivatedCompositeBy(senderId, chatRoomId)
                 .orElseThrow(() -> new RuntimeException("밀 메이트가 없습니다"));
         // 아래 두 쿼리는 "연관관계 검증" 과정인데, 각각 다른 방식을 사용
-        MealMate receiver = mealMateRepository.findOneActivatedWithChatRoomByName(feedbackDto.receiverName, chatRoomId)
+        MealMate receiver = mealMateRepository.findOneActivatedCompositeBy(receiverId, chatRoomId)
                 .orElseThrow(() -> new RuntimeException("밀 메이트가 없습니다."));
         ChatPeriod chatPeriod = chatRoom.findMatchedChatPeriod(chatPeriodId);
 
-        FeedbackHistory feedbackHistory = new FeedbackHistory(feedbackDto.feedbackMention, giver, receiver, chatPeriod, now, feedbackDto.mileage);
+        FeedbackHistory feedbackHistory = FeedbackFactory.createFeedbackHistory(feedbackDto.feedbackMention, giver, receiver, chatPeriod, now, feedbackDto.mileage, chatRoom);
         feedbackHistoryRepository.save(feedbackHistory);
 
-        MileageHistory latestMileageHistory = mileageHistoryRepository.findLatestBy(feedbackDto.receiverName)
+        MileageHistory latestMileageHistory = mileageHistoryRepository.findLatestBy(feedbackDto.receiverNickname)
                 .orElseThrow(() -> new RuntimeException("적절한 마일리지 히스토리를 찾을 수 없습니다."));
         MileageHistory newMileageHistory = latestMileageHistory.createHistory(feedbackHistory.getFeedbackMileage(), MileageChangeReason.FEEDBACK, feedbackHistory, now);
         mileageHistoryRepository.save(newMileageHistory);
@@ -93,7 +96,9 @@ public class MealMateService {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 업습니다"));
         boolean immediately = chatRoomStatusChangePolicy.canAddImmediately(LocalTime.now(), dto);
-        chatRoom.addChatPeriod(dto.getStartHour(), dto.getStartMinute(), dto.getEndHour(), dto.getEndMinute(), immediately);
+        LocalTime startTime = dto.getStartTime();
+        LocalTime endTime = dto.getEndTime();
+        chatRoom.addChatPeriod(startTime.getHour(), startTime.getMinute(), endTime.getHour(), endTime.getMinute(), immediately);
         // 즉시/예약 여부를 프론트에서 알 수 있게끔 처리
     }
 
@@ -107,7 +112,6 @@ public class MealMateService {
         chatRoom.deleteChatPeriod(chatPeriodId, immediately);
         // 즉시/예약 여부를 프론트에서 알 수 있게끔 처리
     }
-
     public void updateChatPeriod(String chatRoomId, Long voteId, ChatPeriodDto dto) {
         voteComplete(chatRoomId, voteId, VoteValidateDto.of(dto));
 
@@ -119,11 +123,12 @@ public class MealMateService {
         chatRoom.updateChatPeriod(chatPeriodId, dto.getStartHour(), dto.getStartMinute(), dto.getStartHour(), dto.getEndMinute(), immediately);
         // 즉시/예약 여부를 프론트에서 알 수 있게끔 처리
     }
-    public void updateChatRoomTitle(String chatRoomId, Long voteId, String newTitle) {
+    public String updateChatRoomTitle(String chatRoomId, Long voteId, String newTitle) {
         voteComplete(chatRoomId, voteId, VoteValidateDto.of(newTitle));
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 업습니다"));
         chatRoom.updateChatRoomTitle(newTitle);
+        return newTitle;
     }
 
     public void lockChatRoom(String chatRoomId, Long voteId) {
@@ -143,7 +148,7 @@ public class MealMateService {
                 .orElseThrow(() -> new RuntimeException("밀 메이트를 찾을 수 없습니다"));
         ChatRoom chatRoom = this.chatRoomRepository.findOneWithMealMate(mealMate.getMealMateId(), chatRoomId)
                 .orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 없습니다"));
-        Vote vote = createVoteStrategy.createVote(dto, chatRoom);
+        Vote vote = voteFactory.createVote(dto, chatRoom);
         // VotePaper votePaper = mealMate.createVoteAndVoting(dto.getVoteTitle(), dto.getContent(), dto.getVoteMethodType(), dto.getVotingDto().getVoterStatus(), chatRoom);
         boolean isCreator = true;
         VotePaper votePaper = mealMate.voting(vote, dto.getVoting().getVoterStatus(), isCreator);
@@ -183,7 +188,7 @@ public class MealMateService {
         List<Vote> voteList = chatRoom.getVoteList();
 
         return voteList.stream()
-                .filter((vote) -> vote.getCompletedDate() == null)
+                .filter((vote) -> vote.getCompletedAt() == null)
                 .map((vote) -> {
                 List<VotePaper> votePaperList = vote.getVotePaperList();
                 Long personnel = mealMateRepository.countAllActiveMealMateBy(chatRoomId);
@@ -210,11 +215,6 @@ public class MealMateService {
 
     public List<MealMate> getMealMates(String chatRoomId) {
         return mealMateRepository.findAllActiveMealMateBy(chatRoomId);
-    }
-
-    public List<FeedbackHistory> getReceivedFeedbackHistories(Long mealmateId) {
-        MealMate receiver = mealMateRepository.findById(mealmateId).orElseThrow(() -> new RuntimeException(""));
-        return feedbackHistoryRepository.findByReceiverOrderByFeedbackDateDesc(receiver);
     }
 
     public List<ChatPeriod> getChatPeriods(String chatRoomId) {

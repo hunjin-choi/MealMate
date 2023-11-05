@@ -18,7 +18,7 @@
 <div class="container" id="app" v-cloak>
     <div class="row justify-content-between align-items-center">
         <div class="col-3">
-            <button class="btn btn-warning" type="button" @click="redirectToChatRoom">채팅룸으로 이동</button>
+            <button class="btn btn-warning" type="button" @click="redirectToChatRoom">대기방으로 이동</button>
         </div>
         <div class="col-6 text-center">
             <h3>{{roomName}}</h3>
@@ -32,7 +32,7 @@
         <input type="text" class="form-control" v-model="message" v-on:keypress.enter="sendMessage('TALK')" placeholder="Enter chat message here...">
         <div class="input-group-append">
             <button class="btn btn-primary" type="button" @click="sendMessage('TALK')">채팅 보내기</button>
-            <button class="btn btn-info" type="button" @click="feedbackModal = feedbackModal ^ true">피드백 보내기</button>
+            <button class="btn btn-info" type="button" @click="fetchFeedbackMealMateList(); feedbackModal = feedbackModal ^ true">피드백 보내기</button>
             <button class="btn btn-third" type="button" @click="fetchVoteList(); voteListFlag = voteListFlag ^ true;" >투표 리스트</button>
 
         </div>
@@ -48,10 +48,10 @@
                 {{chatPeriodVote.voteMethodType}}
                 {{chatPeriodVote.voteSubject}}
                 {{chatPeriodVote.createdAt}}
-                {{chatPeriodVote.startHour}}
-                {{chatPeriodVote.startMinute}}
-                {{chatPeriodVote.endHour}}
-                {{chatPeriodVote.endMinute}}
+                {{chatPeriodVote.startTime}}
+                {{chatPeriodVote.endTime}}
+                찬성: {{chatPeriodVote.agree}}
+                반대: {{chatPeriodVote.disagree}}
                 <span>찬성: ~~~~~</span><span>반대: ~~~~~</span>
                 <button @click="alert('test')">press me</button>
                 <button type="button" @click="votingMethod(chatPeriodVote, 'agree')">agree</button>
@@ -212,17 +212,6 @@
         </div>
     </div>
 
-    <ul class="list-group" v-if="messageFetchFlag">
-            <li class="list-group-item d-flex justify-content-between" v-for="message in messages">
-        <span>
-          {{message.sender}} - {{message.message}}
-        </span>
-        <span>
-          {{message.date}}
-        </span>
-            </li>
-    </ul>
-
     <!-- Chat Time Period Modal -->
     <div v-if="addChatPeriodFlag" class="modal-container">
         <h4>Chat Time Period</h4>
@@ -267,16 +256,33 @@
 
     <!-- Feedback Modal -->
     <div v-if="feedbackModal" class="modal-container">
-        <h4>Feedback</h4>
-        <div>
-            <label>피드백: </label>
-            <input type="text" v-model="feedback" required minlength="5" placeholder="5글자 이상 입력하세요."><br/>
-            <label>마일리지: </label>
-            <input type="number" v-model="mileage" required min="0" placeholder="0 이상의 정수를 입력하세요."><br/>
-            <button @click="submitFeedback">제출</button>
-            <button @click="cancelFeedback">취소</button>
+        <div v-for="feedback in feedbackMealMateList">
+            <span>{{feedback.receiverName}}</span>
+            <span>{{feedback.feedbackMention}}</span>
+            <span>{{feedback.feedbackMileage}}</span>
+            <span>{{feedback.feedbackTime}}</span>
+            <span>{{feedback.mealMateId}}</span>
+            <span><button @click="feedbackForm=true;">Add Feedback</button></span>
+            <div v-if="feedbackForm">
+                <label>피드백: </label>
+                <input type="text" v-model="feedbackMention" required minlength="5" placeholder="5글자 이상 입력하세요."><br/>
+                <label>마일리지: </label>
+                <input type="number" v-model="mileage" required min="0" placeholder="0 이상의 정수를 입력하세요."><br/>
+                <button @click="submitFeedback(feedback.mealMateId, feedback.receiverName)">제출</button>
+                <button @click="cancelFeedback">취소</button>
+            </div>
         </div>
     </div>
+    <ul class="list-group" v-if="messageFetchFlag">
+        <li class="list-group-item d-flex justify-content-between" v-for="message in messages">
+        <span>
+          {{message.sender}} - {{message.message}}
+        </span>
+            <span>
+          {{message.date}}
+        </span>
+        </li>
+    </ul>
 
 </div>
 <!-- JavaScript -->
@@ -312,7 +318,7 @@
             startMinute: null,
             endHour: null,
             endMinute: null,
-            feedback: '',
+            feedbackMention: '',
             mileage: null,
             tempValue:null,
             messageFetchFlag: false,
@@ -339,6 +345,9 @@
             updateChatPeriodForm: null,
             allLockChangeVoteList: null,
             lockVoteFlag: null,
+            feedbackMealMateList: null,
+            feedbackInfo: {},
+            feedbackForm: false,
         },
         // 아래가 vm 생성자인가보다;
         async created() {
@@ -389,6 +398,9 @@
             const resp = await axios.get('/chat/room/messages/' + _this.roomId);
             console.log(resp);
             _this.messages = resp.data;
+            _this.messages.sort(function(a, b) {
+                return a.date < b.date ? -1 : a.date > b.date ? 1 : 0;
+            });
             console.log(resp.data);
             console.log(_this.messages);
             _this.messageFetchFlag = true;
@@ -418,17 +430,20 @@
                 this.message = '';
             },
             recvMessage: function(recv) {
-                this.messages.unshift({"type":recv.type,"sender":recv.sender,"message":recv.message, "date": recv.date})
+                // this.messages.unshift({"type":recv.type,"sender":recv.sender,"message":recv.message, "date": recv.date})
+                this.messages.push({"type":recv.type,"sender":recv.sender,"message":recv.message, "date": recv.date});
             },
-            submitFeedback: function() {
-                if(this.feedback.length < 5 || this.mileage < 0) {
+            submitFeedback: function(mealMateId, mealMateNickname) {
+                if(this.feedbackMention.length < 5 || this.mileage < 0) {
                     alert("피드백은 5글자 이상, 마일리지는 0 이상의 정수를 입력해야 합니다.");
                     return;
                 }
 
                 const data = {
-                    feedbackMention: this.feedback,
-                    mileage: this.mileage
+                    feedbackMention: this.feedbackMention,
+                    mileage: this.mileage,
+                    receiverMealMateId: mealMateId,
+                    receiverNickname: mealMateNickname,
                 };
 
                 axios.post('http://localhost:8080/mealmate/feedback/one/' + this.roomId, data, {
@@ -575,10 +590,8 @@
                     case 'ADD_CHAT_PERIOD':
                         axios.post('http://localhost:8080/mealmate/addPeriod/' + this.roomId + "/" + chatPeriodVote.voteId, {
                             voteId: chatPeriodVote.voteId,
-                            startHour: chatPeriodVote.startHour,
-                            startMinute: chatPeriodVote.startMinute,
-                            endHour: chatPeriodVote.endHour,
-                            endMinute: chatPeriodVote.endMinute,
+                            startTime: chatPeriodVote.startTime,
+                            endTime: chatPeriodVote.endTime,
                         });
                         break;
                     case 'DELETE_CHAT_PERIOD':
@@ -599,10 +612,27 @@
             },
             chatTitleVoteComplete: function (voteId, newTitle) {
                 axios.post('http://localhost:8080/mealmate/updateTitle/' + this.roomId + "/" + voteId + "/" + newTitle)
+                    .then(response => {
+                        // 이러면 클라이언트 하나의 채팅방 제목은 즉각 바뀌겠지만, 다른 클라이언트가 보기엔 바뀌지 않을 것...
+                        this.roomName = response.data;
+                    }).catch(error => {
+                        alert("chatTitleVoteComplete fail");
+                        console.error(error);
+                    });
             },
             chatRoomLockVoteComplete: function (voteId) {
                 axios.post('http://localhost:8080/mealmate/lock/' + this.roomId + "/" + voteId);
-            }
+            },
+            fetchFeedbackMealMateList: function () {
+                axios.get('http://localhost:8080/mealmate/chatroom/feedback/current/list')
+                    .then(response => {
+                        this.feedbackMealMateList = response.data;
+                        console.log(response);
+                    }).catch(error => {
+                    alert("fetchMemberList fail");
+                    console.error(error);
+                });
+            },
         }
     });
 </script>

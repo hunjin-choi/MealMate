@@ -8,6 +8,7 @@ import service.chat.mealmate.mealMate.domain.ChatPeriod;
 import service.chat.mealmate.mealMate.repository.ChatPeriodRepository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -18,8 +19,8 @@ public class ScheduleService {
     private final ChatPeriodRepository chatPeriodRepository;
     @Scheduled(cron = "0 0 1 * * * ")
     public void chatPeriodSchedule() {
-        LocalDate today = LocalDate.now();
-        List<ChatPeriod> reservedChatPeriods = chatPeriodRepository.reservedChatPeriodAt(today);
+        LocalDateTime now = LocalDateTime.now();
+        List<ChatPeriod> reservedChatPeriods = chatPeriodRepository.reservedChatPeriodAt(now);
         for (ChatPeriod chatPeriod : reservedChatPeriods) {
             if (chatPeriod.getReservedDeleted() == true) {
                 chatPeriod.softDelete();
