@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 public class VotePaper implements Serializable {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long votePaperId;
-    @ManyToOne @JoinColumn(name = "vote_id")
+    @ManyToOne(cascade = CascadeType.ALL) @JoinColumn(name = "vote_id")
     private Vote vote;
     @ManyToOne @JoinColumn(name = "meal_mate_id")
     private MealMate mealMate;

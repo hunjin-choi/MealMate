@@ -11,6 +11,7 @@
     <table class="table table-bordered table-striped">
         <thead class="thead-dark">
         <tr>
+            <th>Giver Nickname</th>
             <th>Mileage Per Feedback</th>
             <th>Feedback Mention</th>
             <th>Feedback Date</th>
@@ -20,6 +21,7 @@
         <tbody>
         <#list feedbackList as item>
             <tr>
+                <td>${item.giverNickname}</td>
                 <td>${item.feedbackMileage}</td>
                 <td>${item.feedbackMention}</td>
                 <td>${item.feedbackDate}</td>

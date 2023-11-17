@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import service.chat.mealmate.chat.dto.ChatMessageType;
 import service.chat.mealmate.mealMate.domain.*;
 import service.chat.mealmate.mealMate.domain.vote.*;
 import service.chat.mealmate.mealMate.domain.vote.validate.VoteValidateDto;
@@ -70,14 +71,14 @@ public class MealMateService {
     public MealMate enter(Long memberId, String chatRoomId) {
         return chatRoomEnterPolicy.canEnterImmediately(memberId, chatRoomId);
     }
-    public void feedback(Long senderId, Long receiverId, String chatRoomId, Long chatPeriodId, FeedbackDto feedbackDto) {
+    public void feedback(Long senderMealMateId, Long receiverMealMateId, String chatRoomId, Long chatPeriodId, FeedbackDto feedbackDto) {
         LocalDateTime now = LocalDateTime.now();
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new RuntimeException("채팅방이 없습니다."));
-        MealMate giver = mealMateRepository.findOneActivatedCompositeBy(senderId, chatRoomId)
+        MealMate giver = mealMateRepository.findById(senderMealMateId)
                 .orElseThrow(() -> new RuntimeException("밀 메이트가 없습니다"));
         // 아래 두 쿼리는 "연관관계 검증" 과정인데, 각각 다른 방식을 사용
-        MealMate receiver = mealMateRepository.findOneActivatedCompositeBy(receiverId, chatRoomId)
+        MealMate receiver = mealMateRepository.findById(receiverMealMateId)
                 .orElseThrow(() -> new RuntimeException("밀 메이트가 없습니다."));
         ChatPeriod chatPeriod = chatRoom.findMatchedChatPeriod(chatPeriodId);
 
@@ -153,7 +154,6 @@ public class MealMateService {
         boolean isCreator = true;
         VotePaper votePaper = mealMate.voting(vote, dto.getVoting().getVoterStatus(), isCreator);
         // cascade 하면 될텐데
-        this.voteRepository.save(vote);
         this.votePaperRepository.save(votePaper);
     }
 
@@ -198,12 +198,12 @@ public class MealMateService {
             }).collect(Collectors.toList());
     }
 
-    public ChatMessage saveChatMessage(String message, Long mealMateId) {
+    public ChatMessage saveChatMessage(String message, Long mealMateId, ChatMessageType chatMessageType) {
         MealMate mealMate = mealMateRepository.findById(mealMateId).orElse(null);
         ChatMessage chatMessage = mealMate.addChatMessage(message);
-        // cascade 하면 될텐데
+        // cascade 옵션 덕분에 따로 save하지 않아도 되지만,
+        // 프론트에서 chatMessageId를 필요로 할 수 있어서 굳이 굳이 save 메서드 호출
         return chatMessageRepository.save(chatMessage);
-        // DB상에 찍힌 시간을 반환하여 프론트에서 메시지 송신 시간을 표시할 수 있게 구현
     }
 
     public List<ChatMessage> getChatMessagesPageable(String chatRoomId, String giverId, int pageNumber, int pageSize) {
@@ -220,6 +220,6 @@ public class MealMateService {
     public List<ChatPeriod> getChatPeriods(String chatRoomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 없습니다"));
         // 자동으로 deleted=false 조건 붙이겠지?
-        return chatRoom.getChatPeriodList();
+        return chatRoom.getChatPeriodList().stream().filter((i) -> !i.getDeleted()).collect(Collectors.toList());
     }
 }

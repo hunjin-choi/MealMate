@@ -22,7 +22,7 @@ public class ChatPeriod {
     private Long chatPeriodId;
     LocalTime startTime;
     LocalTime endTime;
-    Boolean deleted = true; // 삭제 여부 기본값 false
+    Boolean deleted = true;
 
     Boolean reserved = false;
     LocalDateTime reservedDateTime = null;
@@ -51,28 +51,23 @@ public class ChatPeriod {
         int diff = calculateDiffByMinute(LocalTime.of(startHour, startMinute), LocalTime.of(endHour, endMinute));
         if (diff > maxPeriod) throw new RuntimeException("채팅 시간이 너무 길거나 시작시간이 끝나는 시간보다 늦습니다.");
     }
-    public ChatPeriod(int startHour, int startMinute, int endHour, int endMinute, ChatRoom chatRoom) {
+    public ChatPeriod(int startHour, int startMinute, int endHour, int endMinute, boolean deleted, ChatRoom chatRoom) {
         isLessThanMaxPeriod(startHour, startMinute, endHour, endMinute);
         this.startTime = LocalTime.of(startHour, startMinute);
         this.endTime = LocalTime.of(endHour, endMinute);
+        this.deleted = deleted;
         this.chatRoom = chatRoom;
     }
 
-    public ChatPeriod(LocalTime startTime, LocalTime endTime, ChatRoom chatRoom) {
+    public ChatPeriod(LocalTime startTime, LocalTime endTime, boolean deleted, ChatRoom chatRoom) {
         isLessThanMaxPeriod(startTime.getHour(), startTime.getMinute(), endTime.getHour(), endTime.getMinute());
         this.startTime = startTime;
         this.endTime = endTime;
+        this.deleted = deleted;
         this.chatRoom = chatRoom;
     }
     // factoryForTemproal
     // factory
-    public static ChatPeriod of(int startHour, int startMinute, int endHour, int endMinute, ChatRoom chatRoom) {
-        return new ChatPeriod(startHour, startMinute, endHour, endMinute, chatRoom);
-    }
-
-    public static ChatPeriod of(LocalTime startTime, LocalTime endTime, ChatRoom chatRoom) {
-        return new ChatPeriod(startTime, endTime, chatRoom);
-    }
     public static void validate(int startHour, int startMinutes, int endHour, int endMinute) {
         isLessThanMaxPeriod(startHour, startMinutes, endHour, endMinute);
         if (calculateDiffByMinute(LocalTime.of(startHour, startMinutes), LocalTime.of(endHour, endMinute)) > 50)

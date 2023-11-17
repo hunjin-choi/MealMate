@@ -42,13 +42,14 @@ public class ChatRoom {
         this.chatRoomId = chatRoomId;
         this.title = title;
         this.openedAt = openedAt;
-        this.expectedClosedAt = LocalDateTime.now().plusHours(1);// 24시간 뒤의 시간
+        this.expectedClosedAt = LocalDateTime.now().plusDays(1);// 24시간 뒤의 시간
         this.maxPersonnel = maxPersonnel;
         for (int i = 0; i < 2; i++) {
-            chatPeriodList.add(new ChatPeriod(0, 0, 0, 0, this));
+            chatPeriodList.add(new ChatPeriod(0, 0, 0, 0, true, this));
         }
-        ChatPeriod temporalChatPeriod = new ChatPeriod(0, 0, 0, 0, this);
-        temporalChatPeriod.update(openedAt.getHour(), openedAt.getMinute(), expectedClosedAt.getHour(), expectedClosedAt.getMinute());
+        // 임시 채팅 시간대 설정
+        ChatPeriod temporalChatPeriod = new ChatPeriod(0, 0, 23, 59, false, this);
+        // temporalChatPeriod.update(openedAt.getHour(), openedAt.getMinute(), expectedClosedAt.getHour(), expectedClosedAt.getMinute());
         temporalChatPeriod.reservedSoftDelete(expectedClosedAt);
         chatPeriodList.add(temporalChatPeriod);
     }
@@ -114,11 +115,12 @@ public class ChatRoom {
         this.expectedClosedAt = LocalDateTime.of(9999, 12, 31, 0, 0);
         // this.expectedClosedAt = LocalDateTime.MAX; <- 년도가 비정상적으로 큰 값을 생성함;;
         this.lockedAt = lockedAt;
+        // 채팅 시간대 추가
+        addChatPeriod(lockedAt.getHour(), lockedAt.getMinute(), lockedAt.plusHours(1).getHour(), lockedAt.getMinute(), true);
+        // 임시 채팅 시간대 삭제
         this.chatPeriodList.stream()
                 .filter(i -> i.reservedDeleted == true)
                 .forEach(chatPeriod -> {chatPeriod.softDelete();});
-
-        addChatPeriod(lockedAt.getHour(), lockedAt.getMinute(), lockedAt.plusHours(1).getHour(), lockedAt.getMinute(), true);
     }
     public void close(LocalDateTime closedAt) {
         for (MealMate mealMate : mealMateList) {
@@ -133,20 +135,22 @@ public class ChatRoom {
 //        if (this.lockedAt == null) {
 //            throw new RuntimeException("비잠금상태의 채팅방에는 임시시간대만 있습니다");
 //        }
-        return chatPeriodList.stream().filter(chatPeriod -> {
-            LocalTime startTime = chatPeriod.getStartTime();
-            LocalTime endTime = chatPeriod.getEndTime();
-            if (startTime.getHour() > endTime.getHour())
-                return startTime.isBefore(localTime) || endTime.isAfter(localTime);
-            else
-                return startTime.isBefore(localTime) && endTime.isAfter(localTime);
-        }).findAny().orElseThrow(() -> new RuntimeException("적절한 채팅 시간대를 찾을 수 없습니다"));
+        return chatPeriodList.stream()
+                .filter(chatPeriod -> !chatPeriod.deleted)
+                .filter(chatPeriod -> {
+                    LocalTime startTime = chatPeriod.getStartTime();
+                    LocalTime endTime = chatPeriod.getEndTime();
+                    if (startTime.getHour() > endTime.getHour())
+                        return startTime.isBefore(localTime) || endTime.isAfter(localTime);
+                    else
+                        return startTime.isBefore(localTime) && endTime.isAfter(localTime);
+        }).findAny().orElse(null);
     }
 
     public ChatPeriod findMatchedChatPeriod(Long chatPeriodId) {
         for (ChatPeriod chatPeriod : chatPeriodList)
             if (chatPeriodId.equals(chatPeriod.getChatPeriodId())) return chatPeriod;
-        throw new RuntimeException("적절한 채팅 시간대를 찾을 수 없습니다.");
+        return null;
     }
 
     public LocalDateTime findMatchedChatPeriodEndTime(LocalDateTime localDateTime) {

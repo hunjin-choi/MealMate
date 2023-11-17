@@ -12,7 +12,7 @@ import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
-import service.chat.mealmate.chat.dto.RedisChatMessageDto;
+import service.chat.mealmate.chat.dto.ChatMessageType;
 import service.chat.mealmate.chat.service.RedisChatPublisherService;
 import service.chat.mealmate.security.domain.SecurityMember;
 import service.chat.mealmate.security.jwt.JwtTokenProvider;
@@ -43,6 +43,10 @@ public class StompHandler implements ChannelInterceptor {
         message = MessageBuilder.fromMessage(message).setHeader("connect", "true").build();
         // accessor.setImmutable();
         accessor.setHeader("connect", "true");
+        if (accessor.getCommand().equals(StompCommand.CONNECT)) {
+            message = MessageBuilder.fromMessage(message).setHeader("Set-Cookie", "thisIsCookieForMealMate123").build();
+            return message;
+        }
         if (accessor.getCommand().equals(StompCommand.DISCONNECT)) {
             // 프론트까지 전달 안됨
             accessor.setHeader("connect", "false");
@@ -53,7 +57,8 @@ public class StompHandler implements ChannelInterceptor {
             String loginId = securityMember.getUsername();
             String msg = loginId + "님이 퇴장하셨습니다.";
             String chatRoomId = securityMember.getChatRoomId();
-            redisChatPublisherService.convertAndSend(msg, loginId, chatRoomId, mealMateId, RedisChatMessageDto.MessageType.QUIT);
+            redisChatPublisherService.convertAndSend(msg, loginId, chatRoomId, mealMateId, ChatMessageType.QUIT);
+            securityMember.clearChatInfo();
 //            channel.send(message); -> 재전송
             return message;
         }

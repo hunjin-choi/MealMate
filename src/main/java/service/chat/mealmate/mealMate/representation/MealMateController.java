@@ -6,7 +6,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import service.chat.mealmate.chat.dto.RedisChatMessageDto;
+import service.chat.mealmate.chat.dto.ChatMessageType;
 import service.chat.mealmate.chat.service.RedisChatPublisherService;
 import service.chat.mealmate.mealMate.domain.vote.VoteSubject;
 import service.chat.mealmate.mealMate.domain.vote.VoterStatus;
@@ -17,14 +17,10 @@ import service.chat.mealmate.mealMate.repository.VoteRepository;
 import service.chat.mealmate.security.domain.SecurityMember;
 import service.chat.mealmate.security.jwt.JwtTokenProvider;
 import service.chat.mealmate.mealMate.domain.ChatPeriod;
-import service.chat.mealmate.mealMate.domain.FeedbackHistory;
 import service.chat.mealmate.mealMate.domain.MealMate;
 import service.chat.mealmate.mealMate.service.MealMateService;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Controller
@@ -41,8 +37,8 @@ public class MealMateController {
     private final FeedbackHistoryRepository feedbackHistoryRepository;
     @GetMapping
     @ResponseBody
-    public void test(@RequestBody() CreateVoteAndVotingDto dto) {
-        System.out.println("dto = " + dto);
+    public void test() {
+        System.out.println("dto = ");
     }
     @GetMapping("/vote/chatPeriod/list/{chatRoomId}")
     @ResponseBody
@@ -162,7 +158,7 @@ public class MealMateController {
         String loginId = principal.getUsername();
         Long mealMateId = principal.getMealMateId();
         String chatRoomId1 = principal.getChatRoomId();
-        redisChatPublisherService.convertAndSend(message, loginId, chatRoomId1, mealMateId, RedisChatMessageDto.MessageType.INFO);
+        redisChatPublisherService.convertAndSend(message, loginId, chatRoomId1, mealMateId, ChatMessageType.LOCK);
     }
     @PostMapping("/feedback/one/{roomId}")
     @ResponseBody
@@ -170,11 +166,11 @@ public class MealMateController {
         // roomId를 pathVaraiable로 넣지 말고, jwt에서 payload로 넣어 둔 값을 가져오는 식으로 하자
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         SecurityMember principal = (SecurityMember) auth.getPrincipal();
-        Long giverId = principal.getMealMateId();
+        Long senderMealmateId = principal.getMealMateId();
         Long chatPeriodId = principal.getChatPeriodId();
         // chatPeriod 개수 체크, chatPeriod 겹치지 않는지 체크
         // find mealmate -> add ChatPeriod
-        mealmateService.feedback(giverId, feedbackDto.getReceiverMealMateId(), roomId, chatPeriodId, feedbackDto);
+        mealmateService.feedback(senderMealmateId, feedbackDto.getReceiverMealMateId(), roomId, chatPeriodId, feedbackDto);
     }
 
     @GetMapping("/chatroom/feedback/current/list")
@@ -197,7 +193,7 @@ public class MealMateController {
     public String findReceivedFeedbackHistories(Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         SecurityMember principal = (SecurityMember) authentication.getPrincipal();
-        List<FeedbackHistoryDto> feedbackList = feedbackHistoryRepository.findFeedbackHistoriesBy(principal.getMealMateId());
+        List<FeedbackHistoryDto> feedbackList = feedbackHistoryRepository.findFeedbackHistoriesBy(principal.getMemberId());
         model.addAttribute("feedbackList", feedbackList);
         return "mealmate/feedbackList";
     }

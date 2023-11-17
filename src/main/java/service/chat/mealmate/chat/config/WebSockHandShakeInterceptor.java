@@ -23,8 +23,13 @@ public class WebSockHandShakeInterceptor implements HandshakeInterceptor {
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     @Override
-    @ChatPeriodCheck // 이 어노테이션을 인가 절차 진행.
+//    @ChatPeriodCheck // 이 어노테이션으로 인가 절차 진행.
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
+        SecurityMember principal = (SecurityMember) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        LocalDateTime chatExpiredAt = principal.getChatExpiredAt();
+        // principle에 chatExpiredAt을 설정해주는 작업은 채팅방에 입장하는 API에서 처리합니다.
+        if (chatExpiredAt == null || chatExpiredAt.isBefore(LocalDateTime.now()))
+            return false;
         return true;
     }
 

@@ -31,6 +31,13 @@ public class SecurityMember extends User {
         this.chatPeriodId = chatPeriodId;
         this.chatExpiredAt = chatExpiredAt;
     }
+
+    public void clearChatInfo() {
+        this.mealMateId = null;
+        this.chatRoomId = null;
+        this.chatPeriodId = null;
+        this.chatExpiredAt = null;
+    }
     public SecurityMember(Member member, PasswordEncoder passwordEncoder, List<GrantedAuthority> authorities, LocalDateTime chatExpiredAt) {
         super(member.getLoginId(), passwordEncoder.encode(member.getPassword()), authorities);
         this.memberId = member.getMemberId();

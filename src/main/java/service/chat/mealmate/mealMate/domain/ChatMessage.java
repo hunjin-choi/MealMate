@@ -3,6 +3,7 @@ package service.chat.mealmate.mealMate.domain;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import service.chat.mealmate.chat.dto.ChatMessageType;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -16,6 +17,8 @@ public class ChatMessage {
     private String message;
 
     private LocalDateTime sentAt;
+
+    private ChatMessageType chatMessageType;
 
     @ManyToOne()
     private MealMate mealMate;

@@ -41,7 +41,7 @@
     <div class="list-group" v-if="voteListFlag">
         <button type="button" @click="fetchVoteList(); chatPeriodVoteFlag=chatPeriodVoteFlag ^ true;">채팅 시간대 변경 투표 리스트 보기</button>
         <div v-if="chatPeriodVoteFlag">
-            <li class="" v-for="(chatPeriodVote, index) in allChatPeriodVoteList">
+            <li class="" v-for="(chatPeriodVote, index) in this.allChatPeriodVoteList">
                 {{chatPeriodVote.voteId}}
                 {{chatPeriodVote.voteTitle}}
                 {{chatPeriodVote.content}}
@@ -61,7 +61,7 @@
         </div>
         <button type="button" @click="fetchVoteList(); titleChangeVoteFlag=titleChangeVoteFlag ^ true;">채팅방 제목 투표 리스트 보기</button>
         <div v-if="titleChangeVoteFlag">
-            <li class="" v-for="(titleChangeVote, index) in allTitleChangeVoteList">
+            <li class="" v-for="(titleChangeVote, index) in this.allTitleChangeVoteList">
                 <span>
                     {{titleChangeVote.voteId}}
                     {{titleChangeVote.voteTitle}}
@@ -71,6 +71,8 @@
                     {{titleChangeVote.createdAt}}
                     {{titleChangeVote.completedDate}}
                     {{titleChangeVote.chatRoomTitle}}
+                    찬성: {{titleChangeVote.agree}}
+                    반대: {{titleChangeVote.disagree}}
                     <span>찬성: ~~~~~</span><span>반대: ~~~~~</span>
                     <button @click="alert('test')">press me</button>
                     <button type="button" @click="votingMethod(titleChangeVote, 'agree')">agree</button>
@@ -83,7 +85,7 @@
         </div>
         <button type="button" @click="fetchVoteList(); lockVoteFlag=lockVoteFlag ^ true;">채팅방 잠금 투표 리스트 보기</button>
         <div v-if="lockVoteFlag">
-            <li class="" v-for="(lockChangeVote, index) in allLockChangeVoteList">
+            <li class="" v-for="(lockChangeVote, index) in this.allLockChangeVoteList">
                 <span>
                     {{lockChangeVote.voteId}}
                     {{lockChangeVote.voteTitle}}
@@ -92,11 +94,10 @@
                     {{lockChangeVote.voteSubject}}
                     {{lockChangeVote.createdAt}}
                     {{lockChangeVote.completedDate}}
-                    <span>찬성: ~~~~~</span><span>반대: ~~~~~</span>
-                    <button @click="alert('test')">press me</button>
+<#--                    <span>찬성: ~~~~~</span><span>반대: ~~~~~</span>-->
+<#--                    <button @click="alert('test')">press me</button>-->
                     <button type="button" @click="votingMethod(titleChangeVote, 'agree')">agree</button>
                     <button type="button" @click="votingMethod(titleChangeVote, 'disAgree')">disAgree</button>
-                    <button>투표 결과 실제로 반영하기</button>
                     <button @click="chatRoomLockVoteComplete(lockChangeVote.voteId, lockChangeVote.chatRoomTitle)">투표 결과 실제로 반영하기</button>
                 </span>
             </li>
@@ -257,11 +258,11 @@
     <!-- Feedback Modal -->
     <div v-if="feedbackModal" class="modal-container">
         <div v-for="feedback in feedbackMealMateList">
+            <span>{{feedback.mealMateId}}</span>
             <span>{{feedback.receiverName}}</span>
             <span>{{feedback.feedbackMention}}</span>
             <span>{{feedback.feedbackMileage}}</span>
             <span>{{feedback.feedbackTime}}</span>
-            <span>{{feedback.mealMateId}}</span>
             <span><button @click="feedbackForm=true;">Add Feedback</button></span>
             <div v-if="feedbackForm">
                 <label>피드백: </label>
@@ -301,6 +302,7 @@
     var vm = new Vue({
         el: '#app',
         data: {
+            domain: 'http://localhost:8080',
             roomId: '',
             roomName: '',
             message: '',
@@ -368,12 +370,6 @@
                 vm.$destroy();
                 sock.close();
             });
-
-            const response = await axios.get('/chat/user/' + this.roomId);
-            console.log("axios complete");
-            _this.token = response.data.token;
-            _this.readOnlyToken = response.data.readOnlyToken;
-            _this.readWriteToken = response.data.readWriteToken;
             ///////////
             sock = new SockJS("/ws-stomp");
             ws = Stomp.over(sock);
@@ -382,18 +378,14 @@
             this.roomId = localStorage.getItem('wschat.roomId');
             this.roomName = localStorage.getItem('wschat.roomName');
             var _this = this;
-            axios.get('/chat/user/' + this.roomId).then(response => {
-                _this.token = response.data.token;
-                ws.connect({"token":_this.token}, function(frame) {
-                    ws.subscribe("/sub/chat/room/"+_this.roomId, function(message) {
-                        var recv = JSON.parse(message.body);
-                        _this.recvMessage(recv);
-                    });
-                    _this.sendMessage('ENTER');
-                }, function(error) {
-                    alert("서버 연결에 실패 하였습니다. 다시 접속해 주십시요.");
-                    location.href="/chat/room";
+            ws.connect({"token":_this.token}, function(frame) {
+                ws.subscribe("/sub/chat/room/"+_this.roomId, function(message) {
+                    var recv = JSON.parse(message.body);
+                    _this.recvMessage(recv);
                 });
+                _this.sendMessage('ENTER');
+            }, function(error) {
+                alert("채팅방 멤버가 아니거나 현재 채팅이 불가능한 상태입니다.");
             });
             const resp = await axios.get('/chat/room/messages/' + _this.roomId);
             console.log(resp);
@@ -419,6 +411,10 @@
         },
         methods: {
             sendMessage: function(type) {
+                if (ws.connected == false) {
+                    alert("채팅방 멤버가 아니거나 현재 채팅이 불가능한 상태입니다.");
+                    return;
+                }
                 ws.send("/pub/chat/message/" + this.roomId,
                     {"token":this.token, "readOnlyToken" : this.readOnlyToken, "readWriteToken": this.readWriteToken,
                         "accessToken": this.accessToken, "refreshToken" : this.refreshToken},
@@ -430,6 +426,12 @@
                 this.message = '';
             },
             recvMessage: function(recv) {
+                if (recv.type == 'LOCK') {
+                    alert("채팅방이 잠겼으므로 퇴장 후 재접속합니다.");
+                    // 이렇게 ws.disconnect 메서드를 먼저 호출 하지 않으면 예외적 상황에 웹소켓 연결을 끊는 에러로 인식함
+                    ws.disconnect();
+                    window.location.href="/chat/room/enter/" + this.roomId;
+                }
                 // this.messages.unshift({"type":recv.type,"sender":recv.sender,"message":recv.message, "date": recv.date})
                 this.messages.push({"type":recv.type,"sender":recv.sender,"message":recv.message, "date": recv.date});
             },

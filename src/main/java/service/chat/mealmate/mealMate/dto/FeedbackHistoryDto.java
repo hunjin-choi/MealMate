@@ -1,11 +1,12 @@
 package service.chat.mealmate.mealMate.dto;
 
 import lombok.Data;
+import lombok.Value;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-@Data
+@Value
 public class FeedbackHistoryDto {
     private String giverNickname;
 

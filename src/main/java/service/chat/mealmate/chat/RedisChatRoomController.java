@@ -2,6 +2,7 @@ package service.chat.mealmate.chat;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -84,11 +85,14 @@ public class RedisChatRoomController {
 
     @GetMapping("/room/enter/{chatRoomId}")
     public String enterRoom(Model model, @PathVariable String chatRoomId) {
-        SecurityMember principal = (SecurityMember) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        SecurityContext context = SecurityContextHolder.getContext();
+        SecurityMember principal = (SecurityMember) context.getAuthentication().getPrincipal();
         Long memberId = principal.getMemberId();
         MealMate mealMate = mealmateService.enter(memberId, chatRoomId);
         ChatPeriod chatPeriod = mealMate.findMatchedChatPeriod(LocalDateTime.now());
-        principal.setChatInfo(mealMate.getMealMateId(), chatRoomId, chatPeriod.getChatPeriodId(), chatPeriod.getExpiredDateTime());
+        Long chatPeriodId = chatPeriod == null ? null : chatPeriod.getChatPeriodId();
+        LocalDateTime expiredDateTime = chatPeriod == null ? null : chatPeriod.getExpiredDateTime();
+        principal.setChatInfo(mealMate.getMealMateId(), chatRoomId, chatPeriodId, expiredDateTime);
         model.addAttribute("roomId", chatRoomId);
         return "/chat/roomdetail";
     }
@@ -104,14 +108,6 @@ public class RedisChatRoomController {
     @ResponseBody
     public RedisChatRoom roomInfo(@PathVariable String roomId) {
         return redisChatRoomRepository.findRoomById(roomId);
-    }
-
-    @GetMapping("/user/{roomId}")
-    @ResponseBody
-    @ChatPeriodCheck
-    public LoginInfo startChat(HttpServletRequest httpRequest, HttpServletResponse httpResponse, @PathVariable("roomId") String roomId) {
-        SecurityMember securityMember = (SecurityMember) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return new LoginInfo(securityMember.getUsername(), "token", "token", "token");
     }
 
 }

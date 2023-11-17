@@ -19,10 +19,6 @@ import java.util.Optional;
 
 @Repository
 public interface VoteRepository extends JpaRepository<Vote, Long>{
-    @Query(value = "select v.* from vote as v left join chat_room as cr on v.chat_room_id = cr.chat_room_id " +
-            "where v.vote_id = :voteId and cr.chat_room_id = :chatRoomId", nativeQuery = true)
-    public Optional<Vote> findOneWithChatRoom(Long voteId, String chatRoomId);
-
     public interface VoteChatPeriodChangeDtoInterface {
         Long getVoteId();
         String getVoteTitle();
@@ -36,6 +32,31 @@ public interface VoteRepository extends JpaRepository<Vote, Long>{
         Long getAgree();
         Long getDisagree();
     }
+
+    public interface VoteChatLockDtoInterface {
+        Long getVoteId();
+        String getVoteTitle();
+        String getContent();
+        String getVoteMethodType();
+        String getVoteSubject();
+        LocalDateTime getCreatedAt();
+        LocalDateTime getCompletedAt();
+    }
+
+    public interface VoteTitleChangeDtoInterface {
+        Long getVoteId();
+        String getVoteTitle();
+        String getContent();
+        String getVoteMethodType();
+        String getVoteSubject();
+        LocalDateTime getCreatedAt();
+        LocalDateTime getCompletedAt();
+        String getTitle();
+    }
+    @Query(value = "select v.* from vote as v left join chat_room as cr on v.chat_room_id = cr.chat_room_id " +
+            "where v.vote_id = :voteId and cr.chat_room_id = :chatRoomId", nativeQuery = true)
+    public Optional<Vote> findOneWithChatRoom(Long voteId, String chatRoomId);
+
     @Query(value = "select new service.chat.mealmate.mealMate.dto.VoteChatPeriodChangeDto(" +
             "v.voteId, v.voteTitle, v.content, v.voteMethodType, v.voteSubject, v.createdAt, cp.startTime, cp.endTime," +
             "sum(case when vp.voterStatus = :#{#agree} then 1 else 0 end), " +

@@ -1,6 +1,5 @@
 package service.chat.mealmate.chat.dto;
 
-import com.fasterxml.jackson.annotation.JacksonAnnotation;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
@@ -18,19 +17,15 @@ import java.util.stream.Collectors;
 @Setter
 @NoArgsConstructor
 public class RedisChatMessageDto {
-    // 메시지 타입 : 입장, 채팅
-    public enum MessageType {
-        ENTER, JOIN, TALK, INFO, QUIT
-    }
 
-    public RedisChatMessageDto(MessageType type, String roomId, String sender, String message) {
+    public RedisChatMessageDto(ChatMessageType type, String roomId, String sender, String message) {
         this.type = type;
         this.roomId = roomId;
         this.sender = sender;
         this.message = message;
     }
 
-    private MessageType type; // 메시지 타입
+    private ChatMessageType type; // 메시지 타입
     private String roomId; // 방번호
     private String sender; // 메시지 보낸사람
     private String message; // 메시지

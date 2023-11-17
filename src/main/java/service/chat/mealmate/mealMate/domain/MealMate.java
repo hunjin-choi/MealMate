@@ -39,6 +39,9 @@ public class MealMate implements Serializable {
 
     @OneToMany(mappedBy =  "mealMate")
     private List<VotePaper> votePaperList = new ArrayList<VotePaper>();
+
+    @OneToMany(mappedBy = "mealMate")
+    private List<ChatMessage> chatMessageList = new ArrayList<ChatMessage>();
     public MealMate(Member member, ChatRoom chatRoom, LocalDateTime joinedAt) {
         this.member = member;
         this.chatRoom = chatRoom;
@@ -69,9 +72,13 @@ public class MealMate implements Serializable {
     }
 
     public ChatMessage addChatMessage(String message) {
-        // chatMesageList에 add 하지 않는 이유: 불필요한 데이터 load
-        return new ChatMessage(message, LocalDateTime.now(), this);
-
+        // chatMessageList에 add
+        // chatMessageList를 load 한 후 add 하는 것은 아닐까..?
+        // 만약 그렇게 동작한다면 불필요한 load 작업이 생기는 거..
+        // [쿼리 로그 확인 결과 불필요한 load 없이 바로 add 함]
+        ChatMessage chatMessage = new ChatMessage(message, LocalDateTime.now(), this);
+        this.chatMessageList.add(chatMessage);
+        return chatMessage;
     }
     public ChatPeriod findMatchedChatPeriod(LocalDateTime localDateTime) {
         return chatRoom.findMatchedChatPeriod(localDateTime);

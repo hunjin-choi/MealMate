@@ -16,7 +16,8 @@ public class VoteTitleChangeDto {
     private VoteSubject voteSubject;
     private LocalDateTime createdAt;
     private LocalDateTime completedDate;
-
+//    private Integer agree;
+//    private Integer disagree;
     private String chatRoomTitle;
 
     public VoteTitleChangeDto(Long voteId, String voteTitle, String content, VoteMethodType voteMethodType, VoteSubject voteSubject, LocalDateTime createdAt, String chatRoomTitle) {

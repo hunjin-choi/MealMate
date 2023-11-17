@@ -30,7 +30,7 @@ public class Vote {
     private LocalDateTime completedAt;
     @Version
     private Long version = 1L; // 두 명 이상이 동시에 투표를 완료를 요청할 수 있기 때문
-    @OneToMany(mappedBy = "vote")
+    @OneToMany(mappedBy = "vote", cascade = CascadeType.ALL)
     private List<VotePaper> votePaperList = new ArrayList<>();
     @ManyToOne() @JoinColumn(name = "chat_room_id")
     private ChatRoom chatRoom;
