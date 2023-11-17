@@ -12,6 +12,7 @@ import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import service.chat.mealmate.member.domain.Member;
+import service.chat.mealmate.member.domain.Oauth2Platform;
 import service.chat.mealmate.member.domain.Role;
 import service.chat.mealmate.member.repository.MemberRepository;
 import service.chat.mealmate.member.service.MemberService;
@@ -72,7 +73,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         Member member = memberRepository.findByEmail(attributes.getEmail()).map(entity->entity.update(attributes.getName(), attributes.getPicture()))
                 .orElse(null);
         if (member == null) {
-            return memberService.signUp(attributes.getName(), "no-password", Role.USER);
+            return memberService.signUpWithOauth2(attributes, Oauth2Platform.GOOGLE, Role.USER);
         } else {
             member = memberRepository.save(member);
             return member;

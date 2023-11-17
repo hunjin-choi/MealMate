@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import service.chat.mealmate.mileageHistory.domain.MileageHistory;
+import service.chat.mealmate.security.Oauth2.CustomOAuth2UserService;
+import service.chat.mealmate.security.Oauth2.OAuthAttributes;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -59,7 +61,8 @@ public class Member {
     }
 
     @Builder
-    public Member(String loginId, String password, String email, String picture, Role role, Oauth2Info oauth2Info){
+    public Member(String loginId, String password, String email, String picture, Role role, Oauth2Platform oAuth2Provider, String oauth2AccountId){
+        Oauth2Info oauth2Info = new Oauth2Info(oAuth2Provider, oauth2AccountId);
         this.of(loginId, password, email, picture, role, oauth2Info);
     }
 

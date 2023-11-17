@@ -31,7 +31,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final MemberService memberService;
     private final CustomUserDetailsService customUserDetailsService;
-//    private final CustomOAuth2LoginSuccessHandler customOAuth2LoginSuccessHandler;
+    private final CustomOAuth2LoginSuccessHandler customOAuth2LoginSuccessHandler;
     @Value("${spring.freemarker.domain}")
     private String corsDomain;
     @Override
@@ -48,14 +48,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     .antMatchers("/**").hasRole(Role.USER.name())
                     .anyRequest().permitAll() // 나머지 리소스에 대한 접근 설정
                 .and()
-                    .formLogin().defaultSuccessUrl("/chat/room", true); // 권한없이 페이지 접근하면 로그인 페이지로 이동한다.
-//                .and()
-//                    .oauth2Login()
-//                    .defaultSuccessUrl("/chat/room", true)
-//                    .userInfoEndpoint()
-//                    .userService(customOAuth2UserService)
-//                .and().
-//                    successHandler(customOAuth2LoginSuccessHandler);
+                    .formLogin().defaultSuccessUrl("/chat/room", true) // 권한없이 페이지 접근하면 로그인 페이지로 이동한다.
+                .and()
+                    .oauth2Login()
+                    .defaultSuccessUrl("/chat/room", true)
+                    .userInfoEndpoint()
+                    .userService(customOAuth2UserService)
+                .and().
+                    successHandler(customOAuth2LoginSuccessHandler);
     }
 
     /**
@@ -66,9 +66,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         auth.userDetailsService(customUserDetailsService);
         PasswordEncoder encoder = passwordEncoder();
 
-        memberService.signUp("hunjin", encoder.encode("hunjin"), Role.USER);
-        memberService.signUp("test", encoder.encode("test"), Role.USER);
-        memberService.signUp("guest", encoder.encode("guest"), Role.GUEST);
+        memberService.signUp("hunjin", encoder.encode("hunjin"), "hunjin@mail.com", Role.USER);
+        memberService.signUp("test", encoder.encode("test"), "test@mail.com", Role.USER);
+        memberService.signUp("guest", encoder.encode("guest"), "guest@mail.com", Role.GUEST);
     }
 
     @Bean

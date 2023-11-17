@@ -1,5 +1,6 @@
 package service.chat.mealmate.security.domain;
 
+import com.sun.istack.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
@@ -10,6 +11,8 @@ import service.chat.mealmate.member.domain.Member;
 
 import javax.persistence.GeneratedValue;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Getter
@@ -39,6 +42,12 @@ public class SecurityMember extends User {
         this.chatExpiredAt = null;
     }
     public SecurityMember(Member member, PasswordEncoder passwordEncoder, List<GrantedAuthority> authorities, LocalDateTime chatExpiredAt) {
+        super(member.getLoginId(), passwordEncoder.encode(member.getPassword()), authorities);
+        this.memberId = member.getMemberId();
+        this.chatExpiredAt = chatExpiredAt;
+    }
+
+    public SecurityMember(Member member, @NotNull PasswordEncoder passwordEncoder, List<GrantedAuthority> authorities) {
         super(member.getLoginId(), passwordEncoder.encode(member.getPassword()), authorities);
         this.memberId = member.getMemberId();
         this.chatExpiredAt = chatExpiredAt;
