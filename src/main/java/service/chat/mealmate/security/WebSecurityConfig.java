@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import service.chat.mealmate.security.Oauth2.CustomOAuth2LoginSuccessHandler;
 import service.chat.mealmate.security.Oauth2.CustomOAuth2UserService;
 import service.chat.mealmate.member.domain.Role;
 import service.chat.mealmate.member.service.MemberService;
@@ -30,7 +31,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final MemberService memberService;
     private final CustomUserDetailsService customUserDetailsService;
-
+//    private final CustomOAuth2LoginSuccessHandler customOAuth2LoginSuccessHandler;
     @Value("${spring.freemarker.domain}")
     private String corsDomain;
     @Override
@@ -47,12 +48,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     .antMatchers("/**").hasRole(Role.USER.name())
                     .anyRequest().permitAll() // 나머지 리소스에 대한 접근 설정
                 .and()
-                    .formLogin().defaultSuccessUrl("/chat/room", true) // 권한없이 페이지 접근하면 로그인 페이지로 이동한다.
-                .and()
-                    .oauth2Login()
-                    .defaultSuccessUrl("/chat/room", true)
-                    .userInfoEndpoint()
-                    .userService(customOAuth2UserService);
+                    .formLogin().defaultSuccessUrl("/chat/room", true); // 권한없이 페이지 접근하면 로그인 페이지로 이동한다.
+//                .and()
+//                    .oauth2Login()
+//                    .defaultSuccessUrl("/chat/room", true)
+//                    .userInfoEndpoint()
+//                    .userService(customOAuth2UserService)
+//                .and().
+//                    successHandler(customOAuth2LoginSuccessHandler);
     }
 
     /**
@@ -74,7 +77,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    CorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOriginPatterns(Arrays.asList(corsDomain, "http://localhost:8080"));
@@ -86,4 +89,5 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
 }
