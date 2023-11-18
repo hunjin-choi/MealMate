@@ -30,6 +30,6 @@ public interface FeedbackHistoryRepository extends JpaRepository<FeedbackHistory
             "from MealMate as mm " +
                 "left join FeedbackHistory as fh on fh.receiver.mealMateId = mm.mealMateId and fh.chatPeriod.chatPeriodId = :chatPeriodId " +
                 "left join mm.member as m on mm.member.memberId = m.memberId " +
-            "where mm.mealMateId <> :giverMealMateId")
-    public List<FeedbackMealMateDto> findFeedbackAbleMealMateListAtCurrent(Long giverMealMateId, Long chatPeriodId);
+            "where mm.mealMateId <> :giverMealMateId and mm.chatRoom.chatRoomId = :chatRoomId ")
+    public List<FeedbackMealMateDto> findFeedbackAbleMealMateListAtCurrent(Long giverMealMateId, Long chatPeriodId, String chatRoomId);
 }

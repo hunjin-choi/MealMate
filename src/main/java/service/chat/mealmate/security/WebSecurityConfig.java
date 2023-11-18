@@ -51,11 +51,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     .formLogin().defaultSuccessUrl("/chat/room", true) // 권한없이 페이지 접근하면 로그인 페이지로 이동한다.
                 .and()
                     .oauth2Login()
-                    .defaultSuccessUrl("/chat/room", true)
+                    .successHandler(customOAuth2LoginSuccessHandler)
                     .userInfoEndpoint()
-                    .userService(customOAuth2UserService)
-                .and().
-                    successHandler(customOAuth2LoginSuccessHandler);
+                    .userService(customOAuth2UserService);
     }
 
     /**

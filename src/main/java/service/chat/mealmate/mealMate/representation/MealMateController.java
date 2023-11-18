@@ -179,7 +179,8 @@ public class MealMateController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         SecurityMember principal = (SecurityMember) authentication.getPrincipal();
         Long chatPeriodId = principal.getChatPeriodId();
-        return feedbackHistoryRepository.findFeedbackAbleMealMateListAtCurrent(principal.getMealMateId(), chatPeriodId);
+        String chatRoomId = principal.getChatRoomId();
+        return feedbackHistoryRepository.findFeedbackAbleMealMateListAtCurrent(principal.getMealMateId(), chatPeriodId, chatRoomId);
     }
     @GetMapping("/list")
     public String findMealMates(Model model) {
